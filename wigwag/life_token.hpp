@@ -30,11 +30,10 @@ namespace wigwag
 		struct impl
 		{
 			std::atomic<int_type>		lock_counter_and_alive_flag;
-			bool						unblock;
 			std::condition_variable		cond_var;
 			std::mutex					mutex;
 
-			impl() : lock_counter_and_alive_flag(alive_flag), unblock(false) { }
+			impl() : lock_counter_and_alive_flag(alive_flag) { }
 		};
 		using impl_ptr = std::shared_ptr<impl>;
 
@@ -49,13 +48,23 @@ namespace wigwag
 			: _impl(std::make_shared<impl>())
 		{ }
 
+		life_token(life_token&& other)
+			: _impl(other._impl)
+		{ other._impl.reset(); }
+
 		~life_token()
 		{
+			if (!_impl)
+				return;
+
 			_impl->lock_counter_and_alive_flag -= alive_flag;
 			std::unique_lock<std::mutex> l(_impl->mutex);
-			while (!_impl->unblock)
+			while (_impl->lock_counter_and_alive_flag != 0)
 				_impl->cond_var.wait(l);
 		}
+
+		life_token(const life_token&) = delete;
+		life_token& operator = (const life_token&) = delete;
 	};
 
 
@@ -106,11 +115,7 @@ namespace wigwag
 			if (i == 0)
 			{
 				std::unique_lock<std::mutex> l(_impl->mutex);
-				if (!_impl->unblock)
-				{
-					_impl->unblock = true;
-					_impl->cond_var.notify_all();
-				}
+				_impl->cond_var.notify_all();
 			}
 		}
 	};
