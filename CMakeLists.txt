@@ -15,4 +15,7 @@ add_definitions(-Wall)
 
 set(WIGWAG_TEST_SRCS test/test.cpp)
 
+find_package(Threads)
+
 add_executable(wigwag_test ${WIGWAG_TEST_SRCS})
+target_link_libraries(wigwag_test ${CMAKE_THREAD_LIBS_INIT})
