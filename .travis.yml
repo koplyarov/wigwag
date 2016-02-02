@@ -1,0 +1,6 @@
+language: C++
+compiler: g++
+
+script: 
+- cmake --build .
+- ./bin/wigwag_test
