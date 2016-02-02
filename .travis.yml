@@ -2,5 +2,6 @@ language: C++
 compiler: g++
 
 script: 
-- cmake --build .
+- cmake .
+- make
 - ./bin/wigwag_test
