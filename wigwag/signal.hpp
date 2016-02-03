@@ -61,7 +61,10 @@ namespace wigwag
 			{ }
 
 			~connection()
-			{ _storage_ref.erase_handler(_id); }
+			{
+				lock_guard lg(_storage_ref.get_lock_primitive());
+				_storage_ref.erase_handler(_id);
+			}
 		};
 
 	private:
@@ -70,7 +73,7 @@ namespace wigwag
 	public:
 		token connect(const handler_type& handler)
 		{
-			lock_guard(_storage.get_lock_primitive());
+			lock_guard lg(_storage.get_lock_primitive());
 
 			life_assurance la;
 			auto id = _storage.add_handler(handler, la.get_life_checker());
@@ -83,7 +86,7 @@ namespace wigwag
 			handlers_stack_container handlers_copy;
 
 			{
-				lock_guard(_storage.get_lock_primitive());
+				lock_guard lg(_storage.get_lock_primitive());
 				handlers_copy.assign(_storage.get_handlers().begin(), _storage.get_handlers().end());
 			}
 
