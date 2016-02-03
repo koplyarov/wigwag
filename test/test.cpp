@@ -31,28 +31,35 @@ static void signal_handler(int i)
 
 int main()
 {
-	signal<void(int)> s;
-	std::atomic<bool> alive;
-
-	std::thread t(
-		[&]()
-		{
-			int i = 0;
-			while (alive)
-			{
-				s(++i);
-				std::this_thread::sleep_for(std::chrono::milliseconds(300));
-			}
-		}
-	);
-
+	try
 	{
-		token t = s.connect(&signal_handler);
-		std::this_thread::sleep_for(std::chrono::seconds(3));
-	}
+		signal<void(int)> s;
+		std::atomic<bool> alive;
 
-	alive = false;
-	t.join();
+		std::thread t(
+			[&]()
+			{
+				int i = 0;
+				while (alive)
+				{
+					s(++i);
+					std::this_thread::sleep_for(std::chrono::milliseconds(300));
+				}
+			}
+		);
+
+		{
+			token t = s.connect(&signal_handler);
+			std::this_thread::sleep_for(std::chrono::seconds(3));
+		}
+
+		alive = false;
+		t.join();
+	}
+	catch (const std::exception& ex)
+	{
+		std::cerr << "Uncaught exception: " << ex.what();
+	}
 
 	return 0;
 }
