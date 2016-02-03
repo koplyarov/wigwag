@@ -10,6 +10,9 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 add_definitions(-std=c++11)
 add_definitions(-Wall)
+if (WIGWAG_VALGRIND)
+	add_definitions(-DWIGWAG_USE_HELGRIND_ANNOTATIONS=1)
+endif()
 
 ######################################################################
 

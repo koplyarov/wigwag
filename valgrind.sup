@@ -1,0 +1,72 @@
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   fun:_ZNSt10shared_ptrINSt6thread10_Impl_baseEED1Ev
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   fun:_ZNSt6atomicIbEaSEb
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   fun:_ZNSt11this_thread9sleep_forIlSt5ratioILl1ELl1EEEEvRKNSt6chrono8durationIT_T0_EE
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   fun:_ZNSt11this_thread9sleep_forIlSt5ratioILl1ELl1000EEEEvRKNSt6chrono8durationIT_T0_EE
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   fun:_ZNKSt6atomicIbEcvbEv
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   fun:_ZNSt16_Sp_counted_baseILN9__gnu_cxx12_Lock_policyE2EED1Ev
+   ...
+   obj:*libstdc++*
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   fun:_ZStanSt12memory_orderSt23__memory_order_modifier
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   fun:_ZNSt10shared_ptrIN6wigwag10life_token4implEED1Ev
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Misc
+   ...
+   fun:_ZN6wigwag10life_token15execution_guardD1Ev
+   ...
+}
+

@@ -16,11 +16,13 @@ addons:
     packages:
       - gcc-4.8
       - g++-4.8
+      - valgrind
 
 script: 
-  - cmake -DWIGWAG_COVERAGE=TRUE .
-  - make
-  - ./bin/wigwag_test
+  - ( mkdir build && cd build && cmake -DWIGWAG_COVERAGE=TRUE . && make )
+  - ./build/bin/wigwag_test
+  - ( mkdir build && cd build && cmake -DWIGWAG_VALGRIND=TRUE . && make )
+  - valgrind --suppressions=valgrind.sup --tool=helgrind --error-exitcode=1 ./build/bin/wigwag_test
 
 after_success:
   - lcov --directory . --capture --output-file coverage.info
