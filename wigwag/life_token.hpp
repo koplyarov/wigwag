@@ -12,6 +12,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/annotations.hpp>
+
 #include <atomic>
 #include <condition_variable>
 #include <limits>
@@ -114,9 +116,13 @@ namespace wigwag
 			int_type i = --_impl->lock_counter_and_alive_flag;
 			if (i == 0)
 			{
-				std::unique_lock<std::mutex> l(_impl->mutex);
+				WIGWAG_ANNOTATE_HAPPENS_AFTER(&_impl->lock_counter_and_alive_flag);
+				WIGWAG_ANNOTATE_RELEASE(&_impl->lock_counter_and_alive_flag);
+
 				_impl->cond_var.notify_all();
 			}
+			else
+				WIGWAG_ANNOTATE_HAPPENS_BEFORE(&_impl->lock_counter_and_alive_flag);
 		}
 	};
 
