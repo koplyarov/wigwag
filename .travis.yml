@@ -19,9 +19,10 @@ addons:
       - valgrind
 
 script: 
-  - ( mkdir build && cd build && cmake -DWIGWAG_COVERAGE=TRUE . && make )
+  - ( mkdir build && cd build && cmake -DWIGWAG_COVERAGE=TRUE .. && make )
   - ./build/bin/wigwag_test
-  - ( mkdir build && cd build && cmake -DWIGWAG_VALGRIND=TRUE . && make )
+  - rm -rf ./build/*
+  - ( mkdir build && cd build && cmake -DWIGWAG_VALGRIND=TRUE .. && make )
   - valgrind --suppressions=valgrind.sup --tool=helgrind --error-exitcode=1 ./build/bin/wigwag_test
 
 after_success:
