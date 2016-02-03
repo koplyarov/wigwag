@@ -18,6 +18,30 @@
    <insert_a_suppression_name_here>
    Helgrind:Race
    ...
+   fun:_ZNKSt11atomic_boolaSEb
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   fun:_ZNKSt6atomicIbEcvbEv
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   fun:_ZNKSt11atomic_boolcvbEv
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
    fun:_ZNSt11this_thread9sleep_forIlSt5ratioILl1ELl1EEEEvRKNSt6chrono8durationIT_T0_EE
    ...
 }
@@ -33,24 +57,9 @@
 {
    <insert_a_suppression_name_here>
    Helgrind:Race
-   ...
-   fun:_ZNKSt6atomicIbEcvbEv
-   ...
-}
-
-{
-   <insert_a_suppression_name_here>
-   Helgrind:Race
    fun:_ZNSt16_Sp_counted_baseILN9__gnu_cxx12_Lock_policyE2EED1Ev
    ...
    obj:*libstdc++*
-   ...
-}
-
-{
-   <insert_a_suppression_name_here>
-   Helgrind:Race
-   fun:_ZStanSt12memory_orderSt23__memory_order_modifier
    ...
 }
 
