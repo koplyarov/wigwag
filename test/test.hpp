@@ -1,3 +1,6 @@
+#ifndef TEST_TEST_HPP
+#define TEST_TEST_HPP
+
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted,
@@ -9,6 +12,8 @@
 
 
 #include <wigwag/signal.hpp>
+
+#include <cxxtest/TestSuite.h>
 
 #include <chrono>
 #include <iostream>
@@ -22,44 +27,63 @@ template < typename Signature_ >
 using threadless_signal = basic_signal<Signature_, signal_policies::threading::threadless, signal_policies::handlers_storage::shared_list, signal_policies::life_assurance::none>;
 
 
-static void signal_handler(int i)
+class wigwag_tests : public CxxTest::TestSuite
 {
-	std::cout << "signal_handler: " << i << std::endl;
-	std::this_thread::sleep_for(std::chrono::seconds(5));
-}
-
-
-int main()
-{
-	try
+private:
+	template < typename ClockT_ >
+	class basic_profiler
 	{
-		signal<void(int)> s;
-		std::atomic<bool> alive(true);
+		typedef std::chrono::time_point<ClockT_>		TimePoint;
 
+	private:
+		TimePoint		_start;
+
+	public:
+		basic_profiler() { _start = ClockT_::now(); }
+
+		decltype(TimePoint() - TimePoint()) reset()
+		{
+			TimePoint end = ClockT_::now();
+			auto delta = end - _start;
+			_start = end;
+			return delta;
+		}
+	};
+	using profiler = basic_profiler<std::chrono::high_resolution_clock>;
+
+public:
+	static void test_default_life_assurance() { do_test_life_assurance<signal>(); }
+
+private:
+	template < template<typename> class Signal_ >
+	static void do_test_life_assurance()
+	{
+		Signal_<void()> s;
+
+		std::atomic<bool> alive(true);
 		std::thread t(
 			[&]()
 			{
-				int i = 0;
 				while (alive)
 				{
-					s(++i);
-					std::this_thread::sleep_for(std::chrono::milliseconds(300));
+					s();
+					std::this_thread::sleep_for(std::chrono::milliseconds(100));
 				}
 			}
 		);
 
+		profiler p;
+
 		{
-			token t = s.connect(&signal_handler);
-			std::this_thread::sleep_for(std::chrono::seconds(3));
+			token t = s.connect([](){ std::this_thread::sleep_for(std::chrono::seconds(2)); });
+			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			p.reset();
 		}
+		TS_ASSERT_LESS_THAN(std::chrono::seconds(1), p.reset());
 
 		alive = false;
 		t.join();
 	}
-	catch (const std::exception& ex)
-	{
-		std::cerr << "Uncaught exception: " << ex.what();
-	}
+};
 
-	return 0;
-}
+#endif

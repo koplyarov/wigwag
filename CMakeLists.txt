@@ -21,10 +21,13 @@ if (WIGWAG_COVERAGE)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
 endif()
 
-set(WIGWAG_TEST_SRCS test/test.cpp)
-
 find_package(Threads)
 
-add_executable(wigwag_test ${WIGWAG_TEST_SRCS})
-
-target_link_libraries(wigwag_test ${CMAKE_THREAD_LIBS_INIT})
+find_package(CxxTest)
+if(CXXTEST_FOUND)
+    include_directories(${CXXTEST_INCLUDE_DIR})
+    enable_testing()
+    CXXTEST_ADD_TEST(wigwag_test unittest_wigwag.cpp
+                      ${CMAKE_CURRENT_SOURCE_DIR}/test/test.hpp)
+    target_link_libraries(wigwag_test ${CMAKE_THREAD_LIBS_INIT}) # as needed
+endif()

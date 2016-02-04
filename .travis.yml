@@ -18,6 +18,7 @@ addons:
       - gcc-4.8
       - g++-4.8
       - valgrind
+      - cxxtest
 
 script: 
   - ( mkdir build && cd build && cmake -DWIGWAG_VALGRIND=TRUE .. && make )
