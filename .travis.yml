@@ -3,6 +3,9 @@ cache: apt
 compiler:
   - gcc
 
+before_install:
+  - sudo apt-add-repository ppa:dhart/ppa
+
 install:
   - wget http://ftp.de.debian.org/debian/pool/main/l/lcov/lcov_1.11.orig.tar.gz
   - tar xf lcov_1.11.orig.tar.gz
@@ -14,7 +17,6 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
-      - dhart
     packages:
       - gcc-4.8
       - g++-4.8
