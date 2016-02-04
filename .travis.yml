@@ -6,7 +6,7 @@ compiler:
 before_install:
   - sudo apt-add-repository -y ppa:dhart/ppa
   - sudo apt-get update -yq
-  - sudo apt-get install -yx cxxtest
+  - sudo apt-get install -yq cxxtest
 
 install:
   - wget http://ftp.de.debian.org/debian/pool/main/l/lcov/lcov_1.11.orig.tar.gz
