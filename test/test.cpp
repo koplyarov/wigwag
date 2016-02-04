@@ -34,7 +34,7 @@ int main()
 	try
 	{
 		signal<void(int)> s;
-		std::atomic<bool> alive = true;
+		std::atomic<bool> alive(true);
 
 		std::thread t(
 			[&]()
