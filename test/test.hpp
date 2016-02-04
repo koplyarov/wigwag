@@ -19,6 +19,8 @@
 #include <iostream>
 #include <thread>
 
+#include <test/test_utils.hpp>
+
 
 using namespace wigwag;
 
@@ -30,26 +32,6 @@ using threadless_signal = basic_signal<Signature_, signal_policies::threading::t
 class wigwag_tests : public CxxTest::TestSuite
 {
 private:
-	template < typename ClockT_ >
-	class basic_profiler
-	{
-		typedef std::chrono::time_point<ClockT_>		TimePoint;
-
-	private:
-		TimePoint		_start;
-
-	public:
-		basic_profiler() { _start = ClockT_::now(); }
-
-		decltype(TimePoint() - TimePoint()) reset()
-		{
-			TimePoint end = ClockT_::now();
-			auto delta = end - _start;
-			_start = end;
-			return delta;
-		}
-	};
-	using profiler = basic_profiler<std::chrono::high_resolution_clock>;
 
 public:
 	static void test_default_life_assurance() { do_test_life_assurance<signal>(); }
@@ -60,9 +42,8 @@ private:
 	{
 		Signal_<void()> s;
 
-		std::atomic<bool> alive(true);
-		std::thread t(
-			[&]()
+		thread t(
+			[&](const std::atomic<bool>& alive)
 			{
 				while (alive)
 				{
@@ -73,16 +54,12 @@ private:
 		);
 
 		profiler p;
-
 		{
 			token t = s.connect([](){ std::this_thread::sleep_for(std::chrono::seconds(2)); });
 			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			p.reset();
 		}
 		TS_ASSERT_LESS_THAN(std::chrono::seconds(1), p.reset());
-
-		alive = false;
-		t.join();
 	}
 };
 
