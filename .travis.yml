@@ -4,7 +4,9 @@ compiler:
   - gcc
 
 before_install:
-  - sudo apt-add-repository ppa:dhart/ppa
+  - sudo apt-add-repository -y ppa:dhart/ppa
+  - sudo apt-get update -yq
+  - sudo apt-get install -yx cxxtest
 
 install:
   - wget http://ftp.de.debian.org/debian/pool/main/l/lcov/lcov_1.11.orig.tar.gz
@@ -21,7 +23,6 @@ addons:
       - gcc-4.8
       - g++-4.8
       - valgrind
-      - cxxtest
 
 script: 
   - ( mkdir build && cd build && cmake -DWIGWAG_VALGRIND=TRUE .. && make )
