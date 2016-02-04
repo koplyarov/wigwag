@@ -1,5 +1,5 @@
-#ifndef WIGWAG_DETAIL_ANNOTATIONS_HPP
-#define WIGWAG_DETAIL_ANNOTATIONS_HPP
+#ifndef WIGWAG_DETAIL_AT_SCOPE_EXIT_HPP
+#define WIGWAG_DETAIL_AT_SCOPE_EXIT_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,15 +11,26 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#if WIGWAG_USE_HELGRIND_ANNOTATIONS
-#	include <valgrind/helgrind.h>
-#	define WIGWAG_ANNOTATE_HAPPENS_BEFORE(Marker_) do { ANNOTATE_HAPPENS_BEFORE(Marker_); } while (0)
-#	define WIGWAG_ANNOTATE_HAPPENS_AFTER(Marker_) do { ANNOTATE_HAPPENS_AFTER(Marker_); } while (0)
-#	define WIGWAG_ANNOTATE_RELEASE(Marker_) do { ANNOTATE_HAPPENS_BEFORE_FORGET_ALL(Marker_); } while (0)
-#else
-#	define WIGWAG_ANNOTATE_HAPPENS_BEFORE(Marker_) do { } while (0)
-#	define WIGWAG_ANNOTATE_HAPPENS_AFTER(Marker_) do { } while (0)
-#	define WIGWAG_ANNOTATE_RELEASE(Marker_) do { } while (0)
-#endif
+#include <utility>
+
+
+namespace wigwag
+{
+
+	template < typename Func_ >
+	class scope_guard
+	{
+		Func_	_f;
+
+	public:
+		scope_guard(Func_&& f) : _f(f) { }
+		~scope_guard() { _f(); }
+	};
+
+	template < typename Func_ >
+	scope_guard<Func_> at_scope_exit(Func_&& f)
+	{ return scope_guard<Func_>(std::move(f)); }
+
+}
 
 #endif

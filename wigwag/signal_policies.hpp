@@ -1,7 +1,6 @@
 #ifndef WIGWAG_SIGNAL_POLICIES_HPP
 #define WIGWAG_SIGNAL_POLICIES_HPP
 
-
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted,
@@ -132,6 +131,24 @@ namespace signal_policies
 	namespace threading
 	{
 		template < typename MutexType_ >
+		struct own_recursive_mutex
+		{
+			class lock_primitive
+			{
+			private:
+				mutable MutexType_		_mutex;
+
+			public:
+				void lock_connect() const { _mutex.lock(); }
+				void unlock_connect() const { _mutex.unlock(); }
+
+				void lock_invoke() const { _mutex.lock(); }
+				void unlock_invoke() const { _mutex.unlock(); }
+			};
+		};
+
+
+		template < typename MutexType_ >
 		struct own_mutex
 		{
 			class lock_primitive
@@ -140,8 +157,19 @@ namespace signal_policies
 				mutable MutexType_		_mutex;
 
 			public:
-				void lock() const { _mutex.lock(); }
-				void unlock() const { _mutex.unlock(); }
+				void lock_connect() const { _mutex.lock(); }
+				void unlock_connect() const { _mutex.unlock(); }
+
+				void lock_invoke() const
+				{
+					if (_mutex.try_lock())
+					{
+						_mutex.unlock();
+						throw std::runtime_error("A nonrecursive mutex should be locked outside of signal::operator()!");
+					}
+				}
+
+				void unlock_invoke() const { }
 			};
 		};
 
@@ -151,8 +179,11 @@ namespace signal_policies
 			class lock_primitive
 			{
 			public:
-				void lock() const { }
-				void unlock() const { }
+				void lock_connect() const { }
+				void unlock_connect() const { }
+
+				void lock_invoke() const { }
+				void unlock_invoke() const { }
 			};
 		};
 	}

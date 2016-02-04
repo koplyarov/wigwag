@@ -1,7 +1,6 @@
 #ifndef WIGWAG_TOKEN_HPP
 #define WIGWAG_TOKEN_HPP
 
-
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted,

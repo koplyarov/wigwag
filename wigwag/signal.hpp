@@ -1,7 +1,6 @@
 #ifndef WIGWAG_SIGNAL_HPP
 #define WIGWAG_SIGNAL_HPP
 
-
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted,
@@ -12,6 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/at_scope_exit.hpp>
 #include <wigwag/life_token.hpp>
 #include <wigwag/signal_policies.hpp>
 #include <wigwag/token.hpp>
@@ -41,14 +41,6 @@ namespace wigwag
 		using storage_ref = typename HandlersStoragePolicy_::template storage_ref<Signature_, ThreadingPolicy_, LifeAssurancePolicy_>;
 
 	private:
-		class lock_guard
-		{
-			const lock_primitive& _lp;
-
-		public:
-			lock_guard(const lock_primitive& lp) : _lp(lp) { _lp.lock(); }
-			~lock_guard() { _lp.unlock(); }
-		};
 
 		struct connection : public token::implementation, public life_assurance
 		{
@@ -62,7 +54,8 @@ namespace wigwag
 
 			~connection()
 			{
-				lock_guard lg(_storage_ref.get_lock_primitive());
+				_storage_ref.get_lock_primitive().lock_connect();
+				auto sg = at_scope_exit([&]() { _storage_ref.get_lock_primitive().unlock_connect(); } );
 				_storage_ref.erase_handler(_id);
 			}
 		};
@@ -73,7 +66,8 @@ namespace wigwag
 	public:
 		token connect(const handler_type& handler)
 		{
-			lock_guard lg(_storage.get_lock_primitive());
+			_storage.get_lock_primitive().lock_connect();
+			auto sg = at_scope_exit([&]() { _storage.get_lock_primitive().unlock_connect(); } );
 
 			life_assurance la;
 			auto id = _storage.add_handler(handler, la.get_life_checker());
@@ -86,7 +80,9 @@ namespace wigwag
 			handlers_stack_container handlers_copy;
 
 			{
-				lock_guard lg(_storage.get_lock_primitive());
+				_storage.get_lock_primitive().lock_invoke();
+				auto sg = at_scope_exit([&]() { _storage.get_lock_primitive().unlock_invoke(); } );
+
 				handlers_copy.assign(_storage.get_handlers().begin(), _storage.get_handlers().end());
 			}
 
@@ -101,7 +97,7 @@ namespace wigwag
 
 
 	template < typename Signature_ >
-	using signal = basic_signal<Signature_, signal_policies::threading::own_mutex<std::mutex>, signal_policies::handlers_storage::shared_list, signal_policies::life_assurance::life_tokens>;
+	using signal = basic_signal<Signature_, signal_policies::threading::own_recursive_mutex<std::mutex>, signal_policies::handlers_storage::shared_list, signal_policies::life_assurance::life_tokens>;
 
 }
 
