@@ -82,7 +82,7 @@ namespace wigwag
 			~connection()
 			{
 				_storage_ref.get_lock_primitive().lock_connect();
-				auto sg = detail::at_scope_exit([&]() { _storage_ref.get_lock_primitive().unlock_connect(); } );
+				auto sg = detail::at_scope_exit([&] { _storage_ref.get_lock_primitive().unlock_connect(); } );
 
 				life_assurance::release();
 				const auto& handler = _storage_ref.get_handlers_container().get_handler_info(_id).handler;
@@ -109,23 +109,23 @@ namespace wigwag
 		token connect(const handler_type& handler)
 		{
 			_storage.get_lock_primitive().lock_connect();
-			auto sg = detail::at_scope_exit([&]() { _storage.get_lock_primitive().unlock_connect(); } );
+			auto sg = detail::at_scope_exit([&] { _storage.get_lock_primitive().unlock_connect(); } );
 
-			handle_exceptions(_storage.get_exception_handler(), [&]() { _storage.get_handler_processor().populate_state(handler); });
+			handle_exceptions(_storage.get_exception_handler(), [&] { _storage.get_handler_processor().populate_state(handler); });
 
 			life_assurance la;
 			auto id = _storage.get_handlers_container().add_handler(handler_info(la.get_life_checker(), handler));
 			return token::create<connection>(std::move(la), storage_ref(_storage), id);
 		}
 
-		template < typename... Args >
-		void operator() (Args&&... args) const
+		template < typename... Args_ >
+		void operator() (Args_&&... args) const
 		{
 			handlers_stack_container handlers_copy;
 
 			{
 				_storage.get_lock_primitive().lock_invoke();
-				auto sg = detail::at_scope_exit([&]() { _storage.get_lock_primitive().unlock_invoke(); } );
+				auto sg = detail::at_scope_exit([&] { _storage.get_lock_primitive().unlock_invoke(); } );
 
 				handlers_copy.assign(_storage.get_handlers_container().get_handlers().begin(), _storage.get_handlers_container().get_handlers().end());
 			}
@@ -134,16 +134,16 @@ namespace wigwag
 			{
 				execution_guard g(h.get_life_checker());
 				if (g.is_alive())
-					handle_exceptions(_storage.get_exception_handler(), [&]() { h.get_handler()(std::forward<Args>(args)...); });
+					handle_exceptions(_storage.get_exception_handler(), h.get_handler(), std::forward<Args_>(args)...);
 			}
 		}
 
 	private:
 		template < typename Func_, typename... Args_ >
-		static void handle_exceptions(const ExceptionHandlingPolicy_& exceptionHandler, Func_&& func)
+		static void handle_exceptions(const ExceptionHandlingPolicy_& exceptionHandler, Func_&& func, Args_&&... args)
 		{
 			try
-			{ func(); }
+			{ func(std::forward<Args_>(args)...); }
 			catch (const std::exception& ex)
 			{ exceptionHandler.handle_std_exception(ex); }
 			catch (...)

@@ -43,9 +43,9 @@ public:
 		basic_signal<void(), exception_handling::rethrow> rs;
 		basic_signal<void(), exception_handling_nop> ns;
 
-		token t0 = ds.connect([&]() { throw std::runtime_error("Test exception"); });
-		token t1 = rs.connect([&]() { throw std::runtime_error("Test exception"); });
-		token t2 = ns.connect([&]() { throw std::runtime_error("Test exception"); });
+		token t0 = ds.connect([&] { throw std::runtime_error("Test exception"); });
+		token t1 = rs.connect([&] { throw std::runtime_error("Test exception"); });
+		token t2 = ns.connect([&] { throw std::runtime_error("Test exception"); });
 
 		TS_ASSERT_THROWS(ds(), std::runtime_error);
 		TS_ASSERT_THROWS(rs(), std::runtime_error);
@@ -101,7 +101,7 @@ private:
 
 		profiler p;
 		{
-			token t = s.connect([](){ std::this_thread::sleep_for(std::chrono::seconds(2)); });
+			token t = s.connect([]{ std::this_thread::sleep_for(std::chrono::seconds(2)); });
 			std::this_thread::sleep_for(std::chrono::milliseconds(500));
 			p.reset();
 		}
