@@ -25,16 +25,29 @@
 using namespace wigwag;
 
 
-template < typename Signature_ >
-using threadless_signal = basic_signal<Signature_, signal_policies::threading::threadless, signal_policies::handlers_storage::shared_list, signal_policies::life_assurance::none>;
+struct exception_handling_nop
+{
+	void handle_std_exception(const std::exception& ex) const { }
+	void handle_unknown_exception() const { }
+};
 
 
 class wigwag_tests : public CxxTest::TestSuite
 {
-private:
-
 public:
 	static void test_default_life_assurance() { do_test_life_assurance<signal>(); }
+
+	static void test_exception_handling()
+	{
+		basic_signal<void(), threading::threadless, exception_handling::rethrow, handlers_storage::shared_list, life_assurance::none> rs;
+		basic_signal<void(), threading::threadless, exception_handling_nop, handlers_storage::shared_list, life_assurance::none> ns;
+
+		token t1 = rs.connect([&]() { throw std::runtime_error("Test exception"); });
+		token t2 = ns.connect([&]() { throw std::runtime_error("Test exception"); });
+
+		TS_ASSERT_THROWS(rs(), std::runtime_error);
+		TS_ASSERT_THROWS_NOTHING(ns());
+	}
 
 private:
 	template < template<typename> class Signal_ >

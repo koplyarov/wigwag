@@ -22,7 +22,7 @@
 namespace wigwag
 {
 
-	template < typename Signature_, typename ThreadingPolicy_, typename HandlersStoragePolicy_, typename LifeAssurancePolicy_ >
+	template < typename Signature_, typename ThreadingPolicy_, typename ExceptionHandlingPolicy_, typename HandlersStoragePolicy_, typename LifeAssurancePolicy_ >
 	class basic_signal
 	{
 	public:
@@ -35,10 +35,10 @@ namespace wigwag
 		using life_checker = typename LifeAssurancePolicy_::life_checker;
 		using execution_guard = typename LifeAssurancePolicy_::execution_guard;
 
-		using handlers_stack_container = typename HandlersStoragePolicy_::template storage<Signature_, ThreadingPolicy_, LifeAssurancePolicy_>::handlers_stack_container;
-		using handler_id = typename HandlersStoragePolicy_::template storage<Signature_, ThreadingPolicy_, LifeAssurancePolicy_>::handler_id;
-		using storage = typename HandlersStoragePolicy_::template storage<Signature_, ThreadingPolicy_, LifeAssurancePolicy_>;
-		using storage_ref = typename HandlersStoragePolicy_::template storage_ref<Signature_, ThreadingPolicy_, LifeAssurancePolicy_>;
+		using storage = typename HandlersStoragePolicy_::template storage<Signature_, ThreadingPolicy_, ExceptionHandlingPolicy_, LifeAssurancePolicy_>;
+		using storage_ref = typename HandlersStoragePolicy_::template storage_ref<Signature_, ThreadingPolicy_, ExceptionHandlingPolicy_, LifeAssurancePolicy_>;
+		using handlers_stack_container = typename storage::handlers_stack_container;
+		using handler_id = typename storage::handler_id;
 
 	private:
 
@@ -64,6 +64,10 @@ namespace wigwag
 		storage		_storage;
 
 	public:
+		basic_signal() { }
+		basic_signal(const basic_signal&) = delete;
+		basic_signal& operator = (const basic_signal&) = delete;
+
 		token connect(const handler_type& handler)
 		{
 			_storage.get_lock_primitive().lock_connect();
@@ -90,14 +94,27 @@ namespace wigwag
 			{
 				execution_guard g(h.get_life_checker());
 				if (g.is_alive())
-					h.get_handler()(std::forward<Args>(args)...);
+				{
+					try
+					{ h.get_handler()(std::forward<Args>(args)...); }
+					catch (const std::exception& ex)
+					{ _storage.get_exception_handler().handle_std_exception(ex); }
+					catch (...)
+					{ _storage.get_exception_handler().handle_unknown_exception(); }
+				}
 			}
 		}
 	};
 
 
 	template < typename Signature_ >
-	using signal = basic_signal<Signature_, signal_policies::threading::own_recursive_mutex<std::mutex>, signal_policies::handlers_storage::shared_list, signal_policies::life_assurance::life_tokens>;
+	using signal = basic_signal <
+						Signature_,
+						threading::own_recursive_mutex<std::mutex>,
+						exception_handling::rethrow,
+						handlers_storage::shared_list,
+						life_assurance::life_tokens
+					>;
 
 }
 

@@ -19,9 +19,18 @@
 #include <vector>
 
 
-namespace wigwag {
-namespace signal_policies
+namespace wigwag
 {
+
+	namespace exception_handling
+	{
+		struct rethrow
+		{
+			void handle_std_exception(const std::exception& ex) const { throw; }
+			void handle_unknown_exception() const { throw; }
+		};
+	}
+
 
 	namespace life_assurance
 	{
@@ -70,7 +79,7 @@ namespace signal_policies
 	{
 		struct shared_list
 		{
-			template < typename Signature_, typename ThreadingPolicy_, typename LifeAssurancePolicy_ >
+			template < typename Signature_, typename ThreadingPolicy_, typename ExceptionHandlingPolicy_, typename LifeAssurancePolicy_ >
 			class storage
 			{
 			public:
@@ -96,7 +105,7 @@ namespace signal_policies
 				using handler_id = typename handlers_list::iterator;
 
 			private:
-				struct impl : public lock_primitive
+				struct impl : public lock_primitive, public ExceptionHandlingPolicy_
 				{
 					handlers_list		handlers;
 				};
@@ -120,10 +129,11 @@ namespace signal_policies
 				const handlers_list& get_handlers() const { return _impl->handlers; }
 
 				const lock_primitive& get_lock_primitive() const { return *_impl; }
+				const ExceptionHandlingPolicy_& get_exception_handler() const { return *_impl; }
 			};
 
-			template < typename Signature_, typename ThreadingPolicy_, typename LifeAssurancePolicy_ >
-			using storage_ref = storage<Signature_, ThreadingPolicy_, LifeAssurancePolicy_>;
+			template < typename Signature_, typename ThreadingPolicy_, typename ExceptionHandlingPolicy_, typename LifeAssurancePolicy_ >
+			using storage_ref = storage<Signature_, ThreadingPolicy_, ExceptionHandlingPolicy_, LifeAssurancePolicy_>;
 		};
 	}
 
@@ -188,6 +198,6 @@ namespace signal_policies
 		};
 	}
 
-}}
+}
 
 #endif
