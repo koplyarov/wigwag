@@ -14,7 +14,8 @@
 #include <utility>
 
 
-namespace wigwag
+namespace wigwag {
+namespace detail
 {
 
 	template < typename Func_ >
@@ -31,6 +32,6 @@ namespace wigwag
 	scope_guard<Func_> at_scope_exit(Func_&& f)
 	{ return scope_guard<Func_>(std::move(f)); }
 
-}
+}}
 
 #endif

@@ -39,14 +39,47 @@ public:
 
 	static void test_exception_handling()
 	{
-		basic_signal<void(), threading::threadless, exception_handling::rethrow, handlers_storage::shared_list, life_assurance::none> rs;
-		basic_signal<void(), threading::threadless, exception_handling_nop, handlers_storage::shared_list, life_assurance::none> ns;
+		signal<void()> ds;
+		basic_signal<void(), exception_handling::rethrow> rs;
+		basic_signal<void(), exception_handling_nop> ns;
 
+		token t0 = ds.connect([&]() { throw std::runtime_error("Test exception"); });
 		token t1 = rs.connect([&]() { throw std::runtime_error("Test exception"); });
 		token t2 = ns.connect([&]() { throw std::runtime_error("Test exception"); });
 
+		TS_ASSERT_THROWS(ds(), std::runtime_error);
 		TS_ASSERT_THROWS(rs(), std::runtime_error);
 		TS_ASSERT_THROWS_NOTHING(ns());
+	}
+
+	static void test_populators()
+	{
+		using h_type = const std::function<void(int)>&;
+
+		signal<void(int)> ds([](h_type h){ h(1); } );
+		basic_signal<void(int), exception_handling::rethrow, threading::none, state_populating::populator_only> ps([](h_type h){ h(2); } );
+		basic_signal<void(int), exception_handling::rethrow, threading::none, state_populating::populator_and_withdrawer> pds(state_populating::populator_and_withdrawer::handler_processor<void(int)>([](h_type h){ h(3); }, [](h_type h){ h(4); }));
+		basic_signal<void(int), exception_handling::rethrow, threading::none, state_populating::none> ns;
+
+		int state = 0;
+		ds.connect([&](int i) { state = i; });
+		TS_ASSERT_EQUALS(state, 1);
+
+		state = 0;
+		ps.connect([&](int i) { state = i; });
+		TS_ASSERT_EQUALS(state, 2);
+
+		{
+			state = 0;
+			token t = pds.connect([&](int i) { state = i; });
+			TS_ASSERT_EQUALS(state, 3);
+			state = 0;
+		}
+		TS_ASSERT_EQUALS(state, 4);
+
+		state = 0;
+		ns.connect([&](int i) { state = i; });
+		TS_ASSERT_EQUALS(state, 0);
 	}
 
 private:

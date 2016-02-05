@@ -32,6 +32,179 @@ namespace wigwag
 	}
 
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	namespace threading
+	{
+		struct own_recursive_mutex
+		{
+			class lock_primitive
+			{
+			private:
+				mutable std::recursive_mutex	_mutex;
+
+			public:
+				void lock_connect() const { _mutex.lock(); }
+				void unlock_connect() const { _mutex.unlock(); }
+
+				void lock_invoke() const { _mutex.lock(); }
+				void unlock_invoke() const { _mutex.unlock(); }
+			};
+		};
+
+
+		struct own_mutex
+		{
+			class lock_primitive
+			{
+			private:
+				mutable std::mutex		_mutex;
+
+			public:
+				void lock_connect() const { _mutex.lock(); }
+				void unlock_connect() const { _mutex.unlock(); }
+
+				void lock_invoke() const
+				{
+					if (_mutex.try_lock())
+					{
+						_mutex.unlock();
+						throw std::runtime_error("A nonrecursive mutex should be locked outside of signal::operator()!");
+
+					}
+				}
+
+				void unlock_invoke() const { }
+			};
+		};
+
+
+		struct none
+		{
+			class lock_primitive
+			{
+			public:
+				void lock_connect() const { }
+				void unlock_connect() const { }
+
+				void lock_invoke() const { }
+				void unlock_invoke() const { }
+			};
+		};
+	}
+
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	namespace state_populating
+	{
+		struct populator_only
+		{
+			template < typename Signature_ >
+			class handler_processor
+			{
+				using handler_processor_func = std::function<void(const std::function<Signature_>&)>;
+
+			private:
+				handler_processor_func		_populator;
+
+			public:
+				handler_processor(handler_processor_func populator = &populator_only::handler_processor<Signature_>::empty_handler)
+					: _populator(populator)
+				{ }
+
+				void populate_state(const std::function<Signature_>& handler) const { _populator(handler); }
+				void withdraw_state(const std::function<Signature_>& handler) const { }
+
+				static void empty_handler(const std::function<Signature_>&) { }
+			};
+		};
+
+
+		struct populator_and_withdrawer
+		{
+			template < typename Signature_ >
+			class handler_processor
+			{
+				using handler_processor_func = std::function<void(const std::function<Signature_>&)>;
+
+			private:
+				handler_processor_func		_populator;
+				handler_processor_func		_withdrawer;
+
+			public:
+				handler_processor(handler_processor_func populator = &populator_only::handler_processor<Signature_>::empty_handler,
+							handler_processor_func withdrawer = &populator_only::handler_processor<Signature_>::empty_handler)
+					: _populator(populator), _withdrawer(withdrawer)
+				{ }
+
+				void populate_state(const std::function<Signature_>& handler) const { _populator(handler); }
+				void withdraw_state(const std::function<Signature_>& handler) const { _withdrawer(handler); }
+
+				static void empty_handler(const std::function<Signature_>&) { }
+			};
+		};
+
+
+		struct none
+		{
+			template < typename Signature_ >
+			struct handler_processor
+			{
+				void populate_state(const std::function<Signature_>& handler) const { }
+				void withdraw_state(const std::function<Signature_>& handler) const { }
+			};
+		};
+	}
+
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	namespace handlers_container
+	{
+		struct list
+		{
+			template < typename HandlerInfo_ >
+			class handlers_container
+			{
+			public:
+				using handlers_stack_container = std::vector<HandlerInfo_>;
+				using handlers_list = std::list<HandlerInfo_>;
+				using handler_id = typename handlers_list::iterator;
+
+			private:
+				handlers_list		_handlers;
+
+			public:
+				const handlers_list& get_handlers() const
+				{ return _handlers; }
+
+				const HandlerInfo_& get_handler_info(handler_id id)
+				{ return *id; }
+
+				handler_id add_handler(HandlerInfo_ handlerInfo)
+				{
+					_handlers.push_back(handlerInfo);
+					handler_id it = _handlers.end();
+					--it;
+					return it;
+				}
+
+				void erase_handler(handler_id id)
+				{ _handlers.erase(id); }
+
+				const handlers_list& get_container() const { return _handlers; }
+			};
+		};
+	}
+
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 	namespace life_assurance
 	{
 		struct life_tokens
@@ -49,12 +222,30 @@ namespace wigwag
 				bool is_alive() const { return guard.is_alive(); }
 			};
 
-			struct life_assurance
+			class life_assurance
 			{
-				life_token		token;
-				life_checker get_life_checker() const { return life_checker(token); }
+				union life_token_storage
+				{
+					life_token		token;
+
+					life_token_storage(life_token_storage&& other) noexcept
+					{
+						new(&token) life_token(std::move(other.token));
+						other.token.~life_token();
+					}
+
+					life_token_storage() { new(&token) life_token(); }
+					~life_token_storage() { }
+				};
+
+				life_token_storage		_token_storage;
+
+			public:
+				life_checker get_life_checker() const { return life_checker(_token_storage.token); }
+				void release() { _token_storage.token.~life_token(); }
 			};
 		};
+
 
 		struct none
 		{
@@ -70,131 +261,130 @@ namespace wigwag
 			struct life_assurance
 			{
 				life_checker get_life_checker() const { return life_checker(); }
+				void release() { }
 			};
 		};
 	}
 
 
-	namespace handlers_storage
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	namespace detail
 	{
-		struct shared_list
+		class enabler { };
+	};
+
+	namespace impl_storage
+	{
+		struct inplace
 		{
-			template < typename Signature_, typename ThreadingPolicy_, typename ExceptionHandlingPolicy_, typename LifeAssurancePolicy_ >
+			template < typename ExceptionHandler_, typename LockPrimitive_, typename HandlerProcessor_, typename HandlersContainer_ >
+			class storage : private ExceptionHandler_, private LockPrimitive_, private HandlerProcessor_, private HandlersContainer_
+			{
+				template< typename T_, typename... Args_ >
+				using con = std::is_constructible<T_, Args_...>;
+
+			public:
+				storage() { }
+
+#define DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(...) typename std::enable_if<__VA_ARGS__, detail::enabler>::type e = detail::enabler()
+
+				template < typename T_ > storage(T_ eh, DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(con<ExceptionHandler_, T_&&>::value)) : ExceptionHandler_(std::move(eh)) { }
+				template < typename T_ > storage(T_ lp, DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(con<LockPrimitive_, T_&&>::value)) : LockPrimitive_(std::move(lp)) { }
+				template < typename T_ > storage(T_ hp, DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(con<HandlerProcessor_, T_&&>::value)) : HandlerProcessor_(std::move(hp)) { }
+				template < typename T_ > storage(T_ hc, DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(con<HandlersContainer_, T_&&>::value)) : HandlersContainer_(std::move(hc)) { }
+
+				template < typename T_, typename U_ >
+				storage(T_ eh, U_ lp, DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(con<ExceptionHandler_, T_&&>::value && con<LockPrimitive_, U_&&>::value))
+					: ExceptionHandler_(std::move(eh)), LockPrimitive_(std::move(lp))
+				{ }
+
+				template < typename T_, typename U_ >
+				storage(T_ eh, U_ hp, DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(con<ExceptionHandler_, T_&&>::value && con<HandlerProcessor_, U_&&>::value))
+					: ExceptionHandler_(std::move(eh)), HandlerProcessor_(std::move(hp))
+				{ }
+
+				template < typename T_, typename U_ >
+				storage(T_ eh, U_ hc, DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(con<ExceptionHandler_, T_&&>::value && con<HandlersContainer_, U_&&>::value))
+					: ExceptionHandler_(std::move(eh)), LockPrimitive_(std::move(hc))
+				{ }
+
+				template < typename T_, typename U_ >
+				storage(T_ lp, U_ hp, DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(con<LockPrimitive_, T_&&>::value && con<HandlerProcessor_, U_&&>::value))
+					: LockPrimitive_(std::move(lp)), HandlerProcessor_(std::move(hp))
+				{ }
+
+				template < typename T_, typename U_ >
+				storage(T_ lp, U_ hc, DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(con<LockPrimitive_, T_&&>::value && con<HandlersContainer_, U_&&>::value))
+					: LockPrimitive_(std::move(lp)), HandlersContainer_(std::move(hc))
+				{ }
+
+				template < typename T_, typename U_ >
+				storage(T_ hp, U_ hc, DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(con<HandlerProcessor_, T_&&>::value && con<HandlersContainer_, U_&&>::value))
+					: HandlerProcessor_(std::move(hp)), HandlersContainer_(std::move(hc))
+				{ }
+
+				template < typename T_, typename U_, typename V_ >
+				storage(T_ lp, U_ hp, V_ hc, DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(con<LockPrimitive_, T_&&>::value && con<HandlerProcessor_, U_&&>::value && con<HandlersContainer_, V_&&>::value))
+					: LockPrimitive_(std::move(lp)), HandlerProcessor_(std::move(hp)), HandlersContainer_(std::move(hc))
+				{ }
+
+				template < typename T_, typename U_, typename V_ >
+				storage(T_ eh, U_ hp, V_ hc, DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(con<ExceptionHandler_, T_&&>::value && con<HandlerProcessor_, U_&&>::value && con<HandlersContainer_, V_&&>::value))
+					: ExceptionHandler_(std::move(eh)), HandlerProcessor_(std::move(hp)), HandlersContainer_(std::move(hc))
+				{ }
+
+				template < typename T_, typename U_, typename V_ >
+				storage(T_ eh, U_ lp, V_ hc, DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(con<ExceptionHandler_, T_&&>::value && con<LockPrimitive_, U_&&>::value && con<HandlersContainer_, V_&&>::value))
+					: ExceptionHandler_(std::move(eh)), LockPrimitive_(std::move(lp)), HandlersContainer_(std::move(hc))
+				{ }
+
+				template < typename T_, typename U_, typename V_ >
+				storage(T_ eh, U_ lp, V_ hp, DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(con<ExceptionHandler_, T_&&>::value && con<LockPrimitive_, U_&&>::value && con<HandlerProcessor_, V_&&>::value))
+					: ExceptionHandler_(std::move(eh)), LockPrimitive_(std::move(lp)), HandlerProcessor_(std::move(hp))
+				{ }
+
+#undef DETAIL_WIGWAG_STORAGE_CTOR_ENABLER
+
+				storage(ExceptionHandler_ eh, LockPrimitive_ lp, HandlerProcessor_ hp, HandlersContainer_ hc) : ExceptionHandler_(std::move(eh)), LockPrimitive_(std::move(lp)), HandlerProcessor_(std::move(hp)), HandlersContainer_(std::move(hc)) { }
+
+				HandlersContainer_& get_handlers_container() { return *this; }
+				const HandlersContainer_& get_handlers_container() const { return *this; }
+
+				const LockPrimitive_& get_lock_primitive() const { return *this; }
+				const ExceptionHandler_& get_exception_handler() const { return *this; }
+				const HandlerProcessor_& get_handler_processor() const { return *this; }
+			};
+		};
+
+
+		struct shared
+		{
+			template < typename ExceptionHandler_, typename LockPrimitive_, typename HandlerProcessor_, typename HandlersContainer_ >
 			class storage
 			{
-			public:
-				using life_checker = typename LifeAssurancePolicy_::life_checker;
-				using lock_primitive = typename ThreadingPolicy_::lock_primitive;
-				using handler_type = std::function<Signature_>;
-
-				struct handler_info : public life_checker
-				{
-					handler_type		handler;
-
-					handler_info(life_checker lc, handler_type h)
-						: life_checker(lc), handler(h)
-					{ }
-
-					const life_checker& get_life_checker() const { return *this; }
-					const handler_type& get_handler() const { return handler; }
-				};
-
-				using handlers_stack_container = std::vector<handler_info>;
-
-				using handlers_list = std::list<handler_info>;
-				using handler_id = typename handlers_list::iterator;
-
 			private:
-				struct impl : public lock_primitive, public ExceptionHandlingPolicy_
-				{
-					handlers_list		handlers;
-				};
+				using impl = inplace::storage<ExceptionHandler_, LockPrimitive_, HandlerProcessor_, HandlersContainer_>;
 
 				std::shared_ptr<impl>	_impl;
 
 			public:
-				storage() : _impl(new impl) { }
+				template < typename... Args_ >
+				storage(Args_... args)
+					: _impl(new impl(std::forward<Args_>(args)...))
+				{ }
 
-				handler_id add_handler(handler_type handler, life_checker lc)
-				{
-					_impl->handlers.push_back(handler_info{lc, handler});
-					handler_id it = _impl->handlers.end();
-					--it;
-					return it;
-				}
+				HandlersContainer_& get_handlers_container() { return _impl->get_handlers_container(); }
+				const HandlersContainer_& get_handlers_container() const { return _impl->get_handlers_container(); }
 
-				void erase_handler(handler_id id)
-				{ _impl->handlers.erase(id); }
-
-				const handlers_list& get_handlers() const { return _impl->handlers; }
-
-				const lock_primitive& get_lock_primitive() const { return *_impl; }
-				const ExceptionHandlingPolicy_& get_exception_handler() const { return *_impl; }
+				const LockPrimitive_& get_lock_primitive() const { return _impl->get_lock_primitive(); }
+				const ExceptionHandler_& get_exception_handler() const { return _impl->get_exception_handler(); }
+				const HandlerProcessor_& get_handler_processor() const { return _impl->get_handler_processor(); }
 			};
 
-			template < typename Signature_, typename ThreadingPolicy_, typename ExceptionHandlingPolicy_, typename LifeAssurancePolicy_ >
-			using storage_ref = storage<Signature_, ThreadingPolicy_, ExceptionHandlingPolicy_, LifeAssurancePolicy_>;
-		};
-	}
-
-
-	namespace threading
-	{
-		template < typename MutexType_ >
-		struct own_recursive_mutex
-		{
-			class lock_primitive
-			{
-			private:
-				mutable MutexType_		_mutex;
-
-			public:
-				void lock_connect() const { _mutex.lock(); }
-				void unlock_connect() const { _mutex.unlock(); }
-
-				void lock_invoke() const { _mutex.lock(); }
-				void unlock_invoke() const { _mutex.unlock(); }
-			};
-		};
-
-
-		template < typename MutexType_ >
-		struct own_mutex
-		{
-			class lock_primitive
-			{
-			private:
-				mutable MutexType_		_mutex;
-
-			public:
-				void lock_connect() const { _mutex.lock(); }
-				void unlock_connect() const { _mutex.unlock(); }
-
-				void lock_invoke() const
-				{
-					if (_mutex.try_lock())
-					{
-						_mutex.unlock();
-						throw std::runtime_error("A nonrecursive mutex should be locked outside of signal::operator()!");
-					}
-				}
-
-				void unlock_invoke() const { }
-			};
-		};
-
-
-		struct threadless
-		{
-			class lock_primitive
-			{
-			public:
-				void lock_connect() const { }
-				void unlock_connect() const { }
-
-				void lock_invoke() const { }
-				void unlock_invoke() const { }
-			};
+			template < typename ExceptionHandlingPolicy_, typename LockPrimitive_, typename HandlerProcessor_,typename HandlersContainer_ >
+			using storage_ref = storage<ExceptionHandlingPolicy_, LockPrimitive_, HandlerProcessor_, HandlersContainer_>;
 		};
 	}
 
