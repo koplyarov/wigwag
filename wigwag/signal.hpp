@@ -27,7 +27,8 @@ namespace wigwag
 			typename ExceptionHandlingPolicy_ = exception_handling::rethrow,
 			typename ThreadingPolicy_ = threading::own_recursive_mutex,
 			typename StatePopulatingPolicy_ = state_populating::populator_only,
-			typename HandlersStoragePolicy_ = handlers_container::list,
+			typename HandlersContainerPolicy_ = handlers_container::list,
+			typename HandlersStackContainerPolicy_ = handlers_stack_container::vector,
 			typename LifeAssurancePolicy_ = life_assurance::life_tokens,
 			typename ImplStoragePolicy_ = impl_storage::shared
 		>
@@ -56,8 +57,8 @@ namespace wigwag
 			const handler_type& get_handler() const { return handler; }
 		};
 
-		using handlers_container =  typename HandlersStoragePolicy_::template handlers_container<handler_info>;
-		using handlers_stack_container = typename handlers_container::handlers_stack_container;
+		using handlers_container =  typename HandlersContainerPolicy_::template handlers_container<handler_info>;
+		using handlers_stack_container = typename HandlersStackContainerPolicy_::template handlers_stack_container<handler_info>;
 		using handler_id = typename handlers_container::handler_id;
 
 		using storage = typename ImplStoragePolicy_::template storage<ExceptionHandlingPolicy_, lock_primitive, handler_processor, handlers_container>;

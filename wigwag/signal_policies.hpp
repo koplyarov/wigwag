@@ -171,7 +171,6 @@ namespace wigwag
 			class handlers_container
 			{
 			public:
-				using handlers_stack_container = std::vector<HandlerInfo_>;
 				using handlers_list = std::list<HandlerInfo_>;
 				using handler_id = typename handlers_list::iterator;
 
@@ -198,6 +197,19 @@ namespace wigwag
 
 				const handlers_list& get_container() const { return _handlers; }
 			};
+		};
+	}
+
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	namespace handlers_stack_container
+	{
+		struct vector
+		{
+			template < typename HandlerInfo_ >
+			using handlers_stack_container = std::vector<HandlerInfo_>;
 		};
 	}
 
