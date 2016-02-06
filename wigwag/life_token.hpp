@@ -118,6 +118,7 @@ namespace wigwag
 				WIGWAG_ANNOTATE_HAPPENS_AFTER(&_impl->lock_counter_and_alive_flag);
 				WIGWAG_ANNOTATE_RELEASE(&_impl->lock_counter_and_alive_flag);
 
+				std::unique_lock<std::mutex> l(_impl->mutex);
 				_impl->cond_var.notify_all();
 			}
 			else

@@ -70,12 +70,3 @@
    fun:_ZNSt10shared_ptrIN6wigwag10life_token4implEED1Ev
    ...
 }
-
-{
-   <insert_a_suppression_name_here>
-   Helgrind:Misc
-   ...
-   fun:_ZN6wigwag10life_token15execution_guardD1Ev
-   ...
-}
-
