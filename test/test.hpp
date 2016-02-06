@@ -23,6 +23,8 @@
 #include <test/test_utils.hpp>
 
 
+#define LOCK_GUARD(...) std::lock_guard<decltype(__VA_ARGS__)> l(__VA_ARGS__);
+
 using namespace wigwag;
 
 
@@ -54,6 +56,36 @@ public:
 		TS_ASSERT_THROWS_NOTHING(ns());
 
 		tp.release();
+	}
+
+	static void test_threading()
+	{
+		signal<void()> ds;
+		basic_signal<void(), exception_handling::rethrow, threading::own_recursive_mutex> rms;
+		basic_signal<void(), exception_handling::rethrow, threading::own_mutex> ms;
+		basic_signal<void(), exception_handling::rethrow, threading::none> ns;
+
+		TS_ASSERT_THROWS_NOTHING(ds());
+		TS_ASSERT_THROWS_NOTHING(rms());
+		TS_ASSERT_THROWS(ms(), std::runtime_error);
+		TS_ASSERT_THROWS_NOTHING(ns());
+
+		{
+			LOCK_GUARD(ds.lock_primitive());
+			TS_ASSERT_THROWS_NOTHING(ds());
+		}
+
+		{
+			LOCK_GUARD(rms.lock_primitive());
+			TS_ASSERT_THROWS_NOTHING(rms());
+		}
+
+		{
+			LOCK_GUARD(ms.lock_primitive());
+			TS_ASSERT_THROWS_NOTHING(ms());
+		}
+
+		static_assert(std::is_same<decltype(ns.lock_primitive()), void>::value, "threading::none::get_primitive() return type should be void!");
 	}
 
 	static void test_populators()
