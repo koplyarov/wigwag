@@ -38,8 +38,6 @@ struct exception_handling_nop
 class wigwag_tests : public CxxTest::TestSuite
 {
 public:
-	static void test_default_life_assurance() { do_test_life_assurance<signal>(); }
-
 	static void test_exception_handling()
 	{
 		signal<void()> ds;
@@ -118,11 +116,9 @@ public:
 		TS_ASSERT_EQUALS(state, 0);
 	}
 
-private:
-	template < template<typename> class Signal_ >
-	static void do_test_life_assurance()
+	static void test_life_assurance()
 	{
-		Signal_<void()> s;
+		signal<void()> s;
 
 		thread t(
 			[&](const std::atomic<bool>& alive)
