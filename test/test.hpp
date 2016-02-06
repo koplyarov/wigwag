@@ -12,6 +12,7 @@
 
 
 #include <wigwag/signal.hpp>
+#include <wigwag/token_pool.hpp>
 
 #include <cxxtest/TestSuite.h>
 
@@ -43,13 +44,16 @@ public:
 		basic_signal<void(), exception_handling::rethrow> rs;
 		basic_signal<void(), exception_handling_nop> ns;
 
-		token t0 = ds.connect([&] { throw std::runtime_error("Test exception"); });
-		token t2 = rs.connect([&] { throw 0; });
-		token t3 = ns.connect([&] { throw std::runtime_error("Test exception"); });
+		token_pool tp;
+		tp += ds.connect([&] { throw std::runtime_error("Test exception"); });
+		tp += rs.connect([&] { throw 0; });
+		tp += ns.connect([&] { throw std::runtime_error("Test exception"); });
 
 		TS_ASSERT_THROWS(ds(), std::runtime_error);
 		TS_ASSERT_THROWS_ANYTHING(rs());
 		TS_ASSERT_THROWS_NOTHING(ns());
+
+		tp.release();
 	}
 
 	static void test_populators()
