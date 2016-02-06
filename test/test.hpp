@@ -58,7 +58,7 @@ public:
 
 		signal<void(int)> ds([](h_type h){ h(1); } );
 		basic_signal<void(int), exception_handling::rethrow, threading::none, state_populating::populator_only> ps([](h_type h){ h(2); } );
-		basic_signal<void(int), exception_handling::rethrow, threading::none, state_populating::populator_and_withdrawer> pds(state_populating::populator_and_withdrawer::handler_processor<void(int)>([](h_type h){ h(3); }, [](h_type h){ h(4); }));
+		basic_signal<void(int), exception_handling::rethrow, threading::none, state_populating::populator_and_withdrawer> pws(state_populating::populator_and_withdrawer::handler_processor<void(int)>([](h_type h){ h(3); }, [](h_type h){ h(4); }));
 		basic_signal<void(int), exception_handling::rethrow, threading::none, state_populating::none> ns;
 
 		int state = 0;
@@ -71,7 +71,7 @@ public:
 
 		{
 			state = 0;
-			token t = pds.connect([&](int i) { state = i; });
+			token t = pws.connect([&](int i) { state = i; });
 			TS_ASSERT_EQUALS(state, 3);
 			state = 0;
 		}
