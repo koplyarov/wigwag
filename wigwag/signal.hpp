@@ -72,7 +72,7 @@ namespace wigwag
 		public:
 			connection(life_assurance&& la, storage_ref sr, handler_id id)
 			try : life_assurance(std::move(la)), _storage_ref(sr), _id(id)
-			{ static_assert(std::is_nothrow_move_constructible<life_assurance>::value, "ASD"); }
+			{ static_assert(std::is_nothrow_move_constructible<life_assurance>::value, "life_assurance object should have a noexcept move constructor!"); }
 			catch(...)
 			{
 				life_assurance::release();
