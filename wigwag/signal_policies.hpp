@@ -45,6 +45,8 @@ namespace wigwag
 				mutable std::recursive_mutex	_mutex;
 
 			public:
+				std::recursive_mutex& get_primitive() const { return _mutex; }
+
 				void lock_connect() const { _mutex.lock(); }
 				void unlock_connect() const { _mutex.unlock(); }
 
@@ -62,6 +64,8 @@ namespace wigwag
 				mutable std::mutex		_mutex;
 
 			public:
+				std::mutex& get_primitive() const { return _mutex; }
+
 				void lock_connect() const { _mutex.lock(); }
 				void unlock_connect() const { _mutex.unlock(); }
 
@@ -85,6 +89,8 @@ namespace wigwag
 			class lock_primitive
 			{
 			public:
+				void get_primitive() const { }
+
 				void lock_connect() const { }
 				void unlock_connect() const { }
 

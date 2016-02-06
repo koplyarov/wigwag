@@ -37,7 +37,7 @@ namespace wigwag
 	private:
 		using handler_type = std::function<Signature_>;
 
-		using lock_primitive = typename ThreadingPolicy_::lock_primitive;
+		using lock_primitive_type = typename ThreadingPolicy_::lock_primitive;
 		using exception_handler = ExceptionHandlingPolicy_;
 		using handler_processor = typename StatePopulatingPolicy_::template handler_processor<Signature_>;
 
@@ -61,8 +61,8 @@ namespace wigwag
 		using handlers_stack_container = typename HandlersStackContainerPolicy_::template handlers_stack_container<handler_info>;
 		using handler_id = typename handlers_container::handler_id;
 
-		using storage = typename ImplStoragePolicy_::template storage<ExceptionHandlingPolicy_, lock_primitive, handler_processor, handlers_container>;
-		using storage_ref = typename ImplStoragePolicy_::template storage_ref<ExceptionHandlingPolicy_, lock_primitive, handler_processor, handlers_container>;
+		using storage = typename ImplStoragePolicy_::template storage<ExceptionHandlingPolicy_, lock_primitive_type, handler_processor, handlers_container>;
+		using storage_ref = typename ImplStoragePolicy_::template storage_ref<ExceptionHandlingPolicy_, lock_primitive_type, handler_processor, handlers_container>;
 
 	private:
 		struct connection : public token::implementation, private life_assurance
@@ -106,6 +106,9 @@ namespace wigwag
 
 		basic_signal(const basic_signal&) = delete;
 		basic_signal& operator = (const basic_signal&) = delete;
+
+		auto lock_primitive() const -> decltype(_storage.get_lock_primitive().get_primitive())
+		{ return _storage.get_lock_primitive().get_primitive(); }
 
 		token connect(const handler_type& handler)
 		{
