@@ -42,6 +42,7 @@ namespace wigwag
 		class checker;
 		class execution_guard;
 
+	private:
 		impl_ptr		_impl;
 
 	public:
