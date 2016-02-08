@@ -185,9 +185,6 @@ namespace wigwag
 				handlers_list		_handlers;
 
 			public:
-				const handlers_list& get_handlers() const
-				{ return _handlers; }
-
 				const HandlerInfo_& get_handler_info(handler_id id)
 				{ return *id; }
 
@@ -202,7 +199,8 @@ namespace wigwag
 				void erase_handler(handler_id id)
 				{ _handlers.erase(id); }
 
-				const handlers_list& get_container() const { return _handlers; }
+				const handlers_list& get_container() const
+				{ return _handlers; }
 			};
 		};
 	}

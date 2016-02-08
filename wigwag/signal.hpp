@@ -131,7 +131,7 @@ namespace wigwag
 				_storage.get_lock_primitive().lock_invoke();
 				auto sg = detail::at_scope_exit([&] { _storage.get_lock_primitive().unlock_invoke(); } );
 
-				handlers_copy.assign(_storage.get_handlers_container().get_handlers().begin(), _storage.get_handlers_container().get_handlers().end());
+				handlers_copy.assign(_storage.get_handlers_container().get_container().begin(), _storage.get_handlers_container().get_container().end());
 			}
 
 			for (const auto& h : handlers_copy)
