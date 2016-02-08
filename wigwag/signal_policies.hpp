@@ -11,6 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/enabler.hpp>
 #include <wigwag/life_token.hpp>
 
 #include <list>
@@ -287,11 +288,6 @@ namespace wigwag
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-	namespace detail
-	{
-		class enabler { };
-	};
 
 	namespace impl_storage
 	{
