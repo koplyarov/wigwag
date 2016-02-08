@@ -19,6 +19,8 @@
 #include <mutex>
 #include <vector>
 
+#include <stdio.h>
+
 
 namespace wigwag
 {
@@ -29,6 +31,12 @@ namespace wigwag
 		{
 			void handle_std_exception(const std::exception& ex) const { throw; }
 			void handle_unknown_exception() const { throw; }
+		};
+
+		struct print_to_stderr
+		{
+			void handle_std_exception(const std::exception& ex) const { fprintf(stderr, "std::exception in signal handler: %s\n", ex.what()); }
+			void handle_unknown_exception() const { fprintf(stderr, "Unknown exception in signal handler!\n"); }
 		};
 	}
 
