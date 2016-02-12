@@ -32,7 +32,7 @@ namespace wigwag
 			typename LifeAssurancePolicy_ = life_assurance::life_tokens,
 			typename ImplStoragePolicy_ = impl_storage::shared
 		>
-	class basic_signal
+	class signal
 	{
 	private:
 		using handler_type = std::function<Signature_>;
@@ -101,16 +101,16 @@ namespace wigwag
 		storage		_storage;
 
 	public:
-		basic_signal()
+		signal()
 		{ }
 
 		template < typename... Args_ >
-		basic_signal(Args_&&... args)
+		signal(Args_&&... args)
 			: _storage(std::forward<Args_>(args)...)
 		{ }
 
-		basic_signal(const basic_signal&) = delete;
-		basic_signal& operator = (const basic_signal&) = delete;
+		signal(const signal&) = delete;
+		signal& operator = (const signal&) = delete;
 
 		auto lock_primitive() const -> decltype(_storage.get_lock_primitive().get_primitive())
 		{ return _storage.get_lock_primitive().get_primitive(); }
@@ -158,9 +158,6 @@ namespace wigwag
 		}
 	};
 
-
-	template < typename Signature_ >
-	using signal = basic_signal<Signature_>;
 
 }
 

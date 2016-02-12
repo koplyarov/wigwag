@@ -41,8 +41,8 @@ public:
 	static void test_exception_handling()
 	{
 		signal<void()> ds;
-		basic_signal<void(), exception_handling::rethrow> rs;
-		basic_signal<void(), exception_handling_nop> ns;
+		signal<void(), exception_handling::rethrow> rs;
+		signal<void(), exception_handling_nop> ns;
 
 		token_pool tp;
 		tp += ds.connect([&] { throw std::runtime_error("Test exception"); });
@@ -59,9 +59,9 @@ public:
 	static void test_threading()
 	{
 		signal<void()> ds;
-		basic_signal<void(), exception_handling::rethrow, threading::own_recursive_mutex> rms;
-		basic_signal<void(), exception_handling::rethrow, threading::own_mutex> ms;
-		basic_signal<void(), exception_handling::rethrow, threading::none> ns;
+		signal<void(), exception_handling::rethrow, threading::own_recursive_mutex> rms;
+		signal<void(), exception_handling::rethrow, threading::own_mutex> ms;
+		signal<void(), exception_handling::rethrow, threading::none> ns;
 
 		TS_ASSERT_THROWS_NOTHING(ds());
 		TS_ASSERT_THROWS_NOTHING(rms());
@@ -91,9 +91,9 @@ public:
 		using h_type = const std::function<void(int)>&;
 
 		signal<void(int)> ds([](h_type h){ h(1); } );
-		basic_signal<void(int), exception_handling::rethrow, threading::none, state_populating::populator_only> ps([](h_type h){ h(2); } );
-		basic_signal<void(int), exception_handling::rethrow, threading::none, state_populating::populator_and_withdrawer> pws(state_populating::populator_and_withdrawer::handler_processor<void(int)>([](h_type h){ h(3); }, [](h_type h){ h(4); }));
-		basic_signal<void(int), exception_handling::rethrow, threading::none, state_populating::none> ns;
+		signal<void(int), exception_handling::rethrow, threading::none, state_populating::populator_only> ps([](h_type h){ h(2); } );
+		signal<void(int), exception_handling::rethrow, threading::none, state_populating::populator_and_withdrawer> pws(state_populating::populator_and_withdrawer::handler_processor<void(int)>([](h_type h){ h(3); }, [](h_type h){ h(4); }));
+		signal<void(int), exception_handling::rethrow, threading::none, state_populating::none> ns;
 
 		int state = 0;
 		ds.connect([&](int i) { state = i; });
