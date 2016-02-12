@@ -27,11 +27,16 @@ namespace wigwag
 
 	namespace exception_handling
 	{
+		struct rethrow;
+		using default_ = rethrow;
+
+
 		struct rethrow
 		{
 			void handle_std_exception(const std::exception& ex) const { throw; }
 			void handle_unknown_exception() const { throw; }
 		};
+
 
 		struct print_to_stderr
 		{
@@ -46,6 +51,10 @@ namespace wigwag
 
 	namespace threading
 	{
+		struct own_recursive_mutex;
+		using default_ = own_recursive_mutex;
+
+
 		struct own_recursive_mutex
 		{
 			class lock_primitive
@@ -114,6 +123,10 @@ namespace wigwag
 
 	namespace state_populating
 	{
+		struct populator_only;
+		using default_ = populator_only;
+
+
 		struct populator_only
 		{
 			template < typename Signature_ >
@@ -179,6 +192,10 @@ namespace wigwag
 
 	namespace handlers_stack_container
 	{
+		struct vector;
+		using default_ = vector;
+
+
 		struct vector
 		{
 			template < typename HandlerInfo_ >
@@ -192,6 +209,10 @@ namespace wigwag
 
 	namespace life_assurance
 	{
+		struct life_tokens;
+		using default_ = life_tokens;
+
+
 		struct life_tokens
 		{
 			struct life_checker
@@ -257,6 +278,10 @@ namespace wigwag
 
 	namespace impl_storage
 	{
+		struct shared;
+		using default_ = shared;
+
+
 		struct inplace
 		{
 			template < typename ExceptionHandler_, typename LockPrimitive_, typename HandlerProcessor_, typename HandlersContainer_ >

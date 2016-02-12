@@ -25,12 +25,12 @@ namespace wigwag
 
 	template <
 			typename Signature_,
-			typename ExceptionHandlingPolicy_ = exception_handling::rethrow,
-			typename ThreadingPolicy_ = threading::own_recursive_mutex,
-			typename StatePopulatingPolicy_ = state_populating::populator_only,
-			typename HandlersStackContainerPolicy_ = handlers_stack_container::vector,
-			typename LifeAssurancePolicy_ = life_assurance::life_tokens,
-			typename ImplStoragePolicy_ = impl_storage::shared
+			typename ExceptionHandlingPolicy_ = exception_handling::default_,
+			typename ThreadingPolicy_ = threading::default_,
+			typename StatePopulatingPolicy_ = state_populating::default_,
+			typename HandlersStackContainerPolicy_ = handlers_stack_container::default_,
+			typename LifeAssurancePolicy_ = life_assurance::default_,
+			typename ImplStoragePolicy_ = impl_storage::default_
 		>
 	class signal
 	{
