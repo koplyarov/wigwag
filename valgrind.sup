@@ -74,7 +74,6 @@
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
-   match-leak-kinds: reachable
    fun:malloc
    ...
    fun:_dl_init
