@@ -84,7 +84,6 @@ namespace wigwag
 					{
 						_mutex.unlock();
 						throw std::runtime_error("A nonrecursive mutex should be locked outside of signal::operator()!");
-
 					}
 				}
 
