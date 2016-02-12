@@ -27,6 +27,7 @@ addons:
 script: 
   - ( mkdir build && cd build && cmake -DWIGWAG_VALGRIND=TRUE .. && make )
   - valgrind --suppressions=valgrind.sup --tool=helgrind --gen-suppressions=all --error-exitcode=1 ./build/bin/wigwag_test
+  - valgrind --suppressions=valgrind.sup --tool=memcheck --leak-check=full --show-leak-kinds=all --gen-suppressions=all --error-exitcode=1 ./build/bin/wigwag_test
   - rm -rf ./build
   - ( mkdir build && cd build && cmake -DWIGWAG_COVERAGE=TRUE .. && make )
   - ./build/bin/wigwag_test
