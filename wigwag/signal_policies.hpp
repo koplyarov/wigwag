@@ -178,45 +178,6 @@ namespace wigwag
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-	namespace handlers_container
-	{
-		struct list
-		{
-			template < typename HandlerInfo_ >
-			class handlers_container
-			{
-			public:
-				using handlers_list = std::list<HandlerInfo_>;
-				using handler_id = typename handlers_list::iterator;
-
-			private:
-				handlers_list		_handlers;
-
-			public:
-				const HandlerInfo_& get_handler_info(handler_id id)
-				{ return *id; }
-
-				handler_id add_handler(HandlerInfo_ handlerInfo)
-				{
-					_handlers.push_back(handlerInfo);
-					handler_id it = _handlers.end();
-					--it;
-					return it;
-				}
-
-				void erase_handler(handler_id id)
-				{ _handlers.erase(id); }
-
-				const handlers_list& get_container() const
-				{ return _handlers; }
-			};
-		};
-	}
-
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 	namespace handlers_stack_container
 	{
 		struct vector

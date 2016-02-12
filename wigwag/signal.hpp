@@ -12,6 +12,7 @@
 
 
 #include <wigwag/detail/at_scope_exit.hpp>
+#include <wigwag/detail/intrusive_list.hpp>
 #include <wigwag/life_token.hpp>
 #include <wigwag/signal_policies.hpp>
 #include <wigwag/token.hpp>
@@ -27,7 +28,6 @@ namespace wigwag
 			typename ExceptionHandlingPolicy_ = exception_handling::rethrow,
 			typename ThreadingPolicy_ = threading::own_recursive_mutex,
 			typename StatePopulatingPolicy_ = state_populating::populator_only,
-			typename HandlersContainerPolicy_ = handlers_container::list,
 			typename HandlersStackContainerPolicy_ = handlers_stack_container::vector,
 			typename LifeAssurancePolicy_ = life_assurance::life_tokens,
 			typename ImplStoragePolicy_ = impl_storage::shared
@@ -57,39 +57,44 @@ namespace wigwag
 			const handler_type& get_handler() const { return handler; }
 		};
 
-		using handlers_container =  typename HandlersContainerPolicy_::template handlers_container<handler_info>;
 		using handlers_stack_container = typename HandlersStackContainerPolicy_::template handlers_stack_container<handler_info>;
-		using handler_id = typename handlers_container::handler_id;
+
+		struct handler_node;
+		using handlers_container = detail::intrusive_list<handler_node>;
 
 		using storage = typename ImplStoragePolicy_::template storage<ExceptionHandlingPolicy_, lock_primitive_type, handler_processor, handlers_container>;
 		using storage_ref = typename ImplStoragePolicy_::template storage_ref<ExceptionHandlingPolicy_, lock_primitive_type, handler_processor, handlers_container>;
 
-	private:
-		struct connection : public token::implementation, private life_assurance
+		struct handler_node : public token::implementation, private life_assurance, public detail::intrusive_list_node
 		{
 			storage_ref		_storage_ref;
-			handler_id		_id;
+			handler_type	_handler;
 
 		public:
-			connection(life_assurance&& la, storage_ref sr, handler_id id)
-			try : life_assurance(std::move(la)), _storage_ref(sr), _id(id)
-			{ static_assert(std::is_nothrow_move_constructible<life_assurance>::value, "life_assurance object should have a noexcept move constructor!"); }
+			handler_node(storage_ref sr, handler_type handler)
+			try : _storage_ref(sr), _handler(handler)
+			{
+				static_assert(std::is_nothrow_move_constructible<life_assurance>::value, "life_assurance object should have a noexcept move constructor!");
+				_storage_ref.get_handlers_container().push_back(*this);
+			}
 			catch(...)
 			{
 				life_assurance::release();
 				throw;
 			}
 
-			~connection()
+			~handler_node()
 			{
 				_storage_ref.get_lock_primitive().lock_connect();
 				auto sg = detail::at_scope_exit([&] { _storage_ref.get_lock_primitive().unlock_connect(); } );
 
 				life_assurance::release();
-				const auto& handler = _storage_ref.get_handlers_container().get_handler_info(_id).handler;
-				_storage_ref.get_handler_processor().withdraw_state(handler);
-				_storage_ref.get_handlers_container().erase_handler(_id);
+				_storage_ref.get_handler_processor().withdraw_state(_handler);
+				_storage_ref.get_handlers_container().erase(*this);
 			}
+
+			operator handler_info() const
+			{ return handler_info(life_assurance::get_life_checker(), _handler); }
 		};
 
 	private:
@@ -117,9 +122,7 @@ namespace wigwag
 
 			handle_exceptions(_storage.get_exception_handler(), [&] { _storage.get_handler_processor().populate_state(handler); });
 
-			life_assurance la;
-			auto id = _storage.get_handlers_container().add_handler(handler_info(la.get_life_checker(), handler));
-			return token::create<connection>(std::move(la), storage_ref(_storage), id);
+			return token::create<handler_node>(storage_ref(_storage), handler);
 		}
 
 		template < typename... Args_ >
@@ -131,7 +134,7 @@ namespace wigwag
 				_storage.get_lock_primitive().lock_invoke();
 				auto sg = detail::at_scope_exit([&] { _storage.get_lock_primitive().unlock_invoke(); } );
 
-				handlers_copy.assign(_storage.get_handlers_container().get_container().begin(), _storage.get_handlers_container().get_container().end());
+				handlers_copy.assign(_storage.get_handlers_container().begin(), _storage.get_handlers_container().end());
 			}
 
 			for (const auto& h : handlers_copy)
