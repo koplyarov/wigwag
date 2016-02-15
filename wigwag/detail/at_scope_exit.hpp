@@ -22,10 +22,22 @@ namespace detail
 	class scope_guard
 	{
 		Func_	_f;
+		bool	_moved;
 
 	public:
-		scope_guard(Func_&& f) : _f(f) { }
-		~scope_guard() { _f(); }
+		scope_guard(Func_&& f)
+			: _f(f), _moved(false)
+		{ }
+
+		scope_guard(scope_guard&& other)
+			: _f(other._f), _moved(other._moved)
+		{ other._moved = true; }
+
+		~scope_guard()
+		{
+			if (!_moved)
+				_f();
+		}
 	};
 
 	template < typename Func_ >
