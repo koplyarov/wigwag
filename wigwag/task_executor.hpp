@@ -1,5 +1,5 @@
-#ifndef WIGWAG_DETAIL_SIGNAL_CONNECTOR_IMPL_HPP
-#define WIGWAG_DETAIL_SIGNAL_CONNECTOR_IMPL_HPP
+#ifndef WIGWAG_TASK_EXECUTOR_HPP
+#define WIGWAG_TASK_EXECUTOR_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,28 +11,19 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/task_executor.hpp>
-#include <wigwag/token.hpp>
+#include <functional>
 
 
-namespace wigwag {
-namespace detail
+namespace wigwag
 {
 
-
-	template < typename Signature_ >
-	struct signal_connector_impl
+	struct task_executor
 	{
-		virtual ~signal_connector_impl() { }
+		virtual ~task_executor() { }
 
-		virtual token connect(const std::function<Signature_>& handler) = 0;
-		virtual token connect(const std::shared_ptr<task_executor>& worker, const std::function<Signature_>& handler) = 0;
-
-		virtual void add_ref() = 0;
-		virtual void release() = 0;
+		virtual void add_task(const std::function<void()>& task) = 0;
 	};
 
-
-}}
+}
 
 #endif

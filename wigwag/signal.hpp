@@ -62,6 +62,9 @@ namespace wigwag
 		token connect(const handler_type& handler)
 		{ return _impl->connect(handler); }
 
+		token connect(const std::shared_ptr<task_executor>& worker, const std::function<Signature_>& handler)
+		{ return _impl->connect(worker, handler); }
+
 		template < typename... Args_ >
 		void operator() (Args_&&... args) const
 		{

@@ -11,6 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/async_handler.hpp>
 #include <wigwag/detail/config.hpp>
 #include <wigwag/detail/enabler.hpp>
 #include <wigwag/detail/intrusive_list.hpp>
@@ -68,11 +69,11 @@ namespace detail
 			handler_type					_handler;
 
 		public:
-			handler_node(const intrusive_ptr<signal_impl>& impl, handler_type handler)
+			handler_node(life_assurance&& la, const intrusive_ptr<signal_impl>& impl, handler_type handler)
 #if !WIGWAG_NOEXCEPTIONS
 			try
 #endif
-				: _signal_impl(impl), _handler(handler)
+				: life_assurance(std::move(la)), _signal_impl(impl), _handler(handler)
 			{ _signal_impl->get_handlers_container().push_back(*this); }
 #if !WIGWAG_NOEXCEPTIONS
 			catch(...)
@@ -156,7 +157,23 @@ namespace detail
 			add_ref();
 			intrusive_ptr<signal_impl> self(this);
 
-			return token::create<handler_node>(self, handler);
+			return token::create<handler_node>(life_assurance(), self, handler);
+		}
+
+		virtual token connect(const std::shared_ptr<task_executor>& worker, const std::function<Signature_>& handler)
+		{
+			get_lock_primitive().lock_connect();
+			auto sg = detail::at_scope_exit([&] { get_lock_primitive().unlock_connect(); } );
+
+			life_assurance la;
+			async_handler<Signature_, LifeAssurancePolicy_> real_handler(worker, la.get_life_checker(), handler);
+
+			get_exception_handler().handle_exceptions([&] { get_handler_processor().populate_state(real_handler); });
+
+			add_ref();
+			intrusive_ptr<signal_impl> self(this);
+
+			return token::create<handler_node>(std::move(la), self, real_handler);
 		}
 	};
 

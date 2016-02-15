@@ -12,6 +12,7 @@
 
 
 #include <wigwag/signal.hpp>
+#include <wigwag/thread_task_executor.hpp>
 #include <wigwag/token_pool.hpp>
 
 #include <cxxtest/TestSuite.h>
@@ -49,6 +50,7 @@ public:
 		tp.release();
 	}
 
+
 	static void test_threading()
 	{
 		signal<void()> ds;
@@ -78,6 +80,7 @@ public:
 
 		static_assert(std::is_same<decltype(ns.lock_primitive()), void>::value, "threading::none::get_primitive() return type should be void!");
 	}
+
 
 	static void test_populators()
 	{
@@ -109,6 +112,7 @@ public:
 		TS_ASSERT_EQUALS(state, 0);
 	}
 
+
 	static void test_life_assurance()
 	{
 		signal<void()> s;
@@ -131,6 +135,25 @@ public:
 			p.reset();
 		}
 		TS_ASSERT_LESS_THAN(std::chrono::seconds(1), p.reset());
+	}
+
+
+	static void test_task_executors()
+	{
+		signal<void()> s;
+
+		std::thread::id handler_thread_id;
+		std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
+		token t = s.connect(worker, [&]{
+				handler_thread_id = std::this_thread::get_id();
+			});
+
+		s();
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+		TS_ASSERT_DIFFERS(handler_thread_id, std::thread::id());
+		TS_ASSERT_DIFFERS(handler_thread_id, std::this_thread::get_id());
 	}
 };
 
