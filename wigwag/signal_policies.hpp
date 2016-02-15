@@ -246,6 +246,12 @@ namespace wigwag
 				{
 					life_token		token;
 
+					life_token_storage(life_token_storage&& other) noexcept
+					{
+						new(&token) life_token(std::move(other.token));
+						other.token.~life_token();
+					}
+
 					life_token_storage() { new(&token) life_token(); }
 					~life_token_storage() { }
 				};
