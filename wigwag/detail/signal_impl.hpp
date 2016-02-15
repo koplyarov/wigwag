@@ -11,6 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/config.hpp>
 #include <wigwag/detail/enabler.hpp>
 #include <wigwag/detail/intrusive_list.hpp>
 #include <wigwag/detail/intrusive_ptr.hpp>
@@ -68,16 +69,18 @@ namespace detail
 
 		public:
 			handler_node(const intrusive_ptr<signal_impl>& impl, handler_type handler)
-			try : _signal_impl(impl), _handler(handler)
-			{
-				static_assert(std::is_nothrow_move_constructible<life_assurance>::value, "life_assurance object should have a noexcept move constructor!");
-				_signal_impl->get_handlers_container().push_back(*this);
-			}
+#if !WIGWAG_NOEXCEPTIONS
+			try
+#endif
+				: _signal_impl(impl), _handler(handler)
+			{ _signal_impl->get_handlers_container().push_back(*this); }
+#if !WIGWAG_NOEXCEPTIONS
 			catch(...)
 			{
 				life_assurance::release();
 				throw;
 			}
+#endif
 
 			~handler_node()
 			{
@@ -148,24 +151,12 @@ namespace detail
 			get_lock_primitive().lock_connect();
 			auto sg = detail::at_scope_exit([&] { get_lock_primitive().unlock_connect(); } );
 
-			handle_exceptions(get_exception_handler(), [&] { get_handler_processor().populate_state(handler); });
+			get_exception_handler().handle_exceptions([&] { get_handler_processor().populate_state(handler); });
 
 			add_ref();
 			intrusive_ptr<signal_impl> self(this);
 
 			return token::create<handler_node>(self, handler);
-		}
-
-	public:
-		template < typename Func_, typename... Args_ >
-		static void handle_exceptions(const ExceptionHandlingPolicy_& exceptionHandler, Func_&& func, Args_&&... args)
-		{
-			try
-			{ func(std::forward<Args_>(args)...); }
-			catch (const std::exception& ex)
-			{ exceptionHandler.handle_std_exception(ex); }
-			catch (...)
-			{ exceptionHandler.handle_unknown_exception(); }
 		}
 	};
 

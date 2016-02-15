@@ -11,6 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/config.hpp>
 #include <wigwag/detail/enabler.hpp>
 #include <wigwag/life_token.hpp>
 
@@ -27,22 +28,33 @@ namespace wigwag
 
 	namespace exception_handling
 	{
-		struct rethrow;
-		using default_ = rethrow;
+		struct none;
+		using default_ = none;
 
 
-		struct rethrow
+		struct none
 		{
-			void handle_std_exception(const std::exception& ex) const { throw; }
-			void handle_unknown_exception() const { throw; }
+			template < typename Func_, typename... Args_ >
+			void handle_exceptions(Func_&& func, Args_&&... args) const
+			{ func(std::forward<Args_>(args)...); }
 		};
 
 
+#if !WIGWAG_NOEXCEPTIONS
 		struct print_to_stderr
 		{
-			void handle_std_exception(const std::exception& ex) const { fprintf(stderr, "std::exception in signal handler: %s\n", ex.what()); }
-			void handle_unknown_exception() const { fprintf(stderr, "Unknown exception in signal handler!\n"); }
+			template < typename Func_, typename... Args_ >
+			void handle_exceptions(Func_&& func, Args_&&... args) const
+			{
+				try
+				{ func(std::forward<Args_>(args)...); }
+				catch (const std::exception& ex)
+				{ fprintf(stderr, "std::exception in signal handler: %s\n", ex.what()); }
+				catch (...)
+				{ fprintf(stderr, "Unknown exception in signal handler!\n"); }
+			}
 		};
+#endif
 	}
 
 
@@ -92,7 +104,7 @@ namespace wigwag
 					if (_mutex.try_lock())
 					{
 						_mutex.unlock();
-						throw std::runtime_error("A nonrecursive mutex should be locked outside of signal::operator()!");
+						WIGWAG_THROW("A nonrecursive mutex should be locked outside of signal::operator()!");
 					}
 				}
 
@@ -233,12 +245,6 @@ namespace wigwag
 				union life_token_storage
 				{
 					life_token		token;
-
-					life_token_storage(life_token_storage&& other) noexcept
-					{
-						new(&token) life_token(std::move(other.token));
-						other.token.~life_token();
-					}
 
 					life_token_storage() { new(&token) life_token(); }
 					~life_token_storage() { }

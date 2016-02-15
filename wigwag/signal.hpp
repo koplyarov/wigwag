@@ -78,7 +78,7 @@ namespace wigwag
 			{
 				execution_guard g(h.get_life_checker());
 				if (g.is_alive())
-					impl_type::handle_exceptions(_impl->get_exception_handler(), h.get_handler(), std::forward<Args_>(args)...);
+					_impl->get_exception_handler().handle_exceptions(h.get_handler(), std::forward<Args_>(args)...);
 			}
 		}
 	};
