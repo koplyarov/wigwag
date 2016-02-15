@@ -30,9 +30,13 @@ namespace detail
 		T_*		_raw;
 
 	public:
-		explicit intrusive_ptr(T_* rawPtr = 0)
+		explicit intrusive_ptr(T_* rawPtr = nullptr)
 			: _raw(rawPtr)
-		{}
+		{ }
+
+		intrusive_ptr(intrusive_ptr&& other) noexcept
+			: _raw(other._raw)
+		{ other._raw = nullptr; }
 
 		template < typename U_ >
 		intrusive_ptr(const intrusive_ptr<U_> other, typename std::enable_if<std::is_base_of<T_, U_>::value, enabler>::type e = enabler())
@@ -69,9 +73,9 @@ namespace detail
 		{ return !(*this == other); }
 
 		explicit operator bool() const
-		{ return _raw != 0; }
+		{ return _raw; }
 
-		void reset(T_* ptr = 0)
+		void reset(T_* ptr = nullptr)
 		{
 			intrusive_ptr tmp(ptr);
 			swap(tmp);
