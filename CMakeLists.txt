@@ -12,9 +12,8 @@ add_definitions(-std=c++11)
 add_definitions(-Wall)
 if (WIGWAG_VALGRIND)
 	add_definitions(-DWIGWAG_USE_HELGRIND_ANNOTATIONS=1)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include wigwag/detail/stdcpp_annotations.hpp")
 endif()
-
-######################################################################
 
 if (WIGWAG_COVERAGE)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
@@ -23,11 +22,13 @@ endif()
 
 find_package(Threads)
 
+######################################################################
+
 find_package(CxxTest)
 if(CXXTEST_FOUND)
-    include_directories(${CXXTEST_INCLUDE_DIR})
-    enable_testing()
-    CXXTEST_ADD_TEST(wigwag_test unittest_wigwag.cpp
-                      ${CMAKE_CURRENT_SOURCE_DIR}/test/test.hpp)
-    target_link_libraries(wigwag_test ${CMAKE_THREAD_LIBS_INIT}) # as needed
+	include_directories(${CXXTEST_INCLUDE_DIR})
+	enable_testing()
+	CXXTEST_ADD_TEST(wigwag_test unittest_wigwag.cpp
+					  ${CMAKE_CURRENT_SOURCE_DIR}/test/test.hpp)
+	target_link_libraries(wigwag_test ${CMAKE_THREAD_LIBS_INIT})
 endif()

@@ -11,6 +11,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/annotations.hpp>
+
 #include <atomic>
 
 
@@ -38,7 +40,14 @@ namespace detail
 		void release()
 		{
 			if (--_ref_count == 0)
+			{
+				WIGWAG_ANNOTATE_HAPPENS_AFTER(this);
+				WIGWAG_ANNOTATE_RELEASE(this);
+
 				delete static_cast<Derived_*>(this);
+			}
+			else
+				WIGWAG_ANNOTATE_HAPPENS_BEFORE(this);
 		}
 	};
 

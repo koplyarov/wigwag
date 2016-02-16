@@ -40,39 +40,6 @@
 
 {
    <insert_a_suppression_name_here>
-   Helgrind:Race
-   ...
-   fun:_ZNSt11this_thread9sleep_forIlSt5ratioILl1ELl1EEEEvRKNSt6chrono8durationIT_T0_EE
-   ...
-}
-
-{
-   <insert_a_suppression_name_here>
-   Helgrind:Race
-   ...
-   fun:_ZNSt11this_thread9sleep_forIlSt5ratioILl1ELl1000EEEEvRKNSt6chrono8durationIT_T0_EE
-   ...
-}
-
-{
-   <insert_a_suppression_name_here>
-   Helgrind:Race
-   fun:_ZNSt16_Sp_counted_baseILN9__gnu_cxx12_Lock_policyE2EED1Ev
-   ...
-   obj:*libstdc++*
-   ...
-}
-
-{
-   <insert_a_suppression_name_here>
-   Helgrind:Race
-   ...
-   fun:_ZNSt10shared_ptrIN6wigwag10life_token4implEED1Ev
-   ...
-}
-
-{
-   <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:malloc
    ...

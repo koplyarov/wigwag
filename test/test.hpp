@@ -142,9 +142,12 @@ public:
 	{
 		signal<void()> s;
 
+		std::mutex m;
 		std::thread::id handler_thread_id;
+
 		std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
 		token t = s.connect(worker, [&]{
+				std::lock_guard<std::mutex> l(m);
 				handler_thread_id = std::this_thread::get_id();
 			});
 
@@ -152,6 +155,7 @@ public:
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
+		std::lock_guard<std::mutex> l(m);
 		TS_ASSERT_DIFFERS(handler_thread_id, std::thread::id());
 		TS_ASSERT_DIFFERS(handler_thread_id, std::this_thread::get_id());
 	}
