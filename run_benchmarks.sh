@@ -66,38 +66,38 @@ PrintCpuInfo() {
 
 PrintCpuInfo
 
-echo
-Benchmark create_lock_unlock mutex 10000000
-Benchmark create_lock_unlock recursive_mutex 10000000
-Benchmark create_lock_unlock boost_mutex 10000000
-Benchmark create_lock_unlock boost_recursive_mutex 10000000
+#echo
+#Benchmark create_lock_unlock mutex 10000000
+#Benchmark create_lock_unlock recursive_mutex 10000000
+#Benchmark create_lock_unlock boost_mutex 10000000
+#Benchmark create_lock_unlock boost_recursive_mutex 10000000
+
+#echo
+#Benchmark create condition_variable 10000000
+#Benchmark create boost_condition_variable 10000000
+
+#echo
+#Benchmark create life_token 10000000
 
 echo
-Benchmark create condition_variable 10000000
-Benchmark create boost_condition_variable 10000000
+Benchmark create signal 3000000
+Benchmark create ui_signal 3000000
+Benchmark create ui_signal_life_tokens 3000000
+Benchmark create boost_signal2 3000000
 
 echo
-Benchmark create life_token 10000000
+Benchmark connect signal 3000000
+Benchmark connect ui_signal 3000000
+Benchmark connect ui_signal_life_tokens 3000000
+Benchmark connect boost_signal2 3000000
+Benchmark connect_tracked boost_signal2 3000000
 
 echo
-Benchmark create signal 10000000
-Benchmark create ui_signal 10000000
-Benchmark create ui_signal_life_tokens 10000000
-Benchmark create boost_signal2 10000000
-
-echo
-Benchmark connect signal 10000000
-Benchmark connect ui_signal 10000000
-Benchmark connect ui_signal_life_tokens 10000000
-Benchmark connect boost_signal2 10000000
-Benchmark connect_tracked boost_signal2 10000000
-
-echo
-Benchmark invoke signal 10000000
-Benchmark invoke ui_signal 10000000
-Benchmark invoke ui_signal_life_tokens 10000000
-Benchmark invoke boost_signal2 10000000
-Benchmark invoke_tracked boost_signal2 10000000
+Benchmark invoke signal 30000000
+Benchmark invoke ui_signal 100000000
+Benchmark invoke ui_signal_life_tokens 100000000
+Benchmark invoke boost_signal2 30000000
+Benchmark invoke_tracked boost_signal2 30000000
 
 #Callgrind connect ui_signal 100000 invoking
 #Callgrind connect ui_signal_life_tokens 100000 invoking
