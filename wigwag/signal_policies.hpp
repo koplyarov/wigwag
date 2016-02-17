@@ -202,23 +202,6 @@ namespace wigwag
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-	namespace handlers_stack_container
-	{
-		struct vector;
-		using default_ = vector;
-
-
-		struct vector
-		{
-			template < typename HandlerInfo_ >
-			using handlers_stack_container = std::vector<HandlerInfo_>;
-		};
-	}
-
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 	namespace life_assurance
 	{
 		struct life_tokens;
@@ -227,21 +210,14 @@ namespace wigwag
 
 		struct life_tokens
 		{
-			struct life_checker
-			{
-				life_token::checker		checker;
-				life_checker(const life_token::checker& c) : checker(c) { }
-			};
-
-			struct execution_guard
-			{
-				life_token::execution_guard		guard;
-				execution_guard(const life_checker& c) : guard(c.checker) { }
-				bool is_alive() const { return guard.is_alive(); }
-			};
+			class life_checker;
+			class execution_guard;
 
 			class life_assurance
 			{
+				friend class life_checker;
+				friend class execution_guard;
+
 				union life_token_storage
 				{
 					life_token		token;
@@ -259,27 +235,48 @@ namespace wigwag
 				life_token_storage		_token_storage;
 
 			public:
-				life_checker get_life_checker() const { return life_checker(_token_storage.token); }
 				void release() { _token_storage.token.~life_token(); }
+			};
+
+			class life_checker
+			{
+				friend class execution_guard;
+
+				life_token::checker		checker;
+
+			public:
+				life_checker(const life_assurance& la) : checker(la._token_storage.token) { }
+			};
+
+			class execution_guard
+			{
+				life_token::execution_guard		guard;
+
+			public:
+				execution_guard(const life_checker& c) : guard(c.checker) { }
+				execution_guard(const life_assurance& la) : guard(la._token_storage.token) { }
+				bool is_alive() const { return guard.is_alive(); }
 			};
 		};
 
 
 		struct none
 		{
+			struct life_assurance
+			{
+				void release() { }
+			};
+
 			struct life_checker
-			{ };
+			{
+				life_checker(const life_assurance&) {}
+			};
 
 			struct execution_guard
 			{
 				execution_guard(const life_checker&) { }
+				execution_guard(const life_assurance&) { }
 				bool is_alive() const { return true; }
-			};
-
-			struct life_assurance
-			{
-				life_checker get_life_checker() const { return life_checker(); }
-				void release() { }
 			};
 		};
 	}

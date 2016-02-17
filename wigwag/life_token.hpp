@@ -91,27 +91,34 @@ namespace wigwag
 		bool			_alive;
 
 	public:
+		execution_guard(const life_token& token)
+			: _impl(token._impl)
+		{ lock(); }
+
 		execution_guard(const life_token::checker& checker)
 			: _impl(checker._impl)
-		{
-			int_type i = ++_impl->lock_counter_and_alive_flag;
-			_alive = i & alive_flag;
-
-			if (!_alive)
-				dec_lock_counter();
-		}
+		{ lock(); }
 
 		~execution_guard()
 		{
 			if (_alive)
-				dec_lock_counter();
+				unlock();
 		}
 
 		bool is_alive() const
 		{ return _alive; }
 
 	private:
-		void dec_lock_counter()
+		void lock()
+		{
+			int_type i = ++_impl->lock_counter_and_alive_flag;
+			_alive = i & alive_flag;
+
+			if (!_alive)
+				unlock();
+		}
+
+		void unlock()
 		{
 			int_type i = --_impl->lock_counter_and_alive_flag;
 			if (i == 0)

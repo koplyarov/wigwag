@@ -29,17 +29,16 @@ namespace detail
 			typename ExceptionHandlingPolicy_,
 			typename ThreadingPolicy_,
 			typename StatePopulatingPolicy_,
-			typename HandlersStackContainerPolicy_,
 			typename LifeAssurancePolicy_
 		>
 	class signal_impl
 		:	public signal_connector_impl<Signature_>,
-			public intrusive_ref_counter<signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, HandlersStackContainerPolicy_, LifeAssurancePolicy_>>,
+			public intrusive_ref_counter<signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>>,
 			private ExceptionHandlingPolicy_,
 			private ThreadingPolicy_::lock_primitive,
 			private StatePopulatingPolicy_::template handler_processor<Signature_>
 	{
-		using ref_counter_base = intrusive_ref_counter<signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, HandlersStackContainerPolicy_, LifeAssurancePolicy_>>;
+		using ref_counter_base = intrusive_ref_counter<signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>>;
 
 	public:
 		using handler_type = std::function<Signature_>;
@@ -93,8 +92,12 @@ namespace detail
 				_signal_impl->get_handlers_container().erase(*this);
 			}
 
+			const handler_type& get_handler() const { return _handler; }
+			life_checker get_life_checker() const { return life_checker(*this); }
+			const life_assurance& get_life_assurance() const { return *this; }
+
 			operator handler_info() const
-			{ return handler_info(life_assurance::get_life_checker(), _handler); }
+			{ return handler_info(get_life_checker(), _handler); }
 		};
 
 		using handlers_container = detail::intrusive_list<handler_node>;
@@ -166,7 +169,7 @@ namespace detail
 			auto sg = detail::at_scope_exit([&] { get_lock_primitive().unlock_connect(); } );
 
 			life_assurance la;
-			async_handler<Signature_, LifeAssurancePolicy_> real_handler(worker, la.get_life_checker(), handler);
+			async_handler<Signature_, LifeAssurancePolicy_> real_handler(worker, life_checker(la), handler);
 
 			get_exception_handler().handle_exceptions([&] { get_handler_processor().populate_state(real_handler); });
 

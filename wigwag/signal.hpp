@@ -26,7 +26,6 @@ namespace wigwag
 			typename ExceptionHandlingPolicy_ = exception_handling::default_,
 			typename ThreadingPolicy_ = threading::default_,
 			typename StatePopulatingPolicy_ = state_populating::default_,
-			typename HandlersStackContainerPolicy_ = handlers_stack_container::default_,
 			typename LifeAssurancePolicy_ = life_assurance::default_
 		>
 	class signal
@@ -34,11 +33,10 @@ namespace wigwag
 	private:
 		using handler_type = std::function<Signature_>;
 
-		using impl_type = detail::signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, HandlersStackContainerPolicy_, LifeAssurancePolicy_>;
+		using impl_type = detail::signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>;
 		using impl_type_ptr = detail::intrusive_ptr<impl_type>;
 
-		using handlers_stack_container = typename HandlersStackContainerPolicy_::template handlers_stack_container<typename impl_type::handler_info>;
-
+		using life_checker = typename LifeAssurancePolicy_::life_checker;
 		using execution_guard = typename LifeAssurancePolicy_::execution_guard;
 
 	private:
@@ -68,18 +66,11 @@ namespace wigwag
 		template < typename... Args_ >
 		void operator() (Args_&&... args) const
 		{
-			handlers_stack_container handlers_copy;
-
+			_impl->get_lock_primitive().lock_invoke();
+			auto sg = detail::at_scope_exit([&] { _impl->get_lock_primitive().unlock_invoke(); } );
+			for (const auto& h : _impl->get_handlers_container())
 			{
-				_impl->get_lock_primitive().lock_invoke();
-				auto sg = detail::at_scope_exit([&] { _impl->get_lock_primitive().unlock_invoke(); } );
-
-				handlers_copy.assign(_impl->get_handlers_container().begin(), _impl->get_handlers_container().end());
-			}
-
-			for (const auto& h : handlers_copy)
-			{
-				execution_guard g(h.get_life_checker());
+				execution_guard g(h.get_life_assurance());
 				if (g.is_alive())
 					_impl->get_exception_handler().handle_exceptions(h.get_handler(), std::forward<Args_>(args)...);
 			}
