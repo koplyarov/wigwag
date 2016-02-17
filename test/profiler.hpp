@@ -1,5 +1,5 @@
-#ifndef TEST_TEST_UTILS_HPP
-#define TEST_TEST_UTILS_HPP
+#ifndef TEST_PROFILER_HPP
+#define TEST_PROFILER_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -12,47 +12,31 @@
 
 
 #include <chrono>
-#include <thread>
 
 
 namespace wigwag
 {
 
-	class thread
+	template < typename ClockT_ >
+	class basic_profiler
 	{
-	public:
-		using thread_func = std::function<void(const std::atomic<bool>&)>;
+		typedef std::chrono::time_point<ClockT_>		TimePoint;
 
 	private:
-		std::atomic<bool>		_alive;
-		thread_func				_thread_func;
-		std::string				_error_message;
-		std::thread				_impl;
+		TimePoint		_start;
 
 	public:
-		thread(const thread_func& f)
-			:	_alive(true),
-				_thread_func(f)
-		{ _impl = std::thread(std::bind(&thread::func, this)); }
+		basic_profiler() { _start = ClockT_::now(); }
 
-		~thread()
+		decltype(TimePoint() - TimePoint()) reset()
 		{
-			_alive = false;
-			if (_impl.joinable())
-				_impl.join();
-			if (!_error_message.empty())
-				TS_FAIL(("Uncaught exception in thread: " + _error_message).c_str());
-		}
-
-	private:
-		void func()
-		{
-			try
-			{ _thread_func(_alive); }
-			catch (const std::exception& ex)
-			{ _error_message = ex.what(); }
+			TimePoint end = ClockT_::now();
+			auto delta = end - _start;
+			_start = end;
+			return delta;
 		}
 	};
+	using profiler = basic_profiler<std::chrono::high_resolution_clock>;
 
 }
 

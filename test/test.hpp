@@ -21,6 +21,7 @@
 #include <iostream>
 #include <thread>
 
+#include <test/profiler.hpp>
 #include <test/test_utils.hpp>
 
 
