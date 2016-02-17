@@ -10,6 +10,7 @@
 
 #include <wigwag/signal.hpp>
 
+#include <boost/make_shared.hpp>
 #include <boost/program_options.hpp>
 #include <boost/signals2.hpp>
 #include <boost/thread.hpp>
@@ -25,6 +26,9 @@
 
 
 using namespace wigwag;
+
+
+std::function<void()> g_empty_handler([]{});
 
 
 template < typename T_ >
@@ -91,12 +95,10 @@ void connect(int64_t n)
 	Signal_ s;
 	storage_for<Connection_> *v = new storage_for<Connection_>[n];
 
-	std::function<void()> handler = []{};
-
 	{
 		operation_profiler op("connecting");
 		for (int64_t i = 0; i < n; ++i)
-			new(&v[i].obj) Connection_(s.connect(handler));
+			new(&v[i].obj) Connection_(s.connect(g_empty_handler));
 	}
 
 	{
@@ -116,13 +118,11 @@ void connect_tracked(int64_t n)
 
 	boost::shared_ptr<std::string> tracked(new std::string);
 
-	std::function<void()> handler = []{};
-
 	{
 		operation_profiler op("connecting");
 		for (int64_t i = 0; i < n; ++i)
 		{
-			typename Signal_::slot_type slot(handler);
+			typename Signal_::slot_type slot(g_empty_handler);
 			slot.track(tracked);
 			new(&v[i].obj) Connection_(s.connect(slot));
 		}
@@ -134,6 +134,36 @@ void connect_tracked(int64_t n)
 	}
 
 	measure_memory();
+}
+
+
+template < typename Signal_, typename Connection_ >
+void invoke(int64_t n)
+{
+	Signal_ s;
+	Connection_ c = s.connect(g_empty_handler);
+
+	{
+		operation_profiler op("invoking");
+		for (int64_t i = 0; i < n; ++i)
+			s();
+	}
+}
+
+
+template < typename Signal_, typename Connection_ >
+void invoke_tracked(int64_t n)
+{
+	Signal_ s;
+	typename Signal_::slot_type slot(g_empty_handler);
+	slot.track(boost::make_shared<std::string>());
+	Connection_ c = s.connect(slot);
+
+	{
+		operation_profiler op("invoking");
+		for (int64_t i = 0; i < n; ++i)
+			s();
+	}
 }
 
 
@@ -245,6 +275,28 @@ int main(int argc, char* argv[])
 		{
 			if (obj == "boost_signal2")
 				connect_tracked<boost::signals2::signal<void()>, boost::signals2::connection>(count);
+			else
+				throw cmdline_exception("obj " + obj + " not supported");
+		}
+		else if (task == "invoke")
+		{
+			if (obj == "signal")
+				invoke<signal<void()>, token>(count);
+			else if (obj == "ui_signal")
+				invoke<ui_signal<void()>, token>(count);
+			else if (obj == "ui_signal_life_tokens")
+				invoke<ui_signal2<void()>, token>(count);
+
+			else if (obj == "boost_signal2")
+				invoke<boost::signals2::signal<void()>, boost::signals2::connection>(count);
+
+			else
+				throw cmdline_exception("obj " + obj + " not supported");
+		}
+		else if (task == "invoke_tracked")
+		{
+			if (obj == "boost_signal2")
+				invoke_tracked<boost::signals2::signal<void()>, boost::signals2::connection>(count);
 			else
 				throw cmdline_exception("obj " + obj + " not supported");
 		}

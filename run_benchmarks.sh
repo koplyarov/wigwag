@@ -92,6 +92,13 @@ Benchmark connect ui_signal_life_tokens 10000000
 Benchmark connect boost_signal2 10000000
 Benchmark connect_tracked boost_signal2 10000000
 
+echo
+Benchmark invoke signal 10000000
+Benchmark invoke ui_signal 10000000
+Benchmark invoke ui_signal_life_tokens 10000000
+Benchmark invoke boost_signal2 10000000
+Benchmark invoke_tracked boost_signal2 10000000
+
 #Callgrind connect ui_signal 100000 invoking
 #Callgrind connect ui_signal_life_tokens 100000 invoking
 #Callgrind connect boost_signal2 100000 invoking
