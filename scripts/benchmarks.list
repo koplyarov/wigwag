@@ -8,19 +8,19 @@
 #
 #create life_token 10000000
 
-create signal 10000000
-create ui_signal 10000000
-create ui_signal_life_tokens 10000000
-create boost_signal2 10000000
+create signal 3000000
+create ui_signal 3000000
+create ui_signal_life_tokens 3000000
+create boost_signal2 3000000
 
-connect signal 10000000
-connect ui_signal 10000000
-connect ui_signal_life_tokens 10000000
-connect boost_signal2 10000000
-connect_tracked boost_signal2 10000000
+connect signal 3000000
+connect ui_signal 3000000
+connect ui_signal_life_tokens 3000000
+connect boost_signal2 3000000
+connect_tracked boost_signal2 3000000
 
-invoke signal 10000000
-invoke ui_signal 10000000
-invoke ui_signal_life_tokens 10000000
-invoke boost_signal2 10000000
-invoke_tracked boost_signal2 10000000
+invoke signal 30000000
+invoke ui_signal 100000000
+invoke ui_signal_life_tokens 100000000
+invoke boost_signal2 30000000
+invoke_tracked boost_signal2 30000000
