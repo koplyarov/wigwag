@@ -26,6 +26,14 @@
    <insert_a_suppression_name_here>
    Helgrind:Race
    ...
+   fun:_ZNSt11atomic_boolaSEb
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
    fun:_ZNKSt6atomicIbEcvbEv
    ...
 }
