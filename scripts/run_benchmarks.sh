@@ -26,9 +26,7 @@ OutputParser() {
 			NAME=$(echo "$DATA" | sed "s/^<measure memory, name: \(.*\), count: \(.*\)>$/\1/g")
 			COUNT=$(echo "$DATA" | sed "s/^<measure memory, name: \(.*\), count: \(.*\)>$/\2/g")
 			RSS=$(GetMemoryConsumption)
-			if [ $COUNT -gt 300000 ]; then
-				echo "  memory per $NAME:	$(($RSS / $COUNT)) bytes" | expand -t $TABSTOP
-			fi
+			echo "  memory per $NAME:	$(($RSS / $COUNT)) bytes" | expand -t $TABSTOP
 		fi
 	done
 }

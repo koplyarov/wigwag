@@ -51,6 +51,9 @@ namespace wigwag
 
 	inline void measure_memory(const std::string& name, int64_t count)
 	{
+		if (count < 300000)
+			return;
+
 		std::cout << "<measure memory, name: " << name << ", count: " << count << ">" << std::endl;
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
