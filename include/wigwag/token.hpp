@@ -36,6 +36,9 @@ namespace wigwag
 			result._impl.reset(new Implementation_(std::forward<Args_>(args)...));
 			return result;
 		}
+
+		void reset()
+		{ _impl.reset(); }
 	};
 
 }
