@@ -6,8 +6,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
-include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/src)
 
 add_definitions(-std=c++11)
 add_definitions(-Wall)
@@ -32,7 +32,7 @@ if(CXXTEST_FOUND)
 	include_directories(${CXXTEST_INCLUDE_DIR})
 	enable_testing()
 	CXXTEST_ADD_TEST(wigwag_test unittest_wigwag.cpp
-					  ${CMAKE_CURRENT_SOURCE_DIR}/test/test.hpp)
+					  ${CMAKE_CURRENT_SOURCE_DIR}/src/test/test.hpp)
 	target_link_libraries(wigwag_test ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
@@ -47,7 +47,7 @@ find_package(Boost COMPONENTS
 if (Boost_FOUND)
 	include_directories(${Boost_INCLUDE_DIRS})
 
-	add_executable(wigwag_benchmarks ${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/benchmarks.cpp)
+	add_executable(wigwag_benchmarks ${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/benchmarks.cpp)
 
 	target_link_libraries(wigwag_benchmarks
 		${Boost_PROGRAM_OPTIONS_LIBRARY}
