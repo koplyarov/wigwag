@@ -99,15 +99,7 @@ namespace wigwag
 				void lock_connect() const { _mutex.lock(); }
 				void unlock_connect() const { _mutex.unlock(); }
 
-				void lock_invoke() const
-				{
-					if (_mutex.try_lock())
-					{
-						_mutex.unlock();
-						WIGWAG_THROW("A nonrecursive mutex should be locked outside of signal::operator()!");
-					}
-				}
-
+				void lock_invoke() const { }
 				void unlock_invoke() const { }
 			};
 		};
