@@ -18,6 +18,7 @@
 #include <list>
 #include <memory>
 #include <mutex>
+#include <utility>
 #include <vector>
 
 #include <stdio.h>
@@ -169,6 +170,10 @@ namespace wigwag
 				handler_processor(handler_processor_func populator = &populator_only::handler_processor<Signature_>::empty_handler,
 							handler_processor_func withdrawer = &populator_only::handler_processor<Signature_>::empty_handler)
 					: _populator(populator), _withdrawer(withdrawer)
+				{ }
+
+				handler_processor(std::pair<handler_processor_func, handler_processor_func> populator_and_withdrawer_pair)
+					: _populator(populator_and_withdrawer_pair.first), _withdrawer(populator_and_withdrawer_pair.second)
 				{ }
 
 				void populate_state(const std::function<Signature_>& handler) const { _populator(handler); }
