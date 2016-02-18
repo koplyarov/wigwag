@@ -156,7 +156,8 @@ void invoke_tracked(int64_t n)
 {
 	Signal_ s;
 	typename Signal_::slot_type slot(g_empty_handler);
-	slot.track(boost::make_shared<std::string>());
+	boost::shared_ptr<std::string> tracked = boost::make_shared<std::string>();
+	slot.track(tracked);
 	Connection_ c = s.connect(slot);
 
 	{
