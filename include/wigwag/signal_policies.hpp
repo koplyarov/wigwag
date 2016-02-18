@@ -51,8 +51,6 @@ namespace wigwag
 				{ func(std::forward<Args_>(args)...); }
 				catch (const std::exception& ex)
 				{ fprintf(stderr, "std::exception in signal handler: %s\n", ex.what()); }
-				catch (...)
-				{ fprintf(stderr, "Unknown exception in signal handler!\n"); }
 			}
 		};
 #endif
