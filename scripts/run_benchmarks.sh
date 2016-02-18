@@ -3,13 +3,6 @@
 SCRIPT_DIR=`dirname $0`
 TABSTOP=48
 
-if [ $# -eq 0 ]; then
-	BENCHMARKS_DIR="$SCRIPT_DIR/../build/bin"
-else
-	BENCHMARKS_DIR="$1"
-fi
-
-
 GetMemoryConsumption() {
 	echo $(($(ps --no-headers -p $(pidof wigwag_benchmarks) -o rss) * 1024))
 }
@@ -49,9 +42,26 @@ PrintCpuInfo() {
 }
 
 
+while [ $# -ne 0 ]; do
+	case "$1" in
+		--bin-dir)	BENCHMARKS_DIR=$2; shift ;;
+		--file|-f)	FILENAME=$2; shift ;;
+		*)			echo "Unknown option: $1" >&2; exit 1; ;;
+	esac
+	shift
+done
+
+
+[ "$FILENAME" ] || FILENAME="scripts/benchmarks.list"
+[ "$BENCHMARKS_DIR" ] || BENCHMARKS_DIR="$SCRIPT_DIR/../build/bin"
+
+
+echo "Benchmark script: $FILENAME"
+echo
+
+
 PrintCpuInfo
 
-FILENAME="scripts/benchmarks.list"
 SKIP_EMPTY_STRINGS=1
 echo
 while read -r LINE; do
