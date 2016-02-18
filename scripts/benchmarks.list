@@ -1,13 +1,3 @@
-#create_lock_unlock		mutex						10000000
-#create_lock_unlock		recursive_mutex				10000000
-#create_lock_unlock		boost_mutex					10000000
-#create_lock_unlock		boost_recursive_mutex		10000000
-#
-#create					condition_variable			10000000
-#create					boost_condition_variable	10000000
-#
-#create					life_token					10000000
-
 create					signal						3000000
 create					ui_signal					3000000
 create					ui_signal_life_tokens		3000000
@@ -24,9 +14,3 @@ connect_invoke			ui_signal					1			100000000
 connect_invoke			ui_signal_life_tokens		1			100000000
 connect_invoke			boost_signal2				1			30000000
 connect_invoke_tracked	boost_signal2				1			30000000
-
-connect_invoke			signal						3000			10000
-connect_invoke			ui_signal					3000			30000
-connect_invoke			ui_signal_life_tokens		3000			30000
-connect_invoke			boost_signal2				3000			10000
-connect_invoke_tracked	boost_signal2				3000			10000
