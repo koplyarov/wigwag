@@ -52,65 +52,76 @@ public:
 	}
 
 
-	static void test_threading()
-	{
-		signal<void()> ds;
-		signal<void(), exception_handling::none, threading::own_recursive_mutex> rms;
-		signal<void(), exception_handling::none, threading::own_mutex> ms;
-		signal<void(), exception_handling::none, threading::none> ns;
-
-		TS_ASSERT_THROWS_NOTHING(ds());
-		TS_ASSERT_THROWS_NOTHING(rms());
-		TS_ASSERT_THROWS(ms(), std::runtime_error);
-		TS_ASSERT_THROWS_NOTHING(ns());
-
-		{
-			LOCK_GUARD(ds.lock_primitive());
-			TS_ASSERT_THROWS_NOTHING(ds());
-		}
-
-		{
-			LOCK_GUARD(rms.lock_primitive());
-			TS_ASSERT_THROWS_NOTHING(rms());
-		}
-
-		{
-			LOCK_GUARD(ms.lock_primitive());
-			TS_ASSERT_THROWS_NOTHING(ms());
-		}
-
-		static_assert(std::is_same<decltype(ns.lock_primitive()), void>::value, "threading::none::get_primitive() return type should be void!");
-	}
-
-
 	static void test_populators()
 	{
 		using h_type = const std::function<void(int)>&;
 
-		signal<void(int)> ds([](h_type h){ h(1); } );
-		signal<void(int), exception_handling::none, threading::none, state_populating::populator_only> ps([](h_type h){ h(2); } );
-		signal<void(int), exception_handling::none, threading::none, state_populating::populator_and_withdrawer> pws(state_populating::populator_and_withdrawer::handler_processor<void(int)>([](h_type h){ h(3); }, [](h_type h){ h(4); }));
-		signal<void(int), exception_handling::none, threading::none, state_populating::none> ns;
+		{
+			int signal_state = 1;
+			signal<void(int)> s([&](h_type h){ h(signal_state); } );
+			thread th(
+				[&](const std::atomic<bool>& alive)
+				{
+					sleep_ms(500);
+					auto l = lock(s.lock_primitive());
+					signal_state = 2;
+					s(2);
+				}
+			);
 
-		int state = 0;
-		ds.connect([&](int i) { state = i; });
-		TS_ASSERT_EQUALS(state, 1);
-
-		state = 0;
-		ps.connect([&](int i) { state = i; });
-		TS_ASSERT_EQUALS(state, 2);
+			mutexed<int> state;
+			token t = s.connect([&](int i) { state.set(i); });
+			TS_ASSERT_EQUALS(state.get(), 1);
+			sleep_ms(1000);
+			TS_ASSERT_EQUALS(state.get(), 2);
+			t.reset();
+			TS_ASSERT_EQUALS(state.get(), 2);
+		}
 
 		{
-			state = 0;
-			token t = pws.connect([&](int i) { state = i; });
-			TS_ASSERT_EQUALS(state, 3);
-			state = 0;
-		}
-		TS_ASSERT_EQUALS(state, 4);
+			int signal_state = 1;
+			signal<void(int), exception_handling::default_, threading::default_, state_populating::populator_and_withdrawer> s(std::make_pair([](h_type h){ h(1); }, [](h_type h){ h(3); }));
 
-		state = 0;
-		ns.connect([&](int i) { state = i; });
-		TS_ASSERT_EQUALS(state, 0);
+			thread th(
+				[&](const std::atomic<bool>& alive)
+				{
+					sleep_ms(500);
+					auto l = lock(s.lock_primitive());
+					signal_state = 2;
+					s(2);
+				}
+			);
+
+			mutexed<int> state;
+			token t = s.connect([&](int i) { state.set(i); });
+			TS_ASSERT_EQUALS(state.get(), 1);
+			sleep_ms(1000);
+			TS_ASSERT_EQUALS(state.get(), 2);
+			t.reset();
+			TS_ASSERT_EQUALS(state.get(), 3);
+		}
+
+		{
+			int signal_state = 0;
+			signal<void(int), exception_handling::default_, threading::default_, state_populating::none> s;
+			thread th(
+				[&](const std::atomic<bool>& alive)
+				{
+					sleep_ms(500);
+					auto l = lock(s.lock_primitive());
+					signal_state = 2;
+					s(2);
+				}
+			);
+
+			mutexed<int> state;
+			token t = s.connect([&](int i) { state.set(i); });
+			TS_ASSERT_EQUALS(state.get(), 0);
+			sleep_ms(1000);
+			TS_ASSERT_EQUALS(state.get(), 2);
+			t.reset();
+			TS_ASSERT_EQUALS(state.get(), 2);
+		}
 	}
 
 

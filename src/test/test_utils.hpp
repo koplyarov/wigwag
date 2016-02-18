@@ -54,6 +54,41 @@ namespace wigwag
 		}
 	};
 
+
+	template < typename Lockable_ >
+	std::unique_lock<Lockable_> lock(Lockable_& lockable)
+	{ return std::unique_lock<Lockable_>(lockable); }
+
+
+	void sleep_ms(int64_t ms)
+	{ std::this_thread::sleep_for(std::chrono::milliseconds(ms)); }
+
+
+	template < typename T_ >
+	class mutexed
+	{
+	private:
+		mutable std::mutex		_m;
+		T_						_val;
+
+	public:
+		mutexed(T_ val = T_())
+			: _val(val)
+		{ }
+
+		T_ get() const
+		{
+			auto l = lock(_m);
+			return _val;
+		}
+
+		void set(T_ val)
+		{
+			auto l = lock(_m);
+			_val = val;
+		}
+	};
+
 }
 
 #endif
