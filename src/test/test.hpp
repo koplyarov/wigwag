@@ -48,6 +48,13 @@ public:
 		TS_ASSERT_THROWS_ANYTHING(rs());
 		TS_ASSERT_THROWS_NOTHING(ns());
 
+		tp += ns.connect([&] { throw 0; });
+		TS_ASSERT_THROWS_ANYTHING(ns());
+
+		std::shared_ptr<task_executor> worker = std::make_shared<basic_thread_task_executor<exception_handling::print_to_stderr> >();
+		worker->add_task([]{ throw std::runtime_error("Test exception"); });
+		sleep_ms(1000);
+
 		tp.release();
 	}
 
@@ -135,15 +142,23 @@ public:
 				while (alive)
 				{
 					s();
-					std::this_thread::sleep_for(std::chrono::milliseconds(100));
+					sleep_ms(100);
 				}
 			}
 		);
 
 		profiler p;
 		{
-			token t = s.connect([]{ std::this_thread::sleep_for(std::chrono::seconds(2)); });
-			std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			token t = s.connect([]{ sleep_ms(2000); });
+			sleep_ms(500);
+			p.reset();
+		}
+		TS_ASSERT_LESS_THAN(std::chrono::seconds(1), p.reset());
+
+		{
+			std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
+			token t = s.connect(worker, []{ sleep_ms(2000); });
+			sleep_ms(500);
 			p.reset();
 		}
 		TS_ASSERT_LESS_THAN(std::chrono::seconds(1), p.reset());
@@ -165,7 +180,7 @@ public:
 
 		s();
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(500));
+		sleep_ms(500);
 
 		std::lock_guard<std::mutex> l(m);
 		TS_ASSERT_DIFFERS(handler_thread_id, std::thread::id());
