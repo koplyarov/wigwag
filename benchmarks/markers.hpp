@@ -11,6 +11,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <boost/core/typeinfo.hpp>
+
 #include <chrono>
 #include <iostream>
 #include <thread>
@@ -25,22 +27,38 @@ namespace wigwag
 	{
 	private:
 		std::string		_name;
+		int64_t			_count;
 		profiler		_prof;
 
 	public:
-		operation_profiler(const std::string& name)
-			: _name(name)
+		operation_profiler(const std::string& name, int64_t count)
+			: _name(name), _count(count)
 		{ std::cout << "<" << _name << ">" << std::endl; }
 
 		~operation_profiler()
-		{ std::cout << "<" << _name << " finished: " << std::chrono::duration_cast<std::chrono::nanoseconds>(_prof.reset()).count() << ">" << std::endl; }
+		{
+			auto d = _prof.reset();
+			auto d_ms = std::chrono::duration_cast<std::chrono::milliseconds>(d);
+			auto d_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(d);
+
+			if (d_ms.count() > 1)
+				std::cout << "<" << _name << " finished: " << d_ns.count() / _count << ">" << std::endl;
+			else
+				std::cout << "<" << _name << " finished>" << std::endl;
+		}
 	};
 
 
-	static void measure_memory()
+	inline void measure_memory(const std::string& name, int64_t count)
 	{
-		std::cout << "<measure memory>" << std::endl;
+		std::cout << "<measure memory, name: " << name << ", count: " << count << ">" << std::endl;
 		std::this_thread::sleep_for(std::chrono::seconds(1));
+	}
+
+	template < typename T_ >
+	inline void measure_memory(int64_t count)
+	{
+		measure_memory(boost::core::demangled_name(BOOST_CORE_TYPEID(T_)), count);
 	}
 
 }

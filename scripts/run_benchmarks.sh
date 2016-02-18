@@ -1,6 +1,7 @@
 #!/bin/bash
 
 SCRIPT_DIR=`dirname $0`
+TABSTOP=48
 
 if [ $# -eq 0 ]; then
 	BENCHMARKS_DIR="$SCRIPT_DIR/../build/bin"
@@ -15,26 +16,32 @@ GetMemoryConsumption() {
 
 
 OutputParser() {
-	NUM_OBJECTS="$1"
 	while read DATA; do
 		if echo "$DATA" | grep -q "^<.* finished: .*>$"; then
 			OP=$(echo "$DATA" | sed "s/^<\(.*\) finished: \(.*\)>$/\1/g")
-			NS_TOTAL=$(echo "$DATA" | sed "s/^<\(.*\) finished: \(.*\)>$/\2/g")
-			echo "  $OP:	$(($NS_TOTAL / $NUM_OBJECTS)) ns" | expand -t 32
+			NS=$(echo "$DATA" | sed "s/^<\(.*\) finished: \(.*\)>$/\2/g")
+			echo "  $OP:	$NS ns" | expand -t $TABSTOP
 		fi
-		if [ "$DATA" = "<measure memory>" ]; then
-			echo "  memory per object:	$(($(GetMemoryConsumption) / $NUM_OBJECTS)) bytes" | expand -t 32
+		if echo "$DATA" | grep -q "^<measure memory, name: .*, count: .*>$"; then
+			NAME=$(echo "$DATA" | sed "s/^<measure memory, name: \(.*\), count: \(.*\)>$/\1/g")
+			COUNT=$(echo "$DATA" | sed "s/^<measure memory, name: \(.*\), count: \(.*\)>$/\2/g")
+			RSS=$(GetMemoryConsumption)
+			if [ $COUNT -gt 300000 ]; then
+				echo "  memory per $NAME:	$(($RSS / $COUNT)) bytes" | expand -t $TABSTOP
+			fi
 		fi
 	done
 }
 
 
 Benchmark() {
-	TYPE="$1"
-	OBJ="$2"
-	COUNT="$3"
-	echo "=== $TYPE $OBJ ==="
-	"$BENCHMARKS_DIR/wigwag_benchmarks" -t "$TYPE" -o "$OBJ" -c "$COUNT" | OutputParser "$COUNT"
+	ARGS="--task $1 --obj $2 --count $3"
+	if [ "$4" ]; then
+		ARGS="$ARGS --secondary-count $4"
+	fi
+
+	echo "=== $@ ==="
+	"$BENCHMARKS_DIR/wigwag_benchmarks" $ARGS | OutputParser
 }
 
 

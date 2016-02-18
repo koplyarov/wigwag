@@ -10,6 +10,7 @@
 
 #include <wigwag/signal.hpp>
 
+#include <boost/core/typeinfo.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/program_options.hpp>
 #include <boost/signals2.hpp>
@@ -37,15 +38,15 @@ void create(int64_t n)
 	storage_for<T_> *v = new storage_for<T_>[n];
 
 	{
-		operation_profiler op("creating");
+		operation_profiler op("creating", n);
 		for (int64_t i = 0; i < n; ++i)
 			new(&v[i].obj) T_();
 	}
 
-	measure_memory();
+	measure_memory("object", n);
 
 	{
-		operation_profiler op("destroying");
+		operation_profiler op("destroying", n);
 		for (int64_t i = 0; i < n; ++i)
 			v[i].obj.~T_();
 	}
@@ -60,27 +61,27 @@ void create_lock_unlock(int64_t n)
 	storage_for<T_> *v = new storage_for<T_>[n];
 
 	{
-		operation_profiler op("creating");
+		operation_profiler op("creating", n);
 		for (int64_t i = 0; i < n; ++i)
 			new(&v[i].obj) T_();
 	}
 
-	measure_memory();
+	measure_memory("object", n);
 
 	{
-		operation_profiler op("locking");
+		operation_profiler op("locking", n);
 		for (int64_t i = 0; i < n; ++i)
 			v[i].obj.lock();
 	}
 
 	{
-		operation_profiler op("unlocking");
+		operation_profiler op("unlocking", n);
 		for (int64_t i = 0; i < n; ++i)
 			v[i].obj.unlock();
 	}
 
 	{
-		operation_profiler op("destroying");
+		operation_profiler op("destroying", n);
 		for (int64_t i = 0; i < n; ++i)
 			v[i].obj.~T_();
 	}
@@ -90,37 +91,44 @@ void create_lock_unlock(int64_t n)
 
 
 template < typename Signal_, typename Connection_ >
-void connect(int64_t n)
+void connect_invoke(int64_t num_slots, int64_t num_calls)
 {
 	Signal_ s;
-	storage_for<Connection_> *v = new storage_for<Connection_>[n];
+	storage_for<Connection_> *v = new storage_for<Connection_>[num_slots];
 
 	{
-		operation_profiler op("connecting");
-		for (int64_t i = 0; i < n; ++i)
+		operation_profiler op("connecting", num_slots);
+		for (int64_t i = 0; i < num_slots; ++i)
 			new(&v[i].obj) Connection_(s.connect(g_empty_handler));
 	}
 
+	measure_memory("connection", num_slots);
+
 	{
-		operation_profiler op("invoking");
-		s();
+		operation_profiler op("invoking", num_slots * num_calls);
+		for (int64_t i = 0; i < num_calls; ++i)
+			s();
 	}
 
-	measure_memory();
+	{
+		operation_profiler op("disconnecting", num_slots);
+		for (int64_t i = 0; i < num_slots; ++i)
+			v[i].obj.~Connection_();
+	}
 }
 
 
 template < typename Signal_, typename Connection_ >
-void connect_tracked(int64_t n)
+void connect_invoke_tracked(int64_t num_slots, int64_t num_calls)
 {
 	Signal_ s;
-	storage_for<Connection_> *v = new storage_for<Connection_>[n];
+	storage_for<Connection_> *v = new storage_for<Connection_>[num_slots];
 
 	boost::shared_ptr<std::string> tracked(new std::string);
 
 	{
-		operation_profiler op("connecting");
-		for (int64_t i = 0; i < n; ++i)
+		operation_profiler op("connecting", num_slots);
+		for (int64_t i = 0; i < num_slots; ++i)
 		{
 			typename Signal_::slot_type slot(g_empty_handler);
 			slot.track(tracked);
@@ -128,44 +136,21 @@ void connect_tracked(int64_t n)
 		}
 	}
 
-	{
-		operation_profiler op("invoking");
-		s();
-	}
-
-	measure_memory();
-}
-
-
-template < typename Signal_, typename Connection_ >
-void invoke(int64_t n)
-{
-	Signal_ s;
-	Connection_ c = s.connect(g_empty_handler);
+	measure_memory("connection", num_slots);
 
 	{
-		operation_profiler op("invoking");
-		for (int64_t i = 0; i < n; ++i)
+		operation_profiler op("invoking", num_slots * num_calls);
+		for (int64_t i = 0; i < num_calls; ++i)
 			s();
 	}
-}
-
-
-template < typename Signal_, typename Connection_ >
-void invoke_tracked(int64_t n)
-{
-	Signal_ s;
-	typename Signal_::slot_type slot(g_empty_handler);
-	boost::shared_ptr<std::string> tracked = boost::make_shared<std::string>();
-	slot.track(tracked);
-	Connection_ c = s.connect(slot);
 
 	{
-		operation_profiler op("invoking");
-		for (int64_t i = 0; i < n; ++i)
-			s();
+		operation_profiler op("disconnecting", num_slots);
+		for (int64_t i = 0; i < num_slots; ++i)
+			v[i].obj.~Connection_();
 	}
 }
+
 
 
 template < typename Signature_ >
@@ -186,14 +171,15 @@ int main(int argc, char* argv[])
 		set_max_thread_priority();
 
 		std::string task, obj;
-		int64_t count = 0;
+		int64_t count = 0, secondary_count = 0;
 
 		boost::program_options::options_description desc;
 		desc.add_options()
-			("help,h", "Show help")
-			("task,t", boost::program_options::value<std::string>(&task), "Set task: create, connect")
-			("obj,o", boost::program_options::value<std::string>(&obj), "Set object: signal, ui_signal, boost_signal2")
-			("count,c", boost::program_options::value<int64_t>(&count), "Set iterations count")
+			("help", "Show help")
+			("task", boost::program_options::value<std::string>(&task), "Set task: create, connect")
+			("obj", boost::program_options::value<std::string>(&obj), "Set object: signal, ui_signal, boost_signal2")
+			("count", boost::program_options::value<int64_t>(&count), "Set iterations count")
+			("secondary-count", boost::program_options::value<int64_t>(&secondary_count), "Set iterations count")
 			;
 
 		boost::program_options::parsed_options parsed = boost::program_options::command_line_parser(argc, argv).options(desc).allow_unregistered().run();
@@ -204,10 +190,12 @@ int main(int argc, char* argv[])
 
 		if (vm.count("help"))
 			throw cmdline_exception(boost::lexical_cast<std::string>(desc));
-		if (vm.count("count") == 0)
-			throw cmdline_exception("count option is required");
+		if (vm.count("task") == 0)
+			throw cmdline_exception("obj option is required");
 		if (vm.count("obj") == 0)
 			throw cmdline_exception("obj option is required");
+		if (vm.count("count") == 0)
+			throw cmdline_exception("count option is required");
 
 
 		if (task == "create")
@@ -257,47 +245,31 @@ int main(int argc, char* argv[])
 			else
 				throw cmdline_exception("obj " + obj + " not supported");
 		}
-		else if (task == "connect")
+		else if (task == "connect_invoke")
 		{
+			if (vm.count("secondary-count") == 0)
+				throw cmdline_exception("secondary-count option is required");
+
 			if (obj == "signal")
-				connect<signal<void()>, token>(count);
+				connect_invoke<signal<void()>, token>(count, secondary_count);
 			else if (obj == "ui_signal")
-				connect<ui_signal<void()>, token>(count);
+				connect_invoke<ui_signal<void()>, token>(count, secondary_count);
 			else if (obj == "ui_signal_life_tokens")
-				connect<ui_signal2<void()>, token>(count);
+				connect_invoke<ui_signal2<void()>, token>(count, secondary_count);
 
 			else if (obj == "boost_signal2")
-				connect<boost::signals2::signal<void()>, boost::signals2::connection>(count);
+				connect_invoke<boost::signals2::signal<void()>, boost::signals2::scoped_connection>(count, secondary_count);
 
 			else
 				throw cmdline_exception("obj " + obj + " not supported");
 		}
-		else if (task == "connect_tracked")
+		else if (task == "connect_invoke_tracked")
 		{
+			if (vm.count("secondary-count") == 0)
+				throw cmdline_exception("secondary-count option is required");
+
 			if (obj == "boost_signal2")
-				connect_tracked<boost::signals2::signal<void()>, boost::signals2::connection>(count);
-			else
-				throw cmdline_exception("obj " + obj + " not supported");
-		}
-		else if (task == "invoke")
-		{
-			if (obj == "signal")
-				invoke<signal<void()>, token>(count);
-			else if (obj == "ui_signal")
-				invoke<ui_signal<void()>, token>(count);
-			else if (obj == "ui_signal_life_tokens")
-				invoke<ui_signal2<void()>, token>(count);
-
-			else if (obj == "boost_signal2")
-				invoke<boost::signals2::signal<void()>, boost::signals2::connection>(count);
-
-			else
-				throw cmdline_exception("obj " + obj + " not supported");
-		}
-		else if (task == "invoke_tracked")
-		{
-			if (obj == "boost_signal2")
-				invoke_tracked<boost::signals2::signal<void()>, boost::signals2::connection>(count);
+				connect_invoke_tracked<boost::signals2::signal<void()>, boost::signals2::scoped_connection>(count, secondary_count);
 			else
 				throw cmdline_exception("obj " + obj + " not supported");
 		}
