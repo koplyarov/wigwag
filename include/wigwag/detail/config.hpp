@@ -20,17 +20,38 @@
 #	if !defined(__EXCEPTIONS) && !defined(WIGWAG_NOEXCEPTIONS)
 #		define WIGWAG_NOEXCEPTIONS 1
 #	endif
+
+#	if !defined(WIGWAG_PLATFORM_POSIX)
+#		define WIGWAG_PLATFORM_POSIX 1
+#	endif
 #endif
 
 #if defined(_MSC_VER)
 #	if !defined(_CPPUNWIND) && !defined(WIGWAG_NOEXCEPTIONS)
 #		define WIGWAG_NOEXCEPTIONS 1
 #	endif
+
+#	if !defined(WIGWAG_PLATFORM_WINDOWS)
+#		define WIGWAG_PLATFORM_WINDOWS 1
+#	endif
+#endif
+
+
+#if !defined(WIGWAG_NOEXCEPTIONS)
+#	define WIGWAG_NOEXCEPTIONS 0
+#endif
+
+#if !defined(WIGWAG_PLATFORM_POSIX)
+#	define WIGWAG_PLATFORM_POSIX 0
+#endif
+
+#if !defined(WIGWAG_PLATFORM_WINDOWS)
+#	define WIGWAG_PLATFORM_WINDOWS 0
 #endif
 
 
 #if !defined(WIGWAG_THROW)
-#	if !defined(WIGWAG_NOEXCEPTIONS) || WIGWAG_NOEXCEPTIONS
+#	if WIGWAG_NOEXCEPTIONS
 #		define WIGWAG_THROW(...) do { ::fprintf(::stderr, "WIGWAG_THROW: %s\n", __VA_ARGS__); std::terminate(); } while (0)
 #	else
 #		define WIGWAG_THROW(...) throw std::runtime_error(__VA_ARGS__)
