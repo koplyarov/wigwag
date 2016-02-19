@@ -216,44 +216,30 @@ namespace wigwag
 				friend class life_checker;
 				friend class execution_guard;
 
-				union life_token_storage
-				{
-					life_token		token;
-
-					life_token_storage(life_token_storage&& other) noexcept
-					{
-						new(&token) life_token(std::move(other.token));
-						other.token.~life_token();
-					}
-
-					life_token_storage() { new(&token) life_token(); }
-					~life_token_storage() { }
-				};
-
-				life_token_storage		_token_storage;
+				life_token	_token;
 
 			public:
-				void release() { _token_storage.token.~life_token(); }
+				void reset() { _token.reset(); }
 			};
 
 			class life_checker
 			{
 				friend class execution_guard;
 
-				life_token::checker		checker;
+				life_token::checker		_checker;
 
 			public:
-				life_checker(const life_assurance& la) : checker(la._token_storage.token) { }
+				life_checker(const life_assurance& la) noexcept : _checker(la._token) { }
 			};
 
 			class execution_guard
 			{
-				life_token::execution_guard		guard;
+				life_token::execution_guard		_guard;
 
 			public:
-				execution_guard(const life_checker& c) : guard(c.checker) { }
-				execution_guard(const life_assurance& la) : guard(la._token_storage.token) { }
-				int is_alive() const { return guard.is_alive(); }
+				execution_guard(const life_checker& c) : _guard(c._checker) { } // TODO: looks like noexcept here makes the code faster, check it on other machines
+				execution_guard(const life_assurance& la) : _guard(la._token) { }
+				int is_alive() const noexcept { return _guard.is_alive(); }
 			};
 		};
 
@@ -262,19 +248,19 @@ namespace wigwag
 		{
 			struct life_assurance
 			{
-				void release() { }
+				void reset() noexcept { }
 			};
 
 			struct life_checker
 			{
-				life_checker(const life_assurance&) {}
+				life_checker(const life_assurance&) noexcept { }
 			};
 
 			struct execution_guard
 			{
-				execution_guard(const life_checker&) { }
-				execution_guard(const life_assurance&) { }
-				int is_alive() const { return true; }
+				execution_guard(const life_checker&) noexcept { }
+				execution_guard(const life_assurance&) noexcept { }
+				int is_alive() const noexcept { return true; }
 			};
 		};
 	}

@@ -52,11 +52,14 @@ namespace wigwag
 			: _impl(std::make_shared<impl>())
 		{ }
 
-		life_token(life_token&& other)
+		life_token(life_token&& other) noexcept
 			: _impl(other._impl)
 		{ other._impl.reset(); }
 
 		~life_token()
+		{ reset(); }
+
+		void reset()
 		{
 			if (!_impl)
 				return;
@@ -65,6 +68,8 @@ namespace wigwag
 			std::unique_lock<std::mutex> l(_impl->mutex);
 			while (_impl->lock_counter_and_alive_flag != 0)
 				_impl->cond_var.wait(l);
+
+			_impl.reset();
 		}
 
 		life_token(const life_token&) = delete;
@@ -80,7 +85,7 @@ namespace wigwag
 		impl_ptr		_impl;
 
 	public:
-		checker(const life_token& token)
+		checker(const life_token& token) noexcept
 			: _impl(token._impl)
 		{ }
 	};
