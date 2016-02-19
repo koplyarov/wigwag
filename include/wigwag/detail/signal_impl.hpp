@@ -38,7 +38,7 @@ namespace detail
 			private intrusive_ref_counter<signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>>,
 			private ExceptionHandlingPolicy_,
 			private ThreadingPolicy_::lock_primitive,
-			private StatePopulatingPolicy_::template handler_processor<Signature_>
+			private StatePopulatingPolicy_::template handler_processor<std::function<Signature_>>
 	{
 		friend class intrusive_ref_counter<signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>>;
 		using ref_counter_base = intrusive_ref_counter<signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>>;
@@ -48,22 +48,10 @@ namespace detail
 
 		using exception_handler = ExceptionHandlingPolicy_;
 		using lock_primitive = typename ThreadingPolicy_::lock_primitive;
-		using handler_processor = typename StatePopulatingPolicy_::template handler_processor<Signature_>;
+		using handler_processor = typename StatePopulatingPolicy_::template handler_processor<handler_type>;
 
 		using life_assurance = typename LifeAssurancePolicy_::life_assurance;
 		using life_checker = typename LifeAssurancePolicy_::life_checker;
-
-		struct handler_info : private life_checker
-		{
-			handler_type		handler;
-
-			handler_info(life_checker lc, handler_type h)
-				: life_checker(lc), handler(h)
-			{ }
-
-			const life_checker& get_life_checker() const { return *this; }
-			const handler_type& get_handler() const { return handler; }
-		};
 
 		class handler_node : public token::implementation, private life_assurance, private detail::intrusive_list_node
 		{
@@ -75,25 +63,15 @@ namespace detail
 
 		public:
 			handler_node(life_assurance&& la, const intrusive_ptr<signal_impl>& impl, handler_type handler)
-#if !WIGWAG_NOEXCEPTIONS
-			try
-#endif
 				: life_assurance(std::move(la)), _signal_impl(impl), _handler(handler)
 			{ _signal_impl->get_handlers_container().push_back(*this); }
-#if !WIGWAG_NOEXCEPTIONS
-			catch(...)
-			{
-				life_assurance::release();
-				throw;
-			}
-#endif
 
 			~handler_node()
 			{
 				_signal_impl->get_lock_primitive().lock_connect();
 				auto sg = detail::at_scope_exit([&] { _signal_impl->get_lock_primitive().unlock_connect(); } );
 
-				life_assurance::release();
+				life_assurance::reset();
 				_signal_impl->get_handler_processor().withdraw_state(_handler);
 				_signal_impl->get_handlers_container().erase(*this);
 			}
@@ -101,9 +79,6 @@ namespace detail
 			const handler_type& get_handler() const { return _handler; }
 			life_checker get_life_checker() const { return life_checker(*this); }
 			const life_assurance& get_life_assurance() const { return *this; }
-
-			operator handler_info() const
-			{ return handler_info(get_life_checker(), _handler); }
 		};
 
 		using handlers_container = detail::intrusive_list<handler_node>;
@@ -156,7 +131,7 @@ namespace detail
 		virtual void add_ref() { ref_counter_base::add_ref(); }
 		virtual void release() { ref_counter_base::release(); }
 
-		virtual token connect(const std::function<Signature_>& handler)
+		virtual token connect(const handler_type& handler)
 		{
 			get_lock_primitive().lock_connect();
 			auto sg = detail::at_scope_exit([&] { get_lock_primitive().unlock_connect(); } );
@@ -169,7 +144,7 @@ namespace detail
 			return token::create<handler_node>(life_assurance(), self, handler);
 		}
 
-		virtual token connect(const std::shared_ptr<task_executor>& worker, const std::function<Signature_>& handler)
+		virtual token connect(const std::shared_ptr<task_executor>& worker, const handler_type& handler)
 		{
 			get_lock_primitive().lock_connect();
 			auto sg = detail::at_scope_exit([&] { get_lock_primitive().unlock_connect(); } );

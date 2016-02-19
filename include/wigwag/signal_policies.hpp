@@ -76,7 +76,7 @@ namespace wigwag
 				mutable std::recursive_mutex	_mutex;
 
 			public:
-				std::recursive_mutex& get_primitive() const { return _mutex; }
+				std::recursive_mutex& get_primitive() const noexcept { return _mutex; }
 
 				void lock_connect() const { _mutex.lock(); }
 				void unlock_connect() const { _mutex.unlock(); }
@@ -95,13 +95,13 @@ namespace wigwag
 				mutable std::mutex		_mutex;
 
 			public:
-				std::mutex& get_primitive() const { return _mutex; }
+				std::mutex& get_primitive() const noexcept { return _mutex; }
 
 				void lock_connect() const { _mutex.lock(); }
 				void unlock_connect() const { _mutex.unlock(); }
 
-				void lock_invoke() const { }
-				void unlock_invoke() const { }
+				void lock_invoke() const noexcept { }
+				void unlock_invoke() const noexcept { }
 			};
 		};
 
@@ -111,13 +111,13 @@ namespace wigwag
 			class lock_primitive
 			{
 			public:
-				void get_primitive() const { }
+				void get_primitive() const noexcept { }
 
-				void lock_connect() const { }
-				void unlock_connect() const { }
+				void lock_connect() const noexcept { }
+				void unlock_connect() const noexcept { }
 
-				void lock_invoke() const { }
-				void unlock_invoke() const { }
+				void lock_invoke() const noexcept { }
+				void unlock_invoke() const noexcept { }
 			};
 		};
 	}
@@ -134,41 +134,41 @@ namespace wigwag
 
 		struct populator_only
 		{
-			template < typename Signature_ >
+			template < typename HandlerType_ >
 			class handler_processor
 			{
-				using handler_processor_func = std::function<void(const std::function<Signature_>&)>;
+				using handler_processor_func = std::function<void(const HandlerType_&)>;
 
 			private:
 				handler_processor_func		_populator;
 
 			public:
-				handler_processor(handler_processor_func populator = &populator_only::handler_processor<Signature_>::empty_handler)
+				handler_processor(handler_processor_func populator = &populator_only::handler_processor<HandlerType_>::empty_handler)
 					: _populator(populator)
 				{ }
 
-				void populate_state(const std::function<Signature_>& handler) const { _populator(handler); }
-				void withdraw_state(const std::function<Signature_>&) const { }
+				void populate_state(const HandlerType_& handler) const { _populator(handler); }
+				void withdraw_state(const HandlerType_&) const noexcept { }
 
-				static void empty_handler(const std::function<Signature_>&) { }
+				static void empty_handler(const HandlerType_&) noexcept { }
 			};
 		};
 
 
 		struct populator_and_withdrawer
 		{
-			template < typename Signature_ >
+			template < typename HandlerType_ >
 			class handler_processor
 			{
-				using handler_processor_func = std::function<void(const std::function<Signature_>&)>;
+				using handler_processor_func = std::function<void(const HandlerType_&)>;
 
 			private:
 				handler_processor_func		_populator;
 				handler_processor_func		_withdrawer;
 
 			public:
-				handler_processor(handler_processor_func populator = &populator_only::handler_processor<Signature_>::empty_handler,
-							handler_processor_func withdrawer = &populator_only::handler_processor<Signature_>::empty_handler)
+				handler_processor(handler_processor_func populator = &populator_only::handler_processor<HandlerType_>::empty_handler,
+							handler_processor_func withdrawer = &populator_only::handler_processor<HandlerType_>::empty_handler)
 					: _populator(populator), _withdrawer(withdrawer)
 				{ }
 
@@ -177,21 +177,21 @@ namespace wigwag
 					: _populator(populator_and_withdrawer_pair.first), _withdrawer(populator_and_withdrawer_pair.second)
 				{ }
 
-				void populate_state(const std::function<Signature_>& handler) const { _populator(handler); }
-				void withdraw_state(const std::function<Signature_>& handler) const { _withdrawer(handler); }
+				void populate_state(const HandlerType_& handler) const { _populator(handler); }
+				void withdraw_state(const HandlerType_& handler) const { _withdrawer(handler); }
 
-				static void empty_handler(const std::function<Signature_>&) { }
+				static void empty_handler(const HandlerType_&) noexcept { }
 			};
 		};
 
 
 		struct none
 		{
-			template < typename Signature_ >
+			template < typename HandlerType_ >
 			struct handler_processor
 			{
-				void populate_state(const std::function<Signature_>&) const { }
-				void withdraw_state(const std::function<Signature_>&) const { }
+				void populate_state(const HandlerType_&) const noexcept { }
+				void withdraw_state(const HandlerType_&) const noexcept { }
 			};
 		};
 	}
