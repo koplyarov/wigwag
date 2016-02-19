@@ -52,7 +52,7 @@ while [ $# -ne 0 ]; do
 done
 
 
-[ "$FILENAME" ] || FILENAME="scripts/benchmarks.list"
+[ "$FILENAME" ] || FILENAME="benchmarks/benchmarks.list"
 [ "$BENCHMARKS_DIR" ] || BENCHMARKS_DIR="$SCRIPT_DIR/../build/bin"
 
 
@@ -61,9 +61,9 @@ echo
 
 
 PrintCpuInfo
+echo
 
 SKIP_EMPTY_STRINGS=1
-echo
 while read -r LINE; do
 	if echo "$LINE" | grep -q "^#"; then
 		continue
