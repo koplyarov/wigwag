@@ -26,6 +26,10 @@
 #	endif
 #endif
 
+#if defined(__GNUC__) || defined(__clang)
+#	define WIGWAG_EXPECT(A_, B_) __builtin_expect((long)(A_), (long)(B_))
+#endif
+
 #if defined(_MSC_VER)
 #	if !defined(_CPPUNWIND) && !defined(WIGWAG_NOEXCEPTIONS)
 #		define WIGWAG_NOEXCEPTIONS 1
@@ -47,6 +51,11 @@
 
 #if !defined(WIGWAG_PLATFORM_WINDOWS)
 #	define WIGWAG_PLATFORM_WINDOWS 0
+#endif
+
+
+#if !defined(WIGWAG_EXPECT)
+#	define WIGWAG_EXPECT(A_, B_) (A_)
 #endif
 
 
