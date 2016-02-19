@@ -19,6 +19,7 @@ if (MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
 else()
 	add_definitions(-Wall)
+	add_definitions(-std=c++11)
 endif()
 
 if (WIGWAG_COVERAGE)
@@ -40,9 +41,6 @@ if(CXXTEST_FOUND)
 	CXXTEST_ADD_TEST(wigwag_test unittest_wigwag.cpp
 					  ${CMAKE_CURRENT_SOURCE_DIR}/src/test/test.hpp)
 
-	set_property(TARGET wigwag_test PROPERTY CXX_STANDARD 11)
-	set_property(TARGET wigwag_test PROPERTY CXX_STANDARD_REQUIRED TRUE)
-
 	target_link_libraries(wigwag_test ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
@@ -62,9 +60,6 @@ if (Boost_FOUND)
 	include_directories(${Boost_INCLUDE_DIRS})
 
 	add_executable(wigwag_benchmarks ${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/benchmarks.cpp)
-
-	set_property(TARGET wigwag_benchmarks PROPERTY CXX_STANDARD 11)
-	set_property(TARGET wigwag_benchmarks PROPERTY CXX_STANDARD_REQUIRED TRUE)
 
 	target_link_libraries(wigwag_benchmarks
 		${Boost_LIBRARIES}
