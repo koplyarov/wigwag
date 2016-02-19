@@ -88,7 +88,7 @@ namespace wigwag
 	{
 	private:
 		impl_ptr		_impl;
-		bool			_alive;
+		int				_alive;
 
 	public:
 		execution_guard(const life_token& token)
@@ -105,14 +105,14 @@ namespace wigwag
 				unlock();
 		}
 
-		bool is_alive() const
+		int is_alive() const
 		{ return _alive; }
 
 	private:
 		void lock()
 		{
 			int_type i = ++_impl->lock_counter_and_alive_flag;
-			_alive = i & alive_flag;
+			_alive = (i & alive_flag) != 0;
 
 			if (!_alive)
 				unlock();

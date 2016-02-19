@@ -9,12 +9,16 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 
-add_definitions(-std=c++11)
-add_definitions(-Wall)
 if (WIGWAG_VALGRIND)
 	message(STATUS "Using valgrind annotations")
 	add_definitions(-DWIGWAG_USE_HELGRIND_ANNOTATIONS=1)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include wigwag/detail/stdcpp_annotations.hpp")
+endif()
+
+if (MSVC)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
+else()
+	add_definitions(-Wall)
 endif()
 
 if (WIGWAG_COVERAGE)
@@ -29,12 +33,19 @@ find_package(Threads)
 
 find_package(CxxTest)
 if(CXXTEST_FOUND)
+	message(STATUS "Found cxxtest, enabling wigwag_test")
 	include_directories(${CXXTEST_INCLUDE_DIR})
 	enable_testing()
+
 	CXXTEST_ADD_TEST(wigwag_test unittest_wigwag.cpp
 					  ${CMAKE_CURRENT_SOURCE_DIR}/src/test/test.hpp)
+
+	set_property(TARGET wigwag_test PROPERTY CXX_STANDARD 11)
+	set_property(TARGET wigwag_test PROPERTY CXX_STANDARD_REQUIRED TRUE)
+
 	target_link_libraries(wigwag_test ${CMAKE_THREAD_LIBS_INIT})
 endif()
+
 
 ######################################################################
 
@@ -42,17 +53,21 @@ find_package(Boost COMPONENTS
 	program_options
 	system
 	exception
+	thread
+	date_time
 )
 
 if (Boost_FOUND)
+	message(STATUS "Found boost, enabling wigwag_benchmarks")
 	include_directories(${Boost_INCLUDE_DIRS})
 
 	add_executable(wigwag_benchmarks ${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/benchmarks.cpp)
 
+	set_property(TARGET wigwag_benchmarks PROPERTY CXX_STANDARD 11)
+	set_property(TARGET wigwag_benchmarks PROPERTY CXX_STANDARD_REQUIRED TRUE)
+
 	target_link_libraries(wigwag_benchmarks
-		${Boost_PROGRAM_OPTIONS_LIBRARY}
-		${Boost_SYSTEM_LIBRARY}
-		${Boost_EXCEPTION_LIBRARY}
+		${Boost_LIBRARIES}
 		${CMAKE_THREAD_LIBS_INIT}
 	)
 endif()

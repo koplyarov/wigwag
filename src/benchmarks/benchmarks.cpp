@@ -35,7 +35,7 @@ std::function<void()> g_empty_handler([]{});
 template < typename T_ >
 void create(int64_t n)
 {
-	storage_for<T_> *v = new storage_for<T_>[n];
+	storage_for<T_> *v = new storage_for<T_>[(size_t)n];
 
 	{
 		operation_profiler op("creating", n);
@@ -58,7 +58,7 @@ void create(int64_t n)
 template < typename T_ >
 void create_lock_unlock(int64_t n)
 {
-	storage_for<T_> *v = new storage_for<T_>[n];
+	storage_for<T_> *v = new storage_for<T_>[(size_t)n];
 
 	{
 		operation_profiler op("creating", n);
@@ -94,7 +94,7 @@ template < typename Signal_, typename Connection_ >
 void connect_invoke(int64_t num_slots, int64_t num_calls)
 {
 	Signal_ s;
-	storage_for<Connection_> *v = new storage_for<Connection_>[num_slots];
+	storage_for<Connection_> *v = new storage_for<Connection_>[(size_t)num_slots];
 
 	{
 		operation_profiler op("connecting", num_slots);
@@ -122,7 +122,7 @@ template < typename Signal_, typename Connection_ >
 void connect_invoke_tracked(int64_t num_slots, int64_t num_calls)
 {
 	Signal_ s;
-	storage_for<Connection_> *v = new storage_for<Connection_>[num_slots];
+	storage_for<Connection_> *v = new storage_for<Connection_>[(size_t)num_slots];
 
 	boost::shared_ptr<std::string> tracked(new std::string);
 

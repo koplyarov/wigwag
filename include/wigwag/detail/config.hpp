@@ -30,7 +30,7 @@
 
 
 #if !defined(WIGWAG_THROW)
-#	if WIGWAG_NOEXCEPTIONS
+#	if !defined(WIGWAG_NOEXCEPTIONS) || WIGWAG_NOEXCEPTIONS
 #		define WIGWAG_THROW(...) do { ::fprintf(::stderr, "WIGWAG_THROW: %s\n", __VA_ARGS__); std::terminate(); } while (0)
 #	else
 #		define WIGWAG_THROW(...) throw std::runtime_error(__VA_ARGS__)
