@@ -1,6 +1,3 @@
-#ifndef WIGWAG_TOKEN_HPP
-#define WIGWAG_TOKEN_HPP
-
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted,
@@ -11,40 +8,6 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <memory>
-
-
-namespace wigwag
-{
-
-#include <wigwag/detail/disable_warnings.hpp>
-
-	class token
-	{
-	public:
-		struct implementation
-		{
-			virtual ~implementation() { }
-		};
-
-	private:
-		std::unique_ptr<implementation>		_impl;
-
-	public:
-		template < typename Implementation_, typename... Args_ >
-		static token create(Args_&&... args)
-		{
-			token result;
-			result._impl.reset(new Implementation_(std::forward<Args_>(args)...));
-			return result;
-		}
-
-		void reset()
-		{ _impl.reset(); }
-	};
-
-#include <wigwag/detail/enable_warnings.hpp>
-
-}
-
+#if defined(__GNUC__) || defined(__clang)
+#	pragma GCC diagnostic pop
 #endif

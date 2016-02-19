@@ -21,6 +21,8 @@ namespace wigwag {
 namespace detail
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 	template < typename T_ >
 	class intrusive_list;
 
@@ -109,6 +111,8 @@ namespace detail
 		void push_back(T_& node) { node.insert_before(_root); }
 		void erase(T_& node) { node.unlink(); }
 	};
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }}
 

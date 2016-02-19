@@ -20,6 +20,8 @@
 namespace wigwag
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 	class token_pool
 	{
 		using tokens_container = std::vector<token>;
@@ -47,6 +49,8 @@ namespace wigwag
 			_tokens.clear();
 		}
 	};
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }
 

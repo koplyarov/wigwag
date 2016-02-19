@@ -21,6 +21,8 @@
 namespace wigwag
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 	template <
 			typename Signature_,
 			typename ExceptionHandlingPolicy_ = exception_handling::default_,
@@ -77,6 +79,7 @@ namespace wigwag
 		}
 	};
 
+#include <wigwag/detail/enable_warnings.hpp>
 
 }
 

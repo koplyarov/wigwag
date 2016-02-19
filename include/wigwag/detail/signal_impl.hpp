@@ -24,6 +24,8 @@ namespace wigwag {
 namespace detail
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 	template <
 			typename Signature_,
 			typename ExceptionHandlingPolicy_,
@@ -33,11 +35,12 @@ namespace detail
 		>
 	class signal_impl
 		:	public signal_connector_impl<Signature_>,
-			public intrusive_ref_counter<signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>>,
+			private intrusive_ref_counter<signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>>,
 			private ExceptionHandlingPolicy_,
 			private ThreadingPolicy_::lock_primitive,
 			private StatePopulatingPolicy_::template handler_processor<Signature_>
 	{
+		friend class intrusive_ref_counter<signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>>;
 		using ref_counter_base = intrusive_ref_counter<signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>>;
 
 	public:
@@ -62,8 +65,11 @@ namespace detail
 			const handler_type& get_handler() const { return handler; }
 		};
 
-		struct handler_node : public token::implementation, private life_assurance, public detail::intrusive_list_node
+		class handler_node : public token::implementation, private life_assurance, private detail::intrusive_list_node
 		{
+			friend class detail::intrusive_list<handler_node>;
+
+		private:
 			intrusive_ptr<signal_impl>		_signal_impl;
 			handler_type					_handler;
 
@@ -108,7 +114,7 @@ namespace detail
 	public:
 		signal_impl() { }
 
-#define DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(...) typename std::enable_if<__VA_ARGS__, enabler>::type e = enabler()
+#define DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(...) typename std::enable_if<__VA_ARGS__, enabler>::type = enabler()
 
 		template < typename T_ > signal_impl(T_ eh, DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(std::is_constructible<exception_handler, T_&&>::value)) : exception_handler(std::move(eh)) { }
 		template < typename T_ > signal_impl(T_ lp, DETAIL_WIGWAG_STORAGE_CTOR_ENABLER(std::is_constructible<lock_primitive, T_&&>::value)) : lock_primitive(std::move(lp)) { }
@@ -179,6 +185,8 @@ namespace detail
 			return token::create<handler_node>(std::move(la), self, real_handler);
 		}
 	};
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }}
 

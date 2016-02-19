@@ -39,7 +39,7 @@ namespace detail
 		{ other._raw = nullptr; }
 
 		template < typename U_ >
-		intrusive_ptr(const intrusive_ptr<U_> other, typename std::enable_if<std::is_base_of<T_, U_>::value, enabler>::type e = enabler())
+		intrusive_ptr(const intrusive_ptr<U_> other, typename std::enable_if<std::is_base_of<T_, U_>::value, enabler>::type = enabler())
 			: _raw(other._raw)
 		{
 			if (_raw)

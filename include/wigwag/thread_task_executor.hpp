@@ -21,6 +21,8 @@
 namespace wigwag
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 	template < typename ExceptionHandlingPolicy_ >
 	class basic_thread_task_executor : public task_executor, private ExceptionHandlingPolicy_
 	{
@@ -86,6 +88,9 @@ namespace wigwag
 
 
 	using thread_task_executor = basic_thread_task_executor<exception_handling::none>;
+
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }
 

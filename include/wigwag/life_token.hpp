@@ -22,6 +22,8 @@
 namespace wigwag
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 	class life_token
 	{
 	private:
@@ -92,12 +94,18 @@ namespace wigwag
 
 	public:
 		execution_guard(const life_token& token)
-			: _impl(token._impl)
-		{ lock(); }
+			: _impl(token._impl), _alive(++_impl->lock_counter_and_alive_flag & alive_flag)
+		{
+			if (!_alive)
+				unlock();
+		}
 
 		execution_guard(const life_token::checker& checker)
-			: _impl(checker._impl)
-		{ lock(); }
+			: _impl(checker._impl), _alive(++_impl->lock_counter_and_alive_flag & alive_flag)
+		{
+			if (!_alive)
+				unlock();
+		}
 
 		~execution_guard()
 		{
@@ -109,15 +117,6 @@ namespace wigwag
 		{ return _alive; }
 
 	private:
-		void lock()
-		{
-			int_type i = ++_impl->lock_counter_and_alive_flag;
-			_alive = (i & alive_flag) != 0;
-
-			if (!_alive)
-				unlock();
-		}
-
 		void unlock()
 		{
 			int_type i = --_impl->lock_counter_and_alive_flag;
@@ -133,6 +132,8 @@ namespace wigwag
 				WIGWAG_ANNOTATE_HAPPENS_BEFORE(&_impl->lock_counter_and_alive_flag);
 		}
 	};
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }
 

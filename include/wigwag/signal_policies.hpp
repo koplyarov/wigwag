@@ -27,6 +27,8 @@
 namespace wigwag
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 	namespace exception_handling
 	{
 		struct none;
@@ -146,7 +148,7 @@ namespace wigwag
 				{ }
 
 				void populate_state(const std::function<Signature_>& handler) const { _populator(handler); }
-				void withdraw_state(const std::function<Signature_>& handler) const { }
+				void withdraw_state(const std::function<Signature_>&) const { }
 
 				static void empty_handler(const std::function<Signature_>&) { }
 			};
@@ -188,8 +190,8 @@ namespace wigwag
 			template < typename Signature_ >
 			struct handler_processor
 			{
-				void populate_state(const std::function<Signature_>& handler) const { }
-				void withdraw_state(const std::function<Signature_>& handler) const { }
+				void populate_state(const std::function<Signature_>&) const { }
+				void withdraw_state(const std::function<Signature_>&) const { }
 			};
 		};
 	}
@@ -277,6 +279,7 @@ namespace wigwag
 		};
 	}
 
+#include <wigwag/detail/enable_warnings.hpp>
 
 }
 

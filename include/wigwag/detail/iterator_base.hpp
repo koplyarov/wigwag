@@ -19,6 +19,8 @@ namespace wigwag {
 namespace detail
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 	template <
 			typename Derived_,
 			typename Category_,
@@ -29,8 +31,6 @@ namespace detail
 		>
 	class iterator_base : public std::iterator<Category_, T_, Distance_, Pointer_, Reference_>
 	{
-		//static_assert(std::is_base_of<iterator_base, Derived_>::value, "iterator_base should be a base of Derived_");
-
 	public:
 		bool operator == (Derived_ other) const { return get_derived().equal(other); }
 		bool operator != (Derived_ other) const { return !(*this == other); }
@@ -72,6 +72,8 @@ namespace detail
 	Derived_ operator + (Distance_ n, iterator_base<Derived_, Category_, T_, Distance_, Pointer_, Reference_> it)
 	{ return it + n; }
 
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }}
 
