@@ -41,6 +41,11 @@
 #endif
 
 
+#if !defined(WIGWAG_DEBUG)
+#	define WIGWAG_DEBUG !defined(NDEBUG)
+#endif
+
+
 #if !defined(WIGWAG_NOEXCEPTIONS)
 #	define WIGWAG_NOEXCEPTIONS 0
 #endif
@@ -61,11 +66,20 @@
 
 #if !defined(WIGWAG_THROW)
 #	if WIGWAG_NOEXCEPTIONS
-#		define WIGWAG_THROW(...) do { ::fprintf(::stderr, "WIGWAG_THROW: %s\n", __VA_ARGS__); std::terminate(); } while (0)
+#		define WIGWAG_THROW(Msg_) do { ::fprintf(::stderr, "WIGWAG_THROW: %s\nFile: %s:%d\nFunction: %s\n", Msg_, __FILE__, __LINE__, __func__); std::terminate(); } while (0)
 #	else
-#		define WIGWAG_THROW(...) throw std::runtime_error(__VA_ARGS__)
+#		define WIGWAG_THROW(Msg_) throw std::runtime_error(Msg_)
 #	endif
 #endif
+
+#if !defined(WIGWAG_ASSERT)
+#	if WIGWAG_DEBUG
+#		define WIGWAG_ASSERT(Expr_, Msg_) do { if (!(Expr_)) { ::fprintf(::stderr, "WIGWAG_ASSERT: %s\nFile: %s:%d\nFunction: %s\n", Msg_, __FILE__, __LINE__, __func__); std::terminate(); } } while (0)
+#	else
+#		define WIGWAG_ASSERT(...) do { } while (0)
+#	endif
+#endif
+
 
 
 #endif
