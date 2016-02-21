@@ -274,7 +274,7 @@ int main(int argc, char* argv[])
 			else
 				throw cmdline_exception("obj " + obj + " not supported");
 		}
-		if (task == "create_function")
+		else if (task == "create_function")
 		{
 			if (obj == "std_function")
 				create_function<std::function<void()>>(count, []{});
