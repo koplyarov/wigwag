@@ -1,9 +1,0 @@
-create_lock_unlock		mutex						10000000
-create_lock_unlock		recursive_mutex				10000000
-create_lock_unlock		boost_mutex					10000000
-create_lock_unlock		boost_recursive_mutex		10000000
-
-create					condition_variable			10000000
-create					boost_condition_variable	10000000
-
-create					life_token					10000000

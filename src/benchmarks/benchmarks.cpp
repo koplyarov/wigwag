@@ -90,6 +90,41 @@ void create_lock_unlock(int64_t n)
 }
 
 
+template < typename T_, typename Functor_ >
+void create_function(int64_t n, const Functor_& f)
+{
+	storage_for<T_> *v = new storage_for<T_>[(size_t)n];
+
+	{
+		operation_profiler op("creating", n);
+		for (int64_t i = 0; i < n; ++i)
+			new(&v[i].obj) T_(f);
+	}
+
+	measure_memory("object", n);
+
+	{
+		operation_profiler op("destroying", n);
+		for (int64_t i = 0; i < n; ++i)
+			v[i].obj.~T_();
+	}
+
+	delete[] v;
+}
+
+class Func
+{
+public:
+	Func()
+	{ }
+
+	Func(const Func&)
+	{ std::cerr << "COPY: " << sc::Backtrace().ToString() << std::endl; }
+
+	void operator () () const
+	{ }
+};
+
 template < typename Signal_, typename Connection_ >
 void connect_invoke(int64_t num_slots, int64_t num_calls)
 {
@@ -110,11 +145,15 @@ void connect_invoke(int64_t num_slots, int64_t num_calls)
 			s();
 	}
 
+	std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
 	{
 		operation_profiler op("disconnecting", num_slots);
 		for (int64_t i = 0; i < num_slots; ++i)
 			v[i].obj.~Connection_();
 	}
+
+	delete[] v;
 }
 
 
@@ -149,6 +188,8 @@ void connect_invoke_tracked(int64_t num_slots, int64_t num_calls)
 		for (int64_t i = 0; i < num_slots; ++i)
 			v[i].obj.~Connection_();
 	}
+
+	delete[] v;
 }
 
 
@@ -200,11 +241,11 @@ int main(int argc, char* argv[])
 
 		if (task == "create")
 		{
-			if (obj == "mutex")
+			if (obj == "std_mutex")
 				create<std::mutex>(count);
-			else if (obj == "recursive_mutex")
+			else if (obj == "std_recursive_mutex")
 				create<std::recursive_mutex>(count);
-			else if (obj == "condition_variable")
+			else if (obj == "std_condition_variable")
 				create<std::condition_variable>(count);
 
 			else if (obj == "boost_mutex")
@@ -232,15 +273,26 @@ int main(int argc, char* argv[])
 		}
 		else if (task == "create_lock_unlock")
 		{
-			if (obj == "mutex")
+			if (obj == "std_mutex")
 				create_lock_unlock<std::mutex>(count);
-			else if (obj == "recursive_mutex")
+			else if (obj == "std_recursive_mutex")
 				create_lock_unlock<std::recursive_mutex>(count);
 
 			else if (obj == "boost_mutex")
 				create_lock_unlock<boost::mutex>(count);
 			else if (obj == "boost_recursive_mutex")
 				create_lock_unlock<boost::recursive_mutex>(count);
+
+			else
+				throw cmdline_exception("obj " + obj + " not supported");
+		}
+		if (task == "create_function")
+		{
+			if (obj == "std_function")
+				create_function<std::function<void()>>(count, []{});
+
+			else if (obj == "boost_function")
+				create_function<boost::function<void()>>(count, []{});
 
 			else
 				throw cmdline_exception("obj " + obj + " not supported");
