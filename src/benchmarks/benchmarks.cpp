@@ -112,18 +112,6 @@ void create_function(int64_t n, const Functor_& f)
 	delete[] v;
 }
 
-class Func
-{
-public:
-	Func()
-	{ }
-
-	Func(const Func&)
-	{ std::cerr << "COPY: " << sc::Backtrace().ToString() << std::endl; }
-
-	void operator () () const
-	{ }
-};
 
 template < typename Signal_, typename Connection_ >
 void connect_invoke(int64_t num_slots, int64_t num_calls)
