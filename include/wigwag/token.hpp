@@ -24,23 +24,41 @@ namespace wigwag
 	public:
 		struct implementation
 		{
+			virtual void release_token_impl() = 0;
 			virtual ~implementation() { }
 		};
 
 	private:
-		std::unique_ptr<implementation>		_impl;
+		implementation*		_impl;
+
+	private:
+		token(implementation* impl)
+			: _impl(impl)
+		{ }
 
 	public:
-		template < typename Implementation_, typename... Args_ >
-		static token create(Args_&&... args)
-		{
-			token result;
-			result._impl.reset(new Implementation_(std::forward<Args_>(args)...));
-			return result;
-		}
+		token(token&& other)
+			: _impl(other._impl)
+		{ other._impl = nullptr; }
+
+		token(const token&) = delete;
+		token& operator = (const token&) = delete;
+
+		~token()
+		{ reset(); }
 
 		void reset()
-		{ _impl.reset(); }
+		{
+			if (!_impl)
+				return;
+
+			_impl->release_token_impl();
+			_impl = nullptr;
+		}
+
+		template < typename Implementation_, typename... Args_ >
+		static token create(Args_&&... args)
+		{ return token(new Implementation_(std::forward<Args_>(args)...)); }
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>

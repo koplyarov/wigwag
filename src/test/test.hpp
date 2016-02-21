@@ -28,6 +28,7 @@
 #define LOCK_GUARD(...) std::lock_guard<decltype(__VA_ARGS__)> l(__VA_ARGS__);
 
 using namespace wigwag;
+using namespace std::chrono;
 
 
 class wigwag_tests : public CxxTest::TestSuite
@@ -149,19 +150,40 @@ public:
 
 		profiler p;
 		{
-			token t = s.connect([]{ sleep_ms(2000); });
-			sleep_ms(500);
+			token t = s.connect([]{ sleep_ms(1000); });
+			token_pool tokens;
+			for (int i = 0; i < 3; ++i)
+				tokens += s.connect([]{ sleep_ms(1000); });
+			sleep_ms(300);
 			p.reset();
+			t.reset();
+			auto disconnect_time = duration_cast<milliseconds>(p.reset()).count();
+			TS_ASSERT_LESS_THAN_EQUALS(600, disconnect_time);
+			TS_ASSERT_LESS_THAN_EQUALS(disconnect_time, 1200);
 		}
-		TS_ASSERT_LESS_THAN(std::chrono::seconds(1), p.reset());
+
+		{
+			token_pool tokens;
+			for (int i = 0; i < 3; ++i)
+				tokens += s.connect([]{ sleep_ms(1000); });
+			token t = s.connect([]{ sleep_ms(1000); });
+			sleep_ms(300);
+			p.reset();
+			t.reset();
+			auto disconnect_time = duration_cast<milliseconds>(p.reset()).count();
+			TS_ASSERT_LESS_THAN_EQUALS(disconnect_time, 100);
+		}
+
 
 		{
 			std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
-			token t = s.connect(worker, []{ sleep_ms(2000); });
-			sleep_ms(500);
+			token t = s.connect(worker, []{ sleep_ms(1000); });
+			sleep_ms(300);
 			p.reset();
+			t.reset();
+			auto disconnect_time = duration_cast<milliseconds>(p.reset()).count();
+			TS_ASSERT_LESS_THAN_EQUALS(600, disconnect_time);
 		}
-		TS_ASSERT_LESS_THAN(std::chrono::seconds(1), p.reset());
 	}
 
 

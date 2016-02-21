@@ -38,9 +38,6 @@ namespace wigwag
 		using impl_type = detail::signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>;
 		using impl_type_ptr = detail::intrusive_ptr<impl_type>;
 
-		using life_checker = typename LifeAssurancePolicy_::life_checker;
-		using execution_guard = typename LifeAssurancePolicy_::execution_guard;
-
 	private:
 		impl_type_ptr		_impl;
 
@@ -49,6 +46,9 @@ namespace wigwag
 		signal(Args_&&... args)
 			: _impl(new impl_type(std::forward<Args_>(args)...))
 		{ }
+
+		~signal()
+		{ _impl->finalize_nodes(); }
 
 		signal(const signal&) = delete;
 		signal& operator = (const signal&) = delete;
@@ -67,16 +67,7 @@ namespace wigwag
 
 		template < typename... Args_ >
 		void operator() (Args_&&... args) const
-		{
-			_impl->get_lock_primitive().lock_invoke();
-			auto sg = detail::at_scope_exit([&] { _impl->get_lock_primitive().unlock_invoke(); } );
-			for (const auto& h : _impl->get_handlers_container())
-			{
-				execution_guard g(h.get_life_assurance());
-				if (g.is_alive())
-					_impl->get_exception_handler().handle_exceptions(h.get_handler(), std::forward<Args_>(args)...);
-			}
-		}
+		{ _impl->invoke(std::forward<Args_>(args)...); }
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>
