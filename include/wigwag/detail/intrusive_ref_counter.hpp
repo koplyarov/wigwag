@@ -24,7 +24,7 @@ namespace detail
 	class intrusive_ref_counter
 	{
 	private:
-		std::atomic<int>	_ref_count;
+		mutable std::atomic<int>	_ref_count;
 
 	public:
 		intrusive_ref_counter()
@@ -34,17 +34,20 @@ namespace detail
 		intrusive_ref_counter(const intrusive_ref_counter&) = delete;
 		intrusive_ref_counter& operator = (const intrusive_ref_counter&) = delete;
 
-		void add_ref()
+		int get_ref_count() const
+		{ return _ref_count; }
+
+		void add_ref() const
 		{ ++_ref_count; }
 
-		void release()
+		void release() const
 		{
 			if (--_ref_count == 0)
 			{
 				WIGWAG_ANNOTATE_HAPPENS_AFTER(this);
 				WIGWAG_ANNOTATE_RELEASE(this);
 
-				delete static_cast<Derived_*>(this);
+				delete static_cast<const Derived_*>(this);
 			}
 			else
 				WIGWAG_ANNOTATE_HAPPENS_BEFORE(this);
