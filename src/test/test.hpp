@@ -21,8 +21,9 @@
 #include <iostream>
 #include <thread>
 
+#include <utils/mutexed.hpp>
 #include <utils/profiler.hpp>
-#include <utils/test_utils.hpp>
+#include <utils/thread.hpp>
 
 
 #define LOCK_GUARD(...) std::lock_guard<decltype(__VA_ARGS__)> l(__VA_ARGS__);
@@ -54,7 +55,7 @@ public:
 
 		std::shared_ptr<task_executor> worker = std::make_shared<basic_thread_task_executor<exception_handling::print_to_stderr> >();
 		worker->add_task([]{ throw std::runtime_error("Test exception"); });
-		sleep_ms(1000);
+		thread::sleep(1000);
 
 		tp.release();
 	}
@@ -70,7 +71,7 @@ public:
 			thread th(
 				[&](const std::atomic<bool>& alive)
 				{
-					sleep_ms(500);
+					thread::sleep(500);
 					auto l = lock(s.lock_primitive());
 					signal_state = 2;
 					s(2);
@@ -80,7 +81,7 @@ public:
 			mutexed<int> state;
 			token t = s.connect([&](int i) { state.set(i); });
 			TS_ASSERT_EQUALS(state.get(), 1);
-			sleep_ms(1000);
+			thread::sleep(1000);
 			TS_ASSERT_EQUALS(state.get(), 2);
 			t.reset();
 			TS_ASSERT_EQUALS(state.get(), 2);
@@ -93,7 +94,7 @@ public:
 			thread th(
 				[&](const std::atomic<bool>& alive)
 				{
-					sleep_ms(500);
+					thread::sleep(500);
 					auto l = lock(s.lock_primitive());
 					signal_state = 2;
 					s(2);
@@ -103,7 +104,7 @@ public:
 			mutexed<int> state;
 			token t = s.connect([&](int i) { state.set(i); });
 			TS_ASSERT_EQUALS(state.get(), 1);
-			sleep_ms(1000);
+			thread::sleep(1000);
 			TS_ASSERT_EQUALS(state.get(), 2);
 			t.reset();
 			TS_ASSERT_EQUALS(state.get(), 3);
@@ -115,7 +116,7 @@ public:
 			thread th(
 				[&](const std::atomic<bool>& alive)
 				{
-					sleep_ms(500);
+					thread::sleep(500);
 					auto l = lock(s.lock_primitive());
 					signal_state = 2;
 					s(2);
@@ -125,7 +126,7 @@ public:
 			mutexed<int> state;
 			token t = s.connect([&](int i) { state.set(i); });
 			TS_ASSERT_EQUALS(state.get(), 0);
-			sleep_ms(1000);
+			thread::sleep(1000);
 			TS_ASSERT_EQUALS(state.get(), 2);
 			t.reset();
 			TS_ASSERT_EQUALS(state.get(), 2);
@@ -143,18 +144,18 @@ public:
 				while (alive)
 				{
 					s();
-					sleep_ms(100);
+					thread::sleep(100);
 				}
 			}
 		);
 
 		profiler p;
 		{
-			token t = s.connect([]{ sleep_ms(1000); });
+			token t = s.connect([]{ thread::sleep(1000); });
 			token_pool tokens;
 			for (int i = 0; i < 3; ++i)
-				tokens += s.connect([]{ sleep_ms(1000); });
-			sleep_ms(300);
+				tokens += s.connect([]{ thread::sleep(1000); });
+			thread::sleep(300);
 			p.reset();
 			t.reset();
 			auto disconnect_time = duration_cast<milliseconds>(p.reset()).count();
@@ -165,9 +166,9 @@ public:
 		{
 			token_pool tokens;
 			for (int i = 0; i < 3; ++i)
-				tokens += s.connect([]{ sleep_ms(1000); });
-			token t = s.connect([]{ sleep_ms(1000); });
-			sleep_ms(300);
+				tokens += s.connect([]{ thread::sleep(1000); });
+			token t = s.connect([]{ thread::sleep(1000); });
+			thread::sleep(300);
 			p.reset();
 			t.reset();
 			auto disconnect_time = duration_cast<milliseconds>(p.reset()).count();
@@ -177,8 +178,8 @@ public:
 
 		{
 			std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
-			token t = s.connect(worker, []{ sleep_ms(1000); });
-			sleep_ms(300);
+			token t = s.connect(worker, []{ thread::sleep(1000); });
+			thread::sleep(300);
 			p.reset();
 			t.reset();
 			auto disconnect_time = duration_cast<milliseconds>(p.reset()).count();
@@ -202,7 +203,7 @@ public:
 
 		s();
 
-		sleep_ms(500);
+		thread::sleep(500);
 
 		std::lock_guard<std::mutex> l(m);
 		TS_ASSERT_DIFFERS(handler_thread_id, std::thread::id());
