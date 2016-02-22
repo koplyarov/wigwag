@@ -1,5 +1,5 @@
-#ifndef WIGWAG_SIGNAL_POLICIES_HPP
-#define WIGWAG_SIGNAL_POLICIES_HPP
+#ifndef WIGWAG_POLICIES_HPP
+#define WIGWAG_POLICIES_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //

@@ -11,7 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/signal_policies.hpp>
+#include <wigwag/policies.hpp>
 #include <wigwag/task_executor.hpp>
 
 #include <queue>

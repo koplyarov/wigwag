@@ -13,8 +13,8 @@
 
 #include <wigwag/detail/at_scope_exit.hpp>
 #include <wigwag/detail/signal_impl.hpp>
+#include <wigwag/policies.hpp>
 #include <wigwag/signal_connector.hpp>
-#include <wigwag/signal_policies.hpp>
 #include <wigwag/token.hpp>
 
 
