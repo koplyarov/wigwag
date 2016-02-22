@@ -1,5 +1,5 @@
-#ifndef WIGWAG_POLICIES_HPP
-#define WIGWAG_POLICIES_HPP
+#ifndef WIGWAG_POLICIES_STATE_POPULATING_NONE_HPP
+#define WIGWAG_POLICIES_STATE_POPULATING_NONE_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,9 +11,26 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/policies/exception_handling/policies.hpp>
-#include <wigwag/policies/life_assurance/policies.hpp>
-#include <wigwag/policies/state_populating/policies.hpp>
-#include <wigwag/policies/threading/policies.hpp>
+namespace wigwag {
+namespace state_populating
+{
+
+#include <wigwag/detail/disable_warnings.hpp>
+
+	struct none
+	{
+		template < typename HandlerType_ >
+		struct handler_processor
+		{
+			void populate_state(const HandlerType_&) const noexcept { }
+
+			template < typename LockPrimitive_ >
+			void withdraw_state(LockPrimitive_&, const HandlerType_&) const noexcept { }
+		};
+	};
+
+#include <wigwag/detail/enable_warnings.hpp>
+
+}}
 
 #endif

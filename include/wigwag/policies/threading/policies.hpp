@@ -1,5 +1,5 @@
-#ifndef WIGWAG_POLICIES_HPP
-#define WIGWAG_POLICIES_HPP
+#ifndef WIGWAG_POLICIES_THREADING_POLICIES_HPP
+#define WIGWAG_POLICIES_THREADING_POLICIES_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,9 +11,16 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/policies/exception_handling/policies.hpp>
-#include <wigwag/policies/life_assurance/policies.hpp>
-#include <wigwag/policies/state_populating/policies.hpp>
-#include <wigwag/policies/threading/policies.hpp>
+#include <wigwag/policies/threading/none.hpp>
+#include <wigwag/policies/threading/own_mutex.hpp>
+#include <wigwag/policies/threading/own_recursive_mutex.hpp>
+
+namespace wigwag {
+namespace threading
+{
+
+	using default_ = own_recursive_mutex;
+
+}}
 
 #endif

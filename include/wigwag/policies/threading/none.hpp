@@ -1,5 +1,5 @@
-#ifndef WIGWAG_POLICIES_HPP
-#define WIGWAG_POLICIES_HPP
+#ifndef WIGWAG_POLICIES_THREADING_NONE_HPP
+#define WIGWAG_POLICIES_THREADING_NONE_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,9 +11,29 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/policies/exception_handling/policies.hpp>
-#include <wigwag/policies/life_assurance/policies.hpp>
-#include <wigwag/policies/state_populating/policies.hpp>
-#include <wigwag/policies/threading/policies.hpp>
+namespace wigwag {
+namespace threading
+{
+
+#include <wigwag/detail/disable_warnings.hpp>
+
+	struct none
+	{
+		class lock_primitive
+		{
+		public:
+			void get_primitive() const noexcept { }
+
+			void lock_nonrecursive() const noexcept { }
+			void unlock_nonrecursive() const noexcept { }
+
+			void lock_recursive() const noexcept { }
+			void unlock_recursive() const noexcept { }
+		};
+	};
+
+#include <wigwag/detail/enable_warnings.hpp>
+
+}}
 
 #endif

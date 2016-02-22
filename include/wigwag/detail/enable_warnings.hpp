@@ -11,3 +11,9 @@
 #if defined(__GNUC__) || defined(__clang)
 #	pragma GCC diagnostic pop
 #endif
+
+#if !defined(WIGWAG_WARNINGS_DISABLED)
+#	error Inconsistent disable_warnings.hpp/enable_warnings.hpp  includes!
+#endif
+
+#undef WIGWAG_WARNINGS_DISABLED

@@ -79,8 +79,8 @@ namespace detail
 					: _lp(lp)
 				{ }
 
-				void lock() const { _lp.lock_connect(); }
-				void unlock() const { _lp.unlock_connect(); }
+				void lock() const { _lp.lock_nonrecursive(); }
+				void unlock() const { _lp.unlock_nonrecursive(); }
 			};
 
 		private:
@@ -105,8 +105,8 @@ namespace detail
 				}
 				else
 				{
-					_signal_impl->get_lock_primitive().lock_connect();
-					auto sg = detail::at_scope_exit([&] { _signal_impl->get_lock_primitive().unlock_connect(); } );
+					_signal_impl->get_lock_primitive().lock_nonrecursive();
+					auto sg = detail::at_scope_exit([&] { _signal_impl->get_lock_primitive().unlock_nonrecursive(); } );
 					_signal_impl->get_handlers_container().erase(*this);
 				}
 			}
@@ -188,8 +188,8 @@ namespace detail
 
 		virtual token connect(const handler_type& handler)
 		{
-			get_lock_primitive().lock_connect();
-			auto sg = detail::at_scope_exit([&] { get_lock_primitive().unlock_connect(); } );
+			get_lock_primitive().lock_nonrecursive();
+			auto sg = detail::at_scope_exit([&] { get_lock_primitive().unlock_nonrecursive(); } );
 
 			get_exception_handler().handle_exceptions([&] { get_handler_processor().populate_state(handler); });
 
@@ -201,8 +201,8 @@ namespace detail
 
 		virtual token connect(const std::shared_ptr<task_executor>& worker, const handler_type& handler)
 		{
-			get_lock_primitive().lock_connect();
-			auto sg = detail::at_scope_exit([&] { get_lock_primitive().unlock_connect(); } );
+			get_lock_primitive().lock_nonrecursive();
+			auto sg = detail::at_scope_exit([&] { get_lock_primitive().unlock_nonrecursive(); } );
 
 			add_ref();
 			intrusive_ptr<signal_impl> self(this);
@@ -218,8 +218,8 @@ namespace detail
 		template < typename... Args_ >
 		void invoke(Args_&&... args)
 		{
-			get_lock_primitive().lock_invoke();
-			auto sg = detail::at_scope_exit([&] { get_lock_primitive().unlock_invoke(); } );
+			get_lock_primitive().lock_recursive();
+			auto sg = detail::at_scope_exit([&] { get_lock_primitive().unlock_recursive(); } );
 			for (auto it = _handlers.begin(); it != _handlers.end();)
 			{
 				if (it->should_be_finalized())

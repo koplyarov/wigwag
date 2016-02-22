@@ -14,3 +14,9 @@
 #	pragma GCC diagnostic push
 #	pragma GCC diagnostic ignored "-Weffc++"
 #endif
+
+#if defined(WIGWAG_WARNINGS_DISABLED)
+#	error Inconsistent disable_warnings.hpp/enable_warnings.hpp  includes!
+#endif
+
+#define WIGWAG_WARNINGS_DISABLED

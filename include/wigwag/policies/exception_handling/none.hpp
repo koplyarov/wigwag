@@ -1,5 +1,5 @@
-#ifndef WIGWAG_POLICIES_HPP
-#define WIGWAG_POLICIES_HPP
+#ifndef WIGWAG_POLICIES_EXCEPTION_HANDLING_NONE_HPP
+#define WIGWAG_POLICIES_EXCEPTION_HANDLING_NONE_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,9 +11,21 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/policies/exception_handling/policies.hpp>
-#include <wigwag/policies/life_assurance/policies.hpp>
-#include <wigwag/policies/state_populating/policies.hpp>
-#include <wigwag/policies/threading/policies.hpp>
+namespace wigwag {
+namespace exception_handling
+{
+
+#include <wigwag/detail/disable_warnings.hpp>
+
+	struct none
+	{
+		template < typename Func_, typename... Args_ >
+		void handle_exceptions(Func_&& func, Args_&&... args) const
+		{ func(std::forward<Args_>(args)...); }
+	};
+
+#include <wigwag/detail/enable_warnings.hpp>
+
+}}
 
 #endif
