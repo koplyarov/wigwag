@@ -1,5 +1,5 @@
-#ifndef WIGWAG_POLICIES_THREADING_POLICIES_HPP
-#define WIGWAG_POLICIES_THREADING_POLICIES_HPP
+#ifndef WIGWAG_POLICIES_THREADING_SHARED_MUTEX_HPP
+#define WIGWAG_POLICIES_THREADING_SHARED_MUTEX_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,17 +11,39 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/policies/threading/none.hpp>
-#include <wigwag/policies/threading/own_mutex.hpp>
-#include <wigwag/policies/threading/own_recursive_mutex.hpp>
-#include <wigwag/policies/threading/shared_mutex.hpp>
-#include <wigwag/policies/threading/shared_recursive_mutex.hpp>
+#include <memory>
+#include <thread>
+
 
 namespace wigwag {
 namespace threading
 {
 
-	using default_ = own_recursive_mutex;
+#include <wigwag/detail/disable_warnings.hpp>
+
+	struct shared_mutex
+	{
+		class lock_primitive
+		{
+		private:
+			std::shared_ptr<std::mutex>		_mutex;
+
+		public:
+			lock_primitive(const std::shared_ptr<std::mutex> mutex)
+				: _mutex(mutex)
+			{ }
+
+			std::shared_ptr<std::mutex> get_primitive() const noexcept { return _mutex; }
+
+			void lock_nonrecursive() const { _mutex->lock(); }
+			void unlock_nonrecursive() const { _mutex->unlock(); }
+
+			void lock_recursive() const noexcept { }
+			void unlock_recursive() const noexcept { }
+		};
+	};
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }}
 
