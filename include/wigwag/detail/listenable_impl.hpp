@@ -11,6 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/at_scope_exit.hpp>
 #include <wigwag/detail/config.hpp>
 #include <wigwag/detail/enabler.hpp>
 #include <wigwag/detail/intrusive_list.hpp>

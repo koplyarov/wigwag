@@ -1,5 +1,5 @@
-#ifndef WIGWAG_SIGNAL_HPP
-#define WIGWAG_SIGNAL_HPP
+#ifndef WIGWAG_LISTENABLE_HPP
+#define WIGWAG_LISTENABLE_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,9 +11,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/detail/signal_impl.hpp>
+#include <wigwag/detail/listenable_impl.hpp>
 #include <wigwag/policies.hpp>
-#include <wigwag/signal_connector.hpp>
 
 
 namespace wigwag
@@ -22,18 +21,16 @@ namespace wigwag
 #include <wigwag/detail/disable_warnings.hpp>
 
 	template <
-			typename Signature_,
+			typename ListenerType_,
 			typename ExceptionHandlingPolicy_ = exception_handling::default_,
 			typename ThreadingPolicy_ = threading::default_,
 			typename StatePopulatingPolicy_ = state_populating::default_,
 			typename LifeAssurancePolicy_ = life_assurance::default_
 		>
-	class signal
+	class listenable
 	{
 	private:
-		using handler_type = std::function<Signature_>;
-
-		using impl_type = detail::signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>;
+		using impl_type = detail::listenable_impl<ListenerType_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>;
 		using impl_type_ptr = detail::intrusive_ptr<impl_type>;
 
 	private:
@@ -41,31 +38,25 @@ namespace wigwag
 
 	public:
 		template < typename... Args_ >
-		signal(Args_&&... args)
+		listenable(Args_&&... args)
 			: _impl(new impl_type(std::forward<Args_>(args)...))
 		{ }
 
-		~signal()
+		~listenable()
 		{ _impl->finalize_nodes(); }
 
-		signal(const signal&) = delete;
-		signal& operator = (const signal&) = delete;
+		listenable(const listenable&) = delete;
+		listenable& operator = (const listenable&) = delete;
 
 		auto lock_primitive() const -> decltype(_impl->get_lock_primitive().get_primitive())
 		{ return _impl->get_lock_primitive().get_primitive(); }
 
-		signal_connector<Signature_> connector() const
-		{ return signal_connector<Signature_>(_impl); }
-
-		token connect(const handler_type& handler)
+		token connect(const ListenerType_& handler)
 		{ return _impl->connect(handler); }
 
-		token connect(const std::shared_ptr<task_executor>& worker, const std::function<Signature_>& handler)
-		{ return _impl->connect(worker, handler); }
-
-		template < typename... Args_ >
-		void operator() (Args_&&... args) const
-		{ _impl->invoke(std::forward<Args_>(args)...); }
+		template < typename InvokeListenerFunc_ >
+		void invoke(const InvokeListenerFunc_& invoke_listener_func)
+		{ _impl->invoke(invoke_listener_func); }
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>

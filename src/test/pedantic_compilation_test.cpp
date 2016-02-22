@@ -8,6 +8,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/listenable.hpp>
 #include <wigwag/signal.hpp>
 #include <wigwag/thread_task_executor.hpp>
 #include <wigwag/token_pool.hpp>
