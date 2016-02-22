@@ -89,7 +89,7 @@ namespace detail
 					continue;
 				}
 
-				execution_guard g(listenable_base::get_signal_data(), it->get_life_assurance());
+				execution_guard g(listenable_base::get_life_assurance_shared_data(), it->get_life_assurance());
 				if (g.is_alive())
 					this->get_exception_handler().handle_exceptions(it->get_handler(), std::forward<Args_>(args)...);
 				++it;

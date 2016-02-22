@@ -34,7 +34,7 @@ namespace detail
 		>
 	class listenable_impl
 		:	private intrusive_ref_counter<listenable_impl<HandlerType_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>>,
-			private LifeAssurancePolicy_::signal_data,
+			private LifeAssurancePolicy_::shared_data,
 			private ExceptionHandlingPolicy_,
 			private ThreadingPolicy_::lock_primitive,
 			private StatePopulatingPolicy_::template handler_processor<HandlerType_>
@@ -201,7 +201,7 @@ namespace detail
 					continue;
 				}
 
-				execution_guard g(*this, it->get_life_assurance());
+				execution_guard g(get_life_assurance_shared_data(), it->get_life_assurance());
 				if (g.is_alive())
 					get_exception_handler().handle_exceptions(invoke_listener_func, it->get_handler());
 				++it;
@@ -211,7 +211,7 @@ namespace detail
 		const lock_primitive& get_lock_primitive() const { return *this; }
 
 	protected:
-		const typename LifeAssurancePolicy_::signal_data& get_signal_data() const { return *this; }
+		const typename LifeAssurancePolicy_::shared_data& get_life_assurance_shared_data() const { return *this; }
 
 		handlers_container& get_handlers_container() { return _handlers; }
 		const handlers_container& get_handlers_container() const { return _handlers; }

@@ -26,7 +26,7 @@ namespace life_assurance
 		class life_checker;
 		class execution_guard;
 
-		class signal_data
+		class shared_data
 		{ };
 
 		struct life_assurance
@@ -56,7 +56,7 @@ namespace life_assurance
 					WIGWAG_ASSERT(false, "Inconsistent reference counter!");
 			}
 
-			void reset_life_assurance(const signal_data&)
+			void reset_life_assurance(const shared_data&)
 			{ _alive = false; }
 
 			bool node_deleted_on_finalize() const
@@ -86,7 +86,7 @@ namespace life_assurance
 			detail::intrusive_ptr<const life_assurance>		_la;
 
 		public:
-			life_checker(const signal_data&, const life_assurance& la) noexcept
+			life_checker(const shared_data&, const life_assurance& la) noexcept
 				: _la(&la)
 			{ la.add_ref(); }
 		};
@@ -100,7 +100,7 @@ namespace life_assurance
 				: _la(c._la)
 			{ }
 
-			execution_guard(const signal_data&, const life_assurance& la)
+			execution_guard(const shared_data&, const life_assurance& la)
 				: _la(&la)
 			{ la.add_ref(); }
 

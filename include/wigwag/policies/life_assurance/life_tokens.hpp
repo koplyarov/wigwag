@@ -29,7 +29,7 @@ namespace life_assurance
 		class execution_guard;
 
 
-		class signal_data
+		class shared_data
 		{ };
 
 
@@ -42,7 +42,7 @@ namespace life_assurance
 			std::atomic<bool>	_should_be_finalized { false };
 
 		public:
-			void reset_life_assurance(const signal_data&)
+			void reset_life_assurance(const shared_data&)
 			{ _token.reset(); }
 
 			bool node_deleted_on_finalize() const
@@ -75,7 +75,7 @@ namespace life_assurance
 			life_token::checker		_checker;
 
 		public:
-			life_checker(const signal_data&, const life_assurance& la) noexcept : _checker(la._token) { }
+			life_checker(const shared_data&, const life_assurance& la) noexcept : _checker(la._token) { }
 		};
 
 
@@ -85,7 +85,7 @@ namespace life_assurance
 
 		public:
 			execution_guard(const life_checker& c) : _guard(c._checker) { } // TODO: looks like noexcept here makes the code faster, check it on other machines
-			execution_guard(const signal_data&, const life_assurance& la) : _guard(la._token) { }
+			execution_guard(const shared_data&, const life_assurance& la) : _guard(la._token) { }
 			int is_alive() const noexcept { return _guard.is_alive(); }
 		};
 	};

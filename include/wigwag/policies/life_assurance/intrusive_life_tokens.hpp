@@ -33,7 +33,7 @@ namespace life_assurance
 		class execution_guard;
 
 
-		class signal_data
+		class shared_data
 		{
 			friend class life_assurance;
 			friend class execution_guard;
@@ -75,7 +75,7 @@ namespace life_assurance
 				WIGWAG_ANNOTATE_HAPPENS_BEFORE(this);
 			}
 
-			void reset_life_assurance(const signal_data& sd)
+			void reset_life_assurance(const shared_data& sd)
 			{
 				_lock_counter_and_alive_flag -= alive_flag;
 				std::unique_lock<std::mutex> l(sd._mutex);
@@ -111,18 +111,18 @@ namespace life_assurance
 		{
 			friend class execution_guard;
 
-			const signal_data*								_sd;
+			const shared_data*								_sd;
 			detail::intrusive_ptr<const life_assurance>		_la;
 
 		public:
-			life_checker(const signal_data& sd, const life_assurance& la) noexcept
+			life_checker(const shared_data& sd, const life_assurance& la) noexcept
 				: _sd(&sd), _la(&la)
 			{ la.add_ref(); }
 		};
 
 		class execution_guard
 		{
-			const signal_data&								_sd;
+			const shared_data&								_sd;
 			detail::intrusive_ptr<const life_assurance>		_la;
 			int												_alive;
 
@@ -134,7 +134,7 @@ namespace life_assurance
 					unlock();
 			}
 
-			execution_guard(const signal_data& sd, const life_assurance& la)
+			execution_guard(const shared_data& sd, const life_assurance& la)
 				: _sd(sd), _la(&la), _alive(++la._lock_counter_and_alive_flag & life_assurance::alive_flag)
 			{
 				la.add_ref();
