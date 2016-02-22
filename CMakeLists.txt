@@ -23,7 +23,7 @@ else()
 endif()
 
 if (WIGWAG_COVERAGE)
-	message(STATUS "Using gcov for test coverage analysis")
+	message(STATUS "Using gcov for API_V1_test coverage analysis")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
 endif()
@@ -52,7 +52,7 @@ if(CXXTEST_FOUND)
 	enable_testing()
 
 	CXXTEST_ADD_TEST(wigwag_test unittest_wigwag.cpp
-					  ${CMAKE_CURRENT_SOURCE_DIR}/src/test/test.hpp)
+					  ${CMAKE_CURRENT_SOURCE_DIR}/src/test/api_v1_test.hpp)
 
 	target_link_libraries(wigwag_test ${CMAKE_THREAD_LIBS_INIT})
 endif()

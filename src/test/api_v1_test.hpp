@@ -1,5 +1,5 @@
-#ifndef TEST_TEST_HPP
-#define TEST_TEST_HPP
+#ifndef TEST_API_V1_TEST_HPP
+#define TEST_API_V1_TEST_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -32,7 +32,7 @@ using namespace wigwag;
 using namespace std::chrono;
 
 
-class wigwag_tests : public CxxTest::TestSuite
+class wigwag_api_v1_test : public CxxTest::TestSuite
 {
 public:
 	static void test_exception_handling()
