@@ -17,7 +17,7 @@
 #include <iostream>
 #include <thread>
 
-#include <test/profiler.hpp>
+#include <utils/profiler.hpp>
 
 
 namespace wigwag

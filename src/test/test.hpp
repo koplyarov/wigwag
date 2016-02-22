@@ -21,8 +21,8 @@
 #include <iostream>
 #include <thread>
 
-#include <test/profiler.hpp>
-#include <test/test_utils.hpp>
+#include <utils/profiler.hpp>
+#include <utils/test_utils.hpp>
 
 
 #define LOCK_GUARD(...) std::lock_guard<decltype(__VA_ARGS__)> l(__VA_ARGS__);

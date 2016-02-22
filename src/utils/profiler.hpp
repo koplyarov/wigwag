@@ -1,5 +1,5 @@
-#ifndef BENCHMARKS_STORAGE_FOR_HPP
-#define BENCHMARKS_STORAGE_FOR_HPP
+#ifndef UTILS_PROFILER_HPP
+#define UTILS_PROFILER_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,17 +11,32 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <chrono>
+
+
 namespace wigwag
 {
 
-	template < typename T_ >
-	union storage_for
+	template < typename ClockT_ >
+	class basic_profiler
 	{
-		T_ obj;
+		typedef std::chrono::time_point<ClockT_>		TimePoint;
 
-		storage_for() { }
-		~storage_for() { }
+	private:
+		TimePoint		_start;
+
+	public:
+		basic_profiler() { _start = ClockT_::now(); }
+
+		decltype(TimePoint() - TimePoint()) reset()
+		{
+			TimePoint end = ClockT_::now();
+			auto delta = end - _start;
+			_start = end;
+			return delta;
+		}
 	};
+	using profiler = basic_profiler<std::chrono::high_resolution_clock>;
 
 }
 

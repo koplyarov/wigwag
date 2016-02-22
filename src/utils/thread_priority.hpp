@@ -1,5 +1,5 @@
-#ifndef BENCHMARKS_THREAD_PRIORITY_HPP
-#define BENCHMARKS_THREAD_PRIORITY_HPP
+#ifndef UTILS_THREAD_PRIORITY_HPP
+#define UTILS_THREAD_PRIORITY_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //

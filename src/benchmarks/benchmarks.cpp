@@ -21,9 +21,9 @@
 #include <thread>
 
 #include <benchmarks/markers.hpp>
-#include <benchmarks/storage_for.hpp>
-#include <benchmarks/thread_priority.hpp>
-#include <test/profiler.hpp>
+#include <utils/storage_for.hpp>
+#include <utils/thread_priority.hpp>
+#include <utils/profiler.hpp>
 
 
 using namespace wigwag;

@@ -1,5 +1,5 @@
-#ifndef TEST_TEST_UTILS_HPP
-#define TEST_TEST_UTILS_HPP
+#ifndef UTILS_UTILS_HPP
+#define UTILS_UTILS_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
