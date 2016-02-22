@@ -27,8 +27,6 @@
 #include <utils/thread.hpp>
 
 
-#define LOCK_GUARD(...) std::lock_guard<decltype(__VA_ARGS__)> l(__VA_ARGS__);
-
 using namespace wigwag;
 using namespace std::chrono;
 
