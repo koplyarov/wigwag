@@ -31,7 +31,7 @@ namespace exception_handling
 				try
 				{ func(std::forward<Args_>(args)...); }
 				catch (const std::exception& ex)
-				{ fprintf(stderr, "std::exception in signal handler: %s\n", ex.what()); }
+				{ fprintf(stderr, "Uncaught std::exception: %s\n", ex.what()); }
 			}
 		};
 #endif
