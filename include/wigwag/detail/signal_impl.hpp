@@ -69,6 +69,20 @@ namespace detail
 				~handler_storage() { }
 			};
 
+			class lock_primitive_adapter
+			{
+			private:
+				const lock_primitive&	_lp;
+
+			public:
+				lock_primitive_adapter(const lock_primitive& lp)
+					: _lp(lp)
+				{ }
+
+				void lock() const { _lp.lock_connect(); }
+				void unlock() const { _lp.unlock_connect(); }
+			};
+
 		private:
 			intrusive_ptr<signal_impl>		_signal_impl;
 			handler_storage					_handler;
@@ -100,7 +114,8 @@ namespace detail
 			virtual void release_token_impl()
 			{
 				life_assurance::reset_life_assurance(*_signal_impl);
-				_signal_impl->get_handler_processor().withdraw_state(_signal_impl->get_lock_primitive(), _handler.obj);
+				lock_primitive_adapter lp(_signal_impl->get_lock_primitive());
+				_signal_impl->get_handler_processor().withdraw_state(lp, _handler.obj);
 				_handler.obj.~handler_type();
 				life_assurance::release_external_ownership(this);
 			}

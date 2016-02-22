@@ -151,7 +151,7 @@ namespace wigwag
 				void populate_state(const HandlerType_& handler) const { _populator(handler); }
 
 				template < typename LockPrimitive_ >
-				void withdraw_state(const LockPrimitive_&, const HandlerType_&) const noexcept { }
+				void withdraw_state(LockPrimitive_&, const HandlerType_&) const noexcept { }
 
 				static void empty_handler(const HandlerType_&) noexcept { }
 			};
@@ -183,11 +183,9 @@ namespace wigwag
 				void populate_state(const HandlerType_& handler) const { _populator(handler); }
 
 				template < typename LockPrimitive_ >
-				void withdraw_state(const LockPrimitive_& lp, const HandlerType_& handler) const
+				void withdraw_state(LockPrimitive_& lp, const HandlerType_& handler) const
 				{
-					lp.lock_connect();
-					auto sg = detail::at_scope_exit([&] { lp.unlock_connect(); } );
-
+					std::lock_guard<LockPrimitive_> l(lp);
 					_withdrawer(handler);
 				}
 
@@ -204,7 +202,7 @@ namespace wigwag
 				void populate_state(const HandlerType_&) const noexcept { }
 
 				template < typename LockPrimitive_ >
-				void withdraw_state(const LockPrimitive_&, const HandlerType_&) const noexcept { }
+				void withdraw_state(LockPrimitive_&, const HandlerType_&) const noexcept { }
 			};
 		};
 	}
