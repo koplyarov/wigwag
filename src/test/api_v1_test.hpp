@@ -13,6 +13,7 @@
 
 #include <wigwag/signal.hpp>
 #include <wigwag/thread_task_executor.hpp>
+#include <wigwag/threadless_task_executor.hpp>
 #include <wigwag/token_pool.hpp>
 
 #include <cxxtest/TestSuite.h>
@@ -184,55 +185,107 @@ public:
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	static void test__life_assurance__default()
+	{ do__test__life_assurance__common<signal<void()>>(); }
+
+	static void test__life_assurance__intrusive_life_tokens()
+	{ do__test__life_assurance__common<signal<void(), exception_handling::default_, threading::default_, state_populating::default_, life_assurance::intrusive_life_tokens>>(); }
+
+	static void test__life_assurance__life_tokens()
+	{ do__test__life_assurance__common<signal<void(), exception_handling::default_, threading::default_, state_populating::default_, life_assurance::life_tokens>>(); }
+
+	template < typename Signal_ >
+	static void do__test__life_assurance__common()
 	{
-		signal<void()> s;
+		Signal_ s;
 
-		thread t(
-			[&](const std::atomic<bool>& alive)
-			{
-				while (alive)
-				{
-					s();
-					thread::sleep(100);
-				}
-			}
-		);
+		thread t([&](const std::atomic<bool>& alive) { while (alive) { s(); thread::sleep(100); } });
 
-		profiler p;
 		{
-			token t = s.connect([]{ thread::sleep(1000); });
-			token_pool tokens;
-			for (int i = 0; i < 3; ++i)
-				tokens += s.connect([]{ thread::sleep(1000); });
+			mutexed<bool> handler_invoked(false);
+			token t = s.connect([&]{ thread::sleep(1000); handler_invoked.set(true); });
+			token other_t = s.connect([]{ thread::sleep(1000); });
 			thread::sleep(300);
-			p.reset();
+			profiler p;
 			t.reset();
 			auto disconnect_time = duration_cast<milliseconds>(p.reset()).count();
+			TS_ASSERT(handler_invoked.get());
 			TS_ASSERT_LESS_THAN_EQUALS(600, disconnect_time);
 			TS_ASSERT_LESS_THAN_EQUALS(disconnect_time, 1200);
 		}
 
 		{
-			token_pool tokens;
-			for (int i = 0; i < 3; ++i)
-				tokens += s.connect([]{ thread::sleep(1000); });
-			token t = s.connect([]{ thread::sleep(1000); });
+			mutexed<bool> handler_invoked(false);
+			token other_t = s.connect([]{ thread::sleep(1000); });
+			token t = s.connect([&]{ thread::sleep(1000); handler_invoked.set(true); });
 			thread::sleep(300);
-			p.reset();
+			profiler p;
 			t.reset();
 			auto disconnect_time = duration_cast<milliseconds>(p.reset()).count();
+			TS_ASSERT(!handler_invoked.get());
 			TS_ASSERT_LESS_THAN_EQUALS(disconnect_time, 100);
 		}
 
 		{
+			mutexed<bool> handler_invoked(false);
 			std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
-			token t = s.connect(worker, []{ thread::sleep(1000); });
+			token t = s.connect([&]{ thread::sleep(1000); handler_invoked.set(true); });
+			token other_t = s.connect([]{ thread::sleep(1000); });
 			thread::sleep(300);
-			p.reset();
+			profiler p;
 			t.reset();
 			auto disconnect_time = duration_cast<milliseconds>(p.reset()).count();
+			TS_ASSERT(handler_invoked.get());
 			TS_ASSERT_LESS_THAN_EQUALS(600, disconnect_time);
+			TS_ASSERT_LESS_THAN_EQUALS(disconnect_time, 1200);
 		}
+
+		{
+			mutexed<bool> handler_invoked(false);
+			std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
+			token other_t = s.connect([]{ thread::sleep(1000); });
+			token t = s.connect([&]{ thread::sleep(1000); handler_invoked.set(true); });
+			thread::sleep(300);
+			profiler p;
+			t.reset();
+			auto disconnect_time = duration_cast<milliseconds>(p.reset()).count();
+			TS_ASSERT(!handler_invoked.get());
+			TS_ASSERT_LESS_THAN_EQUALS(disconnect_time, 100);
+		}
+	}
+
+	static void test__life_assurance__single_threaded()
+	{
+		std::shared_ptr<threadless_task_executor> worker = std::make_shared<threadless_task_executor>();
+		signal<void(), exception_handling::default_, threading::default_, state_populating::default_, life_assurance::single_threaded> s;
+
+		{
+			mutexed<bool> handler_invoked(false);
+			token t = s.connect(worker, [&]{ handler_invoked.set(true); });
+			s();
+			worker->process_tasks();
+			t.reset();
+			TS_ASSERT(handler_invoked.get());
+		}
+
+		{
+			mutexed<bool> handler_invoked(false);
+			token t = s.connect(worker, [&]{ handler_invoked.set(true); });
+			s();
+			t.reset();
+			worker->process_tasks();
+			TS_ASSERT(!handler_invoked.get());
+		}
+	}
+
+	static void test__life_assurance__none()
+	{
+		signal<void(), exception_handling::default_, threading::default_, state_populating::default_, life_assurance::none> s;
+
+		bool handler_invoked = false;
+		token t = s.connect([&]{ handler_invoked  = true; });
+		s();
+		t.reset();
+		TS_ASSERT(handler_invoked);
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

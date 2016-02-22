@@ -11,6 +11,7 @@
 #include <wigwag/listenable.hpp>
 #include <wigwag/signal.hpp>
 #include <wigwag/thread_task_executor.hpp>
+#include <wigwag/threadless_task_executor.hpp>
 #include <wigwag/token_pool.hpp>
 
 

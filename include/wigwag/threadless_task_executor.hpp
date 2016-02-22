@@ -28,7 +28,7 @@ namespace wigwag
 	{
 		using task_queue = std::queue<std::function<void()>>;
 
-		using lock_primitive = ThreadingPolicy_::lock_primitive;
+		using lock_primitive = typename ThreadingPolicy_::lock_primitive;
 
 	private:
 		task_queue				_tasks;
