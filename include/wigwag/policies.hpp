@@ -371,25 +371,33 @@ namespace wigwag
 				friend class life_checker;
 				friend class execution_guard;
 
-				life_token	_token;
+				life_token			_token;
+				std::atomic<bool>	_should_be_finalized { false };
 
 			public:
 				void reset_life_assurance(const signal_data&)
 				{ _token.reset(); }
 
 				bool node_deleted_on_finalize() const
-				{ return false; }
+				{ return true; }
 
 				bool should_be_finalized() const
-				{ return false; }
+				{ return _should_be_finalized; }
 
 				template < typename HandlerNode_ >
-				void release_external_ownership(const HandlerNode_* node)
-				{ delete node; }
+				void release_external_ownership(const HandlerNode_*)
+				{
+					WIGWAG_ANNOTATE_HAPPENS_BEFORE(&_should_be_finalized);
+					_should_be_finalized = true;
+				}
 
 				template < typename HandlerNode_ >
-				void finalize(const HandlerNode_*)
-				{ }
+				void finalize(const HandlerNode_* node)
+				{
+					WIGWAG_ANNOTATE_HAPPENS_AFTER(&_should_be_finalized);
+					WIGWAG_ANNOTATE_RELEASE(&_should_be_finalized);
+					delete node;
+				}
 			};
 
 			class life_checker
