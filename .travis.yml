@@ -34,6 +34,6 @@ script:
 
 after_success:
   - lcov --directory . --capture --output-file coverage.info
-  - lcov --remove coverage.info 'build/unittest_wigwag.cpp' 'test/*' '/usr/*' --output-file coverage.info
+  - lcov --remove coverage.info 'build/unittest_wigwag.cpp' 'src/*' '/usr/*' --output-file coverage.info
   - lcov --list coverage.info
   - coveralls-lcov --repo-token ${COVERALLS_TOKEN} coverage.info
