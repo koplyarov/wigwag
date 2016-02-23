@@ -67,8 +67,12 @@ namespace detail
 		static_assert(std::is_base_of<intrusive_list_node, T_>::value, "intrusive_list_node should be a base of T_");
 
 	public:
+		class const_iterator;
+
 		class iterator : public iterator_base<iterator, std::bidirectional_iterator_tag, T_>
 		{
+			friend class const_iterator;
+
 		private:
 			intrusive_list_node*	_node;
 
@@ -87,6 +91,7 @@ namespace detail
 			const intrusive_list_node*	_node;
 
 		public:
+			const_iterator(iterator it) : _node(it._node) { }
 			explicit const_iterator(const intrusive_list_node* node = nullptr) : _node(node) { }
 
 			const T_& dereference() const { return static_cast<const T_&>(*_node); }

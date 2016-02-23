@@ -34,9 +34,6 @@ namespace detail
 		intrusive_ref_counter(const intrusive_ref_counter&) = delete;
 		intrusive_ref_counter& operator = (const intrusive_ref_counter&) = delete;
 
-		int get_ref_count() const
-		{ return _ref_count; }
-
 		void add_ref() const
 		{ ++_ref_count; }
 
