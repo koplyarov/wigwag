@@ -38,8 +38,12 @@ namespace wigwag
 		~thread()
 		{
 			_alive = false;
+
 			if (_impl.joinable())
 				_impl.join();
+			else
+				std::cerr << "WARNING: thread is not joinable!" << std::endl;
+
 			if (!_error_message.empty())
 				TS_FAIL(("Uncaught exception in thread: " + _error_message).c_str());
 		}
