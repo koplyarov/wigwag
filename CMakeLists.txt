@@ -33,14 +33,20 @@ find_package(Threads)
 ######################################################################
 
 if (MSVC)
+	set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/test/no_exceptions_compilation_test.cpp PROPERTIES COMPILE_FLAGS
+			"/Wall /WX")
 	set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/test/pedantic_compilation_test.cpp PROPERTIES COMPILE_FLAGS
 			"/Wall /WX")
 else()
+	set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/test/no_exceptions_compilation_test.cpp PROPERTIES COMPILE_FLAGS
+			"-Werror=all -Werror=extra -Werror=effc++ -Werror=pedantic -pedantic -pedantic-errors -fno-exceptions -fno-rtti -fcheck-new")
 	set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/test/pedantic_compilation_test.cpp PROPERTIES COMPILE_FLAGS
 			"-Werror=all -Werror=extra -Werror=effc++ -Werror=pedantic -pedantic -pedantic-errors")
 endif()
 
-add_library(wigwag_pedantic_compilation_test ${CMAKE_CURRENT_SOURCE_DIR}/src/test/pedantic_compilation_test.cpp)
+add_library(wigwag_pedantic_compilation_test
+	${CMAKE_CURRENT_SOURCE_DIR}/src/test/no_exceptions_compilation_test.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/test/pedantic_compilation_test.cpp)
 target_link_libraries(wigwag_pedantic_compilation_test)
 
 ######################################################################
