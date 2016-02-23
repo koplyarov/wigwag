@@ -290,24 +290,48 @@ public:
 
 	static void test_task_executors()
 	{
-		signal<void()> s;
+		{
+			std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
 
-		std::mutex m;
-		std::thread::id handler_thread_id;
+			signal<void()> s;
 
-		std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
-		token t = s.connect(worker, [&]{
-				std::lock_guard<std::mutex> l(m);
-				handler_thread_id = std::this_thread::get_id();
-			});
+			std::mutex m;
+			std::thread::id handler_thread_id;
 
-		s();
+			token t = s.connect(worker, [&]{
+					std::lock_guard<std::mutex> l(m);
+					handler_thread_id = std::this_thread::get_id();
+				});
 
-		thread::sleep(500);
+			s();
 
-		std::lock_guard<std::mutex> l(m);
-		TS_ASSERT_DIFFERS(handler_thread_id, std::thread::id());
-		TS_ASSERT_DIFFERS(handler_thread_id, std::this_thread::get_id());
+			thread::sleep(500);
+
+			std::lock_guard<std::mutex> l(m);
+			TS_ASSERT_DIFFERS(handler_thread_id, std::thread::id());
+			TS_ASSERT_DIFFERS(handler_thread_id, std::this_thread::get_id());
+		}
+
+		{
+			std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
+
+			std::mutex m;
+			int n = 0;
+
+			for (int i = 0; i < 3; ++i)
+				worker->add_task([&] {
+						thread::sleep(200);
+						auto l = lock(m);
+						++n;
+					});
+
+			profiler p;
+			worker.reset();
+			auto worker_dtor_time = duration_cast<milliseconds>(p.reset()).count();
+			TS_ASSERT_LESS_THAN_EQUALS(500, worker_dtor_time);
+			auto l = lock(m);
+			TS_ASSERT_EQUALS(n, 3);
+		}
 	}
 };
 

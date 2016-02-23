@@ -65,7 +65,7 @@ namespace wigwag
 		void thread_func()
 		{
 			std::unique_lock<std::mutex> l(_mutex);
-			while (_alive)
+			while (_alive || !_tasks.empty())
 			{
 				if (_tasks.empty())
 				{
