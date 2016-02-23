@@ -11,6 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/listenable.hpp>
 #include <wigwag/signal.hpp>
 #include <wigwag/thread_task_executor.hpp>
 #include <wigwag/threadless_task_executor.hpp>
@@ -33,7 +34,82 @@ using namespace std::chrono;
 
 class wigwag_api_v1_test : public CxxTest::TestSuite
 {
+private:
+	class test_listener
+	{
+	private:
+		std::function<void()>		_f_impl;
+		std::function<void(int)>	_g_impl;
+
+	public:
+		test_listener(const std::function<void()>& f_impl, const std::function<void(int)>& g_impl)
+			: _f_impl(f_impl), _g_impl(g_impl)
+		{ }
+
+		virtual void f() const { _f_impl(); }
+		virtual void g(int i) const { _g_impl(i); }
+	};
+
 public:
+	static void test_signals()
+	{
+		signal<void(int)> s;
+		std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
+
+		std::mutex m;
+		int value = 0;
+
+		token t0 = s.connect([&](int i) { auto l = lock(m); value += i; });
+		s(1);
+		{ auto l = lock(m); TS_ASSERT_EQUALS(value, 1); }
+
+		token t1 = s.connect([&](int i) { auto l = lock(m); value += 10 * i; });
+		s(3);
+		{ auto l = lock(m); TS_ASSERT_EQUALS(value, 34); }
+
+		t0.reset();
+		s(5);
+		{ auto l = lock(m); TS_ASSERT_EQUALS(value, 84); }
+
+		token t2 = s.connect(worker, [&](int i) { auto l = lock(m); value -= i; });
+		s(7);
+		thread::sleep(100);
+		{ auto l = lock(m); TS_ASSERT_EQUALS(value, 147); }
+	}
+
+	static void test_listenable()
+	{
+		listenable<test_listener> l;
+
+		int f_value = 0, g_value = 0;
+
+		token t0 = l.connect(test_listener([&] { ++f_value; }, [&](int i) { g_value += i; }));
+		l.invoke(std::bind(&test_listener::f, std::placeholders::_1));
+		TS_ASSERT_EQUALS(f_value, 1);
+		TS_ASSERT_EQUALS(g_value, 0);
+		l.invoke(std::bind(&test_listener::g, std::placeholders::_1, 32));
+		TS_ASSERT_EQUALS(f_value, 1);
+		TS_ASSERT_EQUALS(g_value, 32);
+
+		token t1 = l.connect(test_listener([&] { f_value += 10; }, [&](int i) { g_value += i * 2; }));
+		l.invoke([](const test_listener& f) { f.f(); });
+		TS_ASSERT_EQUALS(f_value, 12);
+		TS_ASSERT_EQUALS(g_value, 32);
+		l.invoke([](const test_listener& f) { f.g(15); });
+		TS_ASSERT_EQUALS(f_value, 12);
+		TS_ASSERT_EQUALS(g_value, 77);
+
+		t0.reset();
+		l.invoke([](const test_listener& f) { f.f(); });
+		TS_ASSERT_EQUALS(f_value, 22);
+		TS_ASSERT_EQUALS(g_value, 77);
+		l.invoke([](const test_listener& f) { f.g(5); });
+		TS_ASSERT_EQUALS(f_value, 22);
+		TS_ASSERT_EQUALS(g_value, 87);
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	static void test__exception_handling__default()
 	{
 		signal<void()> s;
@@ -46,6 +122,18 @@ public:
 		{
 			token t = s.connect([&] { throw 0; });
 			TS_ASSERT_THROWS_ANYTHING(s());
+		}
+
+		listenable<test_listener> l;
+
+		{
+			token t = l.connect(test_listener([&] { throw std::runtime_error("Test exception"); }, [](int){}));
+			TS_ASSERT_THROWS(l.invoke([](const test_listener& l){ l.f(); }), std::runtime_error);
+		}
+
+		{
+			token t = l.connect(test_listener([]{}, [&] (int i) { throw i; }));
+			TS_ASSERT_THROWS_ANYTHING(l.invoke([](const test_listener& l){ l.g(42); }));
 		}
 	}
 
@@ -62,21 +150,46 @@ public:
 			token t = s.connect([&] { throw 0; });
 			TS_ASSERT_THROWS_ANYTHING(s());
 		}
+
+		listenable<test_listener, exception_handling::none> l;
+
+		{
+			token t = l.connect(test_listener([&] { throw std::runtime_error("Test exception"); }, [](int){}));
+			TS_ASSERT_THROWS(l.invoke([](const test_listener& l){ l.f(); }), std::runtime_error);
+		}
+
+		{
+			token t = l.connect(test_listener([]{}, [&] (int i) { throw i; }));
+			TS_ASSERT_THROWS_ANYTHING(l.invoke([](const test_listener& l){ l.g(42); }));
+		}
 	}
 
 
 	static void test__exception_handling__print_to_stderr()
 	{
-		signal<void(), exception_handling::print_to_stderr> s;
+		{
+			signal<void(), exception_handling::print_to_stderr> s;
 
-		token_pool tp;
-		tp += s.connect([&] { throw std::runtime_error("Test exception"); });
-		tp += s.connect([&] { throw 0; });
-		TS_ASSERT_THROWS_ANYTHING(s());
+			token_pool tp;
+			tp += s.connect([&] { throw std::runtime_error("Test exception"); });
+			TS_ASSERT_THROWS_NOTHING(s());
+			tp += s.connect([&] { throw 0; });
+			TS_ASSERT_THROWS_ANYTHING(s());
 
-		std::shared_ptr<task_executor> worker = std::make_shared<basic_thread_task_executor<exception_handling::print_to_stderr> >();
-		worker->add_task([]{ throw std::runtime_error("Test exception"); });
-		thread::sleep(300);
+			std::shared_ptr<task_executor> worker = std::make_shared<basic_thread_task_executor<exception_handling::print_to_stderr> >();
+			worker->add_task([]{ throw std::runtime_error("Test exception"); });
+			thread::sleep(300);
+		}
+
+		{
+			listenable<test_listener, exception_handling::print_to_stderr> l;
+
+			token_pool tp;
+			tp += l.connect(test_listener([&] { throw std::runtime_error("Test exception"); }, [](int){}));
+			tp += l.connect(test_listener([]{}, [&] (int i) { throw i; }));
+			TS_ASSERT_THROWS_NOTHING(l.invoke([](const test_listener& l){ l.f(); }));
+			TS_ASSERT_THROWS_ANYTHING(l.invoke([](const test_listener& l){ l.g(42); }));
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -194,11 +307,9 @@ public:
 	template < typename Signal_ >
 	static void do__test__life_assurance__common()
 	{
-		Signal_ s;
-
-		thread t([&](const std::atomic<bool>& alive) { while (alive) { s(); thread::sleep(100); } });
-
 		{
+			Signal_ s;
+			thread th([&](const std::atomic<bool>& alive) { while (alive) { s(); thread::sleep(100); } });
 			mutexed<bool> handler_invoked(false);
 			token t = s.connect([&]{ thread::sleep(1000); handler_invoked.set(true); });
 			token other_t = s.connect([]{ thread::sleep(1000); });
@@ -212,6 +323,8 @@ public:
 		}
 
 		{
+			Signal_ s;
+			thread th([&](const std::atomic<bool>& alive) { while (alive) { s(); thread::sleep(100); } });
 			mutexed<bool> handler_invoked(false);
 			token other_t = s.connect([]{ thread::sleep(1000); });
 			token t = s.connect([&]{ thread::sleep(1000); handler_invoked.set(true); });
@@ -224,10 +337,12 @@ public:
 		}
 
 		{
+			Signal_ s;
+			thread th([&](const std::atomic<bool>& alive) { while (alive) { s(); thread::sleep(100); } });
 			mutexed<bool> handler_invoked(false);
 			std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
-			token t = s.connect([&]{ thread::sleep(1000); handler_invoked.set(true); });
-			token other_t = s.connect([]{ thread::sleep(1000); });
+			token t = s.connect(worker, [&]{ thread::sleep(1000); handler_invoked.set(true); });
+			token other_t = s.connect(worker, []{ thread::sleep(1000); });
 			thread::sleep(300);
 			profiler p;
 			t.reset();
@@ -238,10 +353,12 @@ public:
 		}
 
 		{
+			Signal_ s;
+			thread th([&](const std::atomic<bool>& alive) { while (alive) { s(); thread::sleep(100); } });
 			mutexed<bool> handler_invoked(false);
 			std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
-			token other_t = s.connect([]{ thread::sleep(1000); });
-			token t = s.connect([&]{ thread::sleep(1000); handler_invoked.set(true); });
+			token other_t = s.connect(worker, []{ thread::sleep(1000); });
+			token t = s.connect(worker, [&]{ thread::sleep(1000); handler_invoked.set(true); });
 			thread::sleep(300);
 			profiler p;
 			t.reset();
