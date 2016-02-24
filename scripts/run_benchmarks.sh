@@ -36,9 +36,10 @@ Benchmark() {
 }
 
 
-PrintCpuInfo() {
-	echo "### CPU info ###"
-	echo "  $(grep "^model name\>" /proc/cpuinfo | head -n1)"
+PrintSystemInfo() {
+	echo "### System info ###"
+	echo "  $(lsb_release -sd)"
+	echo "  $(grep "^model name\>" /proc/cpuinfo | head -n1 | sed "s/[^:]*:\s*\(.*\)$/\1/g")"
 }
 
 
@@ -60,7 +61,7 @@ echo "Benchmark script: $FILENAME"
 echo
 
 
-PrintCpuInfo
+PrintSystemInfo
 echo
 
 SKIP_EMPTY_STRINGS=1
