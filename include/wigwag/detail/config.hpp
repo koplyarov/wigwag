@@ -84,7 +84,7 @@
 #	endif
 #endif
 
-#if WIGWAG_NOEXCEPTIONS
+#if defined(_MSC_VER) && WIGWAG_NOEXCEPTIONS
 #	define noexcept
 #endif
 
