@@ -36,9 +36,10 @@ function Benchmark($task, $obj, $count, $secondary_count)
 }
 
 
-function PrintCpuInfo
+function PrintSystemInfo
 {
-	"### CPU info ###"
+	"### System info ###"
+	"  $([System.Environment]::OSVersion.VersionString)"
 	"  $((Get-WmiObject Win32_Processor).Name)"
 }
 
@@ -59,7 +60,7 @@ if ($benchmarks_dir -eq $null) { $benchmarks_dir = "$PSScriptRoot\..\build\bin\R
 echo "Benchmark script: $filename"
 echo ""
 
-PrintCpuInfo
+PrintSystemInfo
 echo ""
 
 $skip_empty_lines = $True
