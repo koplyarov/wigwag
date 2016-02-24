@@ -9,3 +9,6 @@
 
 
 #include <test/compilation_test.hpp>
+
+void pedantic_compilation_test_dummy_func()
+{ }

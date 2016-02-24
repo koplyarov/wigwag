@@ -12,6 +12,11 @@
 #	pragma GCC diagnostic pop
 #endif
 
+#if defined(_MSC_VER)
+#	pragma warning(pop)
+#	pragma warning(default: 5031) // Sorry :(
+#endif
+
 #if !defined(WIGWAG_WARNINGS_DISABLED)
 #	error Inconsistent disable_warnings.hpp/enable_warnings.hpp  includes!
 #endif

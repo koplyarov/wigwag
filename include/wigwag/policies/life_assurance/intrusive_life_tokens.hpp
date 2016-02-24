@@ -124,7 +124,7 @@ namespace life_assurance
 		{
 			const shared_data&								_sd;
 			detail::intrusive_ptr<const life_assurance>		_la;
-			int												_alive;
+			life_assurance::int_type						_alive;
 
 		public:
 			execution_guard(const life_checker& c)
@@ -148,7 +148,7 @@ namespace life_assurance
 					unlock();
 			}
 
-			int is_alive() const noexcept
+			life_assurance::int_type is_alive() const noexcept
 			{ return _alive; }
 
 		private:

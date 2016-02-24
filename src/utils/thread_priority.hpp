@@ -13,9 +13,12 @@
 
 #include <iostream>
 
-#if defined __GNUC__
+#if WIGWAG_PLATFORM_POSIX
 #	include <pthread.h>
 #	include <string.h>
+#endif
+#if WIGWAG_PLATFORM_WINDOWS
+#	include <windows.h>
 #endif
 
 namespace wigwag
@@ -23,13 +26,22 @@ namespace wigwag
 
 	void set_max_thread_priority()
 	{
-#if defined __GNUC__
+#if WIGWAG_PLATFORM_POSIX
 		int policy = SCHED_FIFO;
 		struct sched_param scheduler_params = {};
 		scheduler_params.sched_priority = sched_get_priority_max(policy);
 		int res = pthread_setschedparam(pthread_self(), policy, &scheduler_params);
 		if (res != 0)
 			std::cerr << "!!! Could not set thread priority: " << strerror(res) << std::endl;
+#endif
+#if WIGWAG_PLATFORM_WINDOWS
+		if (!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL))
+		{
+			DWORD err = GetLastError();
+			char buf[256] = { '\0' };
+			FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, sizeof(buf) - 1, NULL);
+			std::cerr << "!!! Could not set thread priority: " << buf << std::endl;
+		}
 #endif
 	}
 

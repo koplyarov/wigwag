@@ -15,6 +15,12 @@
 #	pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
+#if defined(_MSC_VER)
+#	pragma warning(disable: 5031) // Sorry :(
+#	pragma warning(push)
+#	pragma warning(disable: 4355 4625 4626 5026 5027)
+#endif
+
 #if defined(WIGWAG_WARNINGS_DISABLED)
 #	error Inconsistent disable_warnings.hpp/enable_warnings.hpp  includes!
 #endif

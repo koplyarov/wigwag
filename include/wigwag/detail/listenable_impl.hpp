@@ -35,10 +35,10 @@ namespace detail
 		>
 	class listenable_impl
 		:	private intrusive_ref_counter<listenable_impl<HandlerType_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>>,
-			private LifeAssurancePolicy_::shared_data,
-			private ExceptionHandlingPolicy_,
-			private ThreadingPolicy_::lock_primitive,
-			private StatePopulatingPolicy_::template handler_processor<HandlerType_>
+			protected LifeAssurancePolicy_::shared_data,
+			protected ExceptionHandlingPolicy_,
+			protected ThreadingPolicy_::lock_primitive,
+			protected StatePopulatingPolicy_::template handler_processor<HandlerType_>
 	{
 		friend class intrusive_ref_counter<listenable_impl<HandlerType_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>>;
 		using ref_counter_base = intrusive_ref_counter<listenable_impl<HandlerType_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>>;

@@ -9,3 +9,6 @@
 
 
 #include <test/compilation_test.hpp>
+
+void no_exceptions_compilation_test_dummy_func()
+{ }

@@ -34,9 +34,13 @@ find_package(Threads)
 
 if (MSVC)
 	set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/test/no_exceptions_compilation_test.cpp PROPERTIES COMPILE_FLAGS
-			"/Wall /WX")
+		"/W4 /WX /D_HAS_EXCEPTIONS=0")
+	get_source_file_property(TMP_COMPILE_FLAGS ${CMAKE_CURRENT_SOURCE_DIR}/src/test/no_exceptions_compilation_test.cpp COMPILE_FLAGS)
+	string(REPLACE "/EHsc" "/EHs-c-" TMP_COMPILE_FLAGS ${TMP_COMPILE_FLAGS})
+	set_source_files_properties(myprogram.cpp COMPILE_FLAGS ${TMP_COMPILE_FLAGS})
+
 	set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/test/pedantic_compilation_test.cpp PROPERTIES COMPILE_FLAGS
-			"/Wall /WX")
+		"/W4 /WX")
 else()
 	set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/test/no_exceptions_compilation_test.cpp PROPERTIES COMPILE_FLAGS
 			"-Werror=all -Werror=extra -Werror=effc++ -Werror=pedantic -pedantic -pedantic-errors -fno-exceptions -fno-rtti -fcheck-new")
@@ -59,6 +63,10 @@ if(CXXTEST_FOUND)
 
 	CXXTEST_ADD_TEST(wigwag_test unittest_wigwag.cpp
 					  ${CMAKE_CURRENT_SOURCE_DIR}/src/test/api_v1_test.hpp)
+
+	if (MSVC)
+		set_source_files_properties(unittest_wigwag.cpp PROPERTIES COMPILE_FLAGS "/wd4800")
+	endif()
 
 	target_link_libraries(wigwag_test ${CMAKE_THREAD_LIBS_INIT})
 endif()
