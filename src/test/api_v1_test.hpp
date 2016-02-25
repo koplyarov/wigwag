@@ -340,6 +340,24 @@ public:
 	static void do__test__life_assurance__common()
 	{
 		{
+			std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
+			worker->add_task([]{ thread::sleep(200); });
+			token_pool tp;
+			Signal_ s;
+			tp += s.connect(worker, []{ thread::sleep(200); });
+			s();
+		}
+
+		{
+			std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
+			worker->add_task([]{ thread::sleep(200); });
+			Signal_ s;
+			token_pool tp;
+			tp += s.connect(worker, []{ thread::sleep(200); });
+			s();
+		}
+
+		{
 			Signal_ s;
 			thread th([&](const std::atomic<bool>& alive) { while (alive) { s(); thread::sleep(100); } });
 			mutexed<bool> handler_invoked(false);
