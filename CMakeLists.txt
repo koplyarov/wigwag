@@ -26,6 +26,7 @@ if (WIGWAG_COVERAGE)
 	message(STATUS "Using gcov for API_V1_test coverage analysis")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include wigwag/detail/coverage.hpp")
 endif()
 
 find_package(Threads)
