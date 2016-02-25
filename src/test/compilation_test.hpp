@@ -88,3 +88,37 @@ private:
 	void int_changed_sync_handler(int)
 	{ }
 };
+
+
+class crazy_signals
+{
+public:
+	signal<void(const std::function<void(int)>& f)>			on_func;
+	signal<void(std::string& s)>							on_string_ref;
+
+	void test_connect()
+	{
+		std::shared_ptr<task_executor>	worker = std::make_shared<thread_task_executor>();
+		token_pool tp;
+
+		tp += on_func.connect(std::bind(&crazy_signals::func_handler, this, std::placeholders::_1));
+		tp += on_string_ref.connect(std::bind(&crazy_signals::string_ref_handler, this, std::placeholders::_1));
+
+		tp += on_func.connect(worker, std::bind(&crazy_signals::func_handler, this, std::placeholders::_1));
+		tp += on_string_ref.connect(worker, std::bind(&crazy_signals::string_ref_handler, this, std::placeholders::_1));
+	}
+
+	void test_invoke()
+	{
+		std::string s;
+
+		on_func([](int){ });
+		on_func(std::bind([](const std::string&, int){ }, "qwe", std::placeholders::_1));
+		on_string_ref(s);
+		on_string_ref(std::ref(s));
+	}
+
+private:
+	void func_handler(const std::function<void(int)>& f) { f(42); }
+	void string_ref_handler(std::string& s) { s = "qwe"; }
+};
