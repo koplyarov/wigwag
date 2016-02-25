@@ -110,6 +110,38 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	static void test_signal_attributes()
+	{
+		std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
+		token_pool tp;
+
+		{
+			signal<void()> s;
+			TS_ASSERT_THROWS_NOTHING(tp += s.connect([]{}));
+			TS_ASSERT_THROWS_NOTHING(tp += s.connect(worker, []{}));
+		}
+
+		{
+			signal<void()> s(signal_attributes::none);
+			TS_ASSERT_THROWS_NOTHING(tp += s.connect([]{}));
+			TS_ASSERT_THROWS_NOTHING(tp += s.connect(worker, []{}));
+		}
+
+		{
+			signal<void()> s(signal_attributes::connect_sync_only);
+			TS_ASSERT_THROWS_NOTHING(tp += s.connect([]{}));
+			TS_ASSERT_THROWS((tp += s.connect(worker, []{})), std::runtime_error);
+		}
+
+		{
+			signal<void()> s(signal_attributes::connect_async_only);
+			TS_ASSERT_THROWS((tp += s.connect([]{})), std::runtime_error);
+			TS_ASSERT_THROWS_NOTHING(tp += s.connect(worker, []{}));
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	static void test__exception_handling__default()
 	{
 		signal<void()> s;

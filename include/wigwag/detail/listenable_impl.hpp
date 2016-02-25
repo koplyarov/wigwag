@@ -17,6 +17,7 @@
 #include <wigwag/detail/intrusive_list.hpp>
 #include <wigwag/detail/intrusive_ptr.hpp>
 #include <wigwag/detail/intrusive_ref_counter.hpp>
+#include <wigwag/handler_attributes.hpp>
 #include <wigwag/token.hpp>
 
 
@@ -101,8 +102,13 @@ namespace detail
 			virtual void release_token_impl()
 			{
 				life_assurance::reset_life_assurance(*_listenable_impl);
-				lock_primitive_adapter lp(_listenable_impl->get_lock_primitive());
-				_listenable_impl->get_handler_processor().withdraw_state(lp, _handler.obj);
+
+				if (!suppress_populator())
+				{
+					lock_primitive_adapter lp(_listenable_impl->get_lock_primitive());
+					_listenable_impl->get_handler_processor().withdraw_state(lp, _handler.obj);
+				}
+
 				_handler.obj.~handler_type();
 
 				if (life_assurance::release_node())
@@ -130,6 +136,26 @@ namespace detail
 
 			const handler_type& get_handler() const { return _handler.obj; }
 			const life_assurance& get_life_assurance() const { return *this; }
+
+		protected:
+			virtual bool suppress_populator()
+			{ return false; }
+		};
+
+		class handler_node_with_attributes : public handler_node
+		{
+		private:
+			handler_attributes		_attributes;
+
+		public:
+			template < typename... Args_ >
+			handler_node_with_attributes(handler_attributes attributes, Args_&&... args)
+				: handler_node(std::forward<Args_>(args)...), _attributes(attributes)
+			{ }
+
+		protected:
+			virtual bool suppress_populator()
+			{ return contains_flag(_attributes, handler_attributes::suppress_populator); }
 		};
 
 		using handlers_container = detail::intrusive_list<handler_node>;
@@ -180,17 +206,15 @@ namespace detail
 		void add_ref() { ref_counter_base::add_ref(); }
 		void release() { ref_counter_base::release(); }
 
-		token connect(const handler_type& handler)
+		token connect(const handler_type& handler, handler_attributes attributes)
 		{
 			get_lock_primitive().lock_nonrecursive();
 			auto sg = detail::at_scope_exit([&] { get_lock_primitive().unlock_nonrecursive(); } );
 
-			get_exception_handler().handle_exceptions([&] { get_handler_processor().populate_state(handler); });
+			if (!contains_flag(attributes, handler_attributes::suppress_populator))
+				get_exception_handler().handle_exceptions([&] { get_handler_processor().populate_state(handler); });
 
-			add_ref();
-			intrusive_ptr<listenable_impl> self(this);
-
-			return token::create<handler_node>(self, handler);
+			return create_node(attributes, handler);
 		}
 
 		template < typename InvokeListenerFunc_ >
@@ -216,6 +240,18 @@ namespace detail
 		const lock_primitive& get_lock_primitive() const { return *this; }
 
 	protected:
+		template < typename... Args_>
+		token create_node(handler_attributes attributes, Args_&&... args)
+		{
+			add_ref();
+			intrusive_ptr<listenable_impl> self(this);
+
+			if (attributes == handler_attributes::none)
+				return token::create<handler_node>(self, std::forward<Args_>(args)...);
+			else
+				return token::create<handler_node_with_attributes>(attributes, self, std::forward<Args_>(args)...);
+		}
+
 		const typename LifeAssurancePolicy_::shared_data& get_life_assurance_shared_data() const { return *this; }
 
 		handlers_container& get_handlers_container() { return _handlers; }

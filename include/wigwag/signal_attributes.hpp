@@ -1,5 +1,5 @@
-#ifndef WIGWAG_DETAIL_SIGNAL_CONNECTOR_IMPL_HPP
-#define WIGWAG_DETAIL_SIGNAL_CONNECTOR_IMPL_HPP
+#ifndef WIGWAG_SIGNAL_ATTRIBUTES_HPP
+#define WIGWAG_SIGNAL_ATTRIBUTES_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,29 +11,21 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/handler_attributes.hpp>
-#include <wigwag/task_executor.hpp>
-#include <wigwag/token.hpp>
+#include <wigwag/detail/flags.hpp>
 
 
-namespace wigwag {
-namespace detail
+namespace wigwag
 {
 
-
-	template < typename Signature_ >
-	struct signal_connector_impl
+	enum class signal_attributes
 	{
-		virtual ~signal_connector_impl() { }
-
-		virtual token connect(const std::function<Signature_>& handler, handler_attributes attributes) = 0;
-		virtual token connect(const std::shared_ptr<task_executor>& worker, const std::function<Signature_>& handler, handler_attributes attributes) = 0;
-
-		virtual void add_ref() = 0;
-		virtual void release() = 0;
+		none				= 0x0,
+		connect_sync_only	= 0x1,
+		connect_async_only	= 0x2
 	};
 
+	WIGWAG_DECLARE_ENUM_BITWISE_OPERATORS(signal_attributes)
 
-}}
+}
 
 #endif

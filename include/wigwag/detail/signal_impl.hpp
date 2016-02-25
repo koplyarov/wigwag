@@ -14,6 +14,7 @@
 #include <wigwag/detail/async_handler.hpp>
 #include <wigwag/detail/listenable_impl.hpp>
 #include <wigwag/detail/signal_connector_impl.hpp>
+#include <wigwag/signal_attributes.hpp>
 
 
 namespace wigwag {
@@ -57,21 +58,27 @@ namespace detail
 		virtual void add_ref() { listenable_base::add_ref(); }
 		virtual void release() { listenable_base::release(); }
 
-		virtual token connect(const handler_type& handler)
-		{ return listenable_base::connect(handler); }
-
-		virtual token connect(const std::shared_ptr<task_executor>& worker, const handler_type& handler)
+		virtual token connect(const handler_type& handler, handler_attributes attributes)
 		{
+			if (contains_flag(this->get_attributes(), signal_attributes::connect_async_only))
+				WIGWAG_THROW("The signal restrains connecting synchronous handlers!");
+
+			return listenable_base::connect(handler, attributes);
+		}
+
+		virtual token connect(const std::shared_ptr<task_executor>& worker, const handler_type& handler, handler_attributes attributes)
+		{
+			if (contains_flag(this->get_attributes(), signal_attributes::connect_sync_only))
+				WIGWAG_THROW("The signal restrains connecting asynchronous handlers!");
+
 			this->get_lock_primitive().lock_nonrecursive();
 			auto sg = detail::at_scope_exit([&] { this->get_lock_primitive().unlock_nonrecursive(); } );
 
-			add_ref();
-			intrusive_ptr<listenable_base> self(this);
-
-			return token::create<handler_node>(self,
+			return this->create_node(attributes,
 					[&](const life_checker& lc) {
 						async_handler<Signature_, LifeAssurancePolicy_> real_handler(worker, lc, handler);
-						this->get_exception_handler().handle_exceptions([&] { this->get_handler_processor().populate_state(real_handler); });
+						if (!contains_flag(attributes, handler_attributes::suppress_populator))
+							this->get_exception_handler().handle_exceptions([&] { this->get_handler_processor().populate_state(real_handler); });
 						return real_handler;
 					});
 		}
@@ -95,7 +102,37 @@ namespace detail
 				++it;
 			}
 		}
+
+	protected:
+		virtual signal_attributes get_attributes() const { return signal_attributes::none; }
 	};
+
+
+	template <
+			typename Signature_,
+			typename ExceptionHandlingPolicy_,
+			typename ThreadingPolicy_,
+			typename StatePopulatingPolicy_,
+			typename LifeAssurancePolicy_
+		>
+	class signal_with_attributes_impl : public signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>
+	{
+		using base = signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>;
+
+	private:
+		signal_attributes	_attributes;
+
+	public:
+		template < typename... Args_ >
+		signal_with_attributes_impl(signal_attributes attributes, Args_&&... args)
+			: base(std::forward<Args_>(args)...), _attributes(attributes)
+		{ }
+
+	protected:
+		virtual signal_attributes get_attributes() const { return _attributes; }
+	};
+
+
 
 #include <wigwag/detail/enable_warnings.hpp>
 

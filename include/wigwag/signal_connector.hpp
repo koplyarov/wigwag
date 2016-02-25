@@ -13,6 +13,7 @@
 
 #include <wigwag/detail/intrusive_ptr.hpp>
 #include <wigwag/detail/signal_connector_impl.hpp>
+#include <wigwag/handler_attributes.hpp>
 
 
 namespace wigwag
@@ -36,11 +37,13 @@ namespace wigwag
 			: _impl(impl)
 		{ }
 
-		token connect(const handler_type& handler)
-		{ return _impl->connect(handler); }
+		template < typename HandlerFunc_ >
+		token connect(const HandlerFunc_& handler, handler_attributes attributes = handler_attributes::none)
+		{ return _impl->connect(handler, attributes); }
 
-		token connect(const std::shared_ptr<task_executor>& worker, const std::function<Signature_>& handler)
-		{ return _impl->connect(worker, handler); }
+		template < typename HandlerFunc_ >
+		token connect(const std::shared_ptr<task_executor>& worker, const HandlerFunc_& handler, handler_attributes attributes = handler_attributes::none)
+		{ return _impl->connect(worker, handler, attributes); }
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>

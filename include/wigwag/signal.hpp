@@ -34,6 +34,7 @@ namespace wigwag
 		using handler_type = std::function<Signature_>;
 
 		using impl_type = detail::signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>;
+		using impl_type_with_attr = detail::signal_with_attributes_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>;
 		using impl_type_ptr = detail::intrusive_ptr<impl_type>;
 
 	private:
@@ -41,8 +42,15 @@ namespace wigwag
 
 	public:
 		template < typename... Args_ >
+		signal(signal_attributes attributes, Args_&&... args)
+			: _impl((attributes == signal_attributes::none) ?
+				new impl_type(std::forward<Args_>(args)...) :
+				new impl_type_with_attr(attributes, std::forward<Args_>(args)...))
+		{ }
+
+		template < typename... Args_ >
 		signal(Args_&&... args)
-			: _impl(new impl_type(std::forward<Args_>(args)...))
+			: _impl( new impl_type(std::forward<Args_>(args)...))
 		{ }
 
 		~signal()
@@ -62,11 +70,13 @@ namespace wigwag
 		signal_connector<Signature_> connector() const
 		{ return signal_connector<Signature_>(_impl); }
 
-		token connect(const handler_type& handler)
-		{ return _impl->connect(handler); }
+		template < typename HandlerFunc_ >
+		token connect(const HandlerFunc_& handler, handler_attributes attributes = handler_attributes::none)
+		{ return _impl->connect(handler, attributes); }
 
-		token connect(const std::shared_ptr<task_executor>& worker, const std::function<Signature_>& handler)
-		{ return _impl->connect(worker, handler); }
+		template < typename HandlerFunc_ >
+		token connect(const std::shared_ptr<task_executor>& worker, const HandlerFunc_& handler, handler_attributes attributes = handler_attributes::none)
+		{ return _impl->connect(worker, handler, attributes); }
 
 		template < typename... Args_ >
 		void operator() (Args_&&... args) const

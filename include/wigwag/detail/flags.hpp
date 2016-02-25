@@ -1,5 +1,5 @@
-#ifndef WIGWAG_DETAIL_SIGNAL_CONNECTOR_IMPL_HPP
-#define WIGWAG_DETAIL_SIGNAL_CONNECTOR_IMPL_HPP
+#ifndef WIGWAG_DETAIL_FLAGS_HPP
+#define WIGWAG_DETAIL_FLAGS_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,28 +11,28 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/handler_attributes.hpp>
-#include <wigwag/task_executor.hpp>
-#include <wigwag/token.hpp>
+#include <type_traits>
 
 
 namespace wigwag {
 namespace detail
 {
 
+#define WIGWAG_DECLARE_ENUM_BITWISE_OPERATORS(EnumClass_) \
+	inline EnumClass_ operator | (EnumClass_ l, EnumClass_ r) \
+	{ \
+		using underlying = typename std::underlying_type<EnumClass_>::type; \
+		return static_cast<EnumClass_>(static_cast<underlying>(l) | static_cast<underlying>(r)); \
+	} \
+	inline EnumClass_ operator & (EnumClass_ l, EnumClass_ r) \
+	{ \
+		using underlying = typename std::underlying_type<EnumClass_>::type; \
+		return static_cast<EnumClass_>(static_cast<underlying>(l) & static_cast<underlying>(r)); \
+	}
 
-	template < typename Signature_ >
-	struct signal_connector_impl
-	{
-		virtual ~signal_connector_impl() { }
-
-		virtual token connect(const std::function<Signature_>& handler, handler_attributes attributes) = 0;
-		virtual token connect(const std::shared_ptr<task_executor>& worker, const std::function<Signature_>& handler, handler_attributes attributes) = 0;
-
-		virtual void add_ref() = 0;
-		virtual void release() = 0;
-	};
-
+	template < typename T_ >
+	inline bool contains_flag(T_ val, T_ flag)
+	{ return (val & flag) != T_(); }
 
 }}
 
