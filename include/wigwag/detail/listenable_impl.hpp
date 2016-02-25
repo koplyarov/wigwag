@@ -95,19 +95,8 @@ namespace detail
 				: _listenable_impl(impl), _handler(handler)
 			{ _listenable_impl->get_handlers_container().push_back(*this); }
 
-			~handler_node()
-			{
-				if (life_assurance::node_deleted_on_finalize())
-				{
-					_listenable_impl->get_handlers_container().erase(*this);
-				}
-				else
-				{
-					_listenable_impl->get_lock_primitive().lock_nonrecursive();
-					auto sg = detail::at_scope_exit([&] { _listenable_impl->get_lock_primitive().unlock_nonrecursive(); } );
-					_listenable_impl->get_handlers_container().erase(*this);
-				}
-			}
+			virtual ~handler_node()
+			{ }
 
 			virtual void release_token_impl()
 			{
@@ -115,14 +104,29 @@ namespace detail
 				lock_primitive_adapter lp(_listenable_impl->get_lock_primitive());
 				_listenable_impl->get_handler_processor().withdraw_state(lp, _handler.obj);
 				_handler.obj.~handler_type();
-				life_assurance::release_external_ownership(this);
+
+				if (life_assurance::release_node())
+				{
+					{
+						_listenable_impl->get_lock_primitive().lock_nonrecursive();
+						auto sg = detail::at_scope_exit([&] { _listenable_impl->get_lock_primitive().unlock_nonrecursive(); } );
+						_listenable_impl->get_handlers_container().erase(*this);
+					}
+					delete this;
+				}
 			}
 
 			bool should_be_finalized() const
-			{ return life_assurance::should_be_finalized(); }
+			{ return life_assurance::node_should_be_released(); }
 
 			void finalize_node()
-			{ life_assurance::finalize(this); }
+			{
+				if (life_assurance::release_node())
+				{
+					_listenable_impl->get_handlers_container().erase(*this);
+					delete this;
+				}
+			}
 
 			const handler_type& get_handler() const { return _handler.obj; }
 			const life_assurance& get_life_assurance() const { return *this; }

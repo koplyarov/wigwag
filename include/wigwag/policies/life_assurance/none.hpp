@@ -27,19 +27,11 @@ namespace life_assurance
 			void reset_life_assurance(const shared_data&)
 			{ }
 
-			bool node_deleted_on_finalize() const
+			bool node_should_be_released() const
 			{ return false; }
 
-			bool should_be_finalized() const
-			{ return false; }
-
-			template < typename HandlerNode_ >
-			void release_external_ownership(const HandlerNode_* node)
-			{ delete node; }
-
-			template < typename HandlerNode_ >
-			void finalize(const HandlerNode_*)
-			{ }
+			bool release_node() const
+			{ return true; }
 		};
 
 		struct life_checker

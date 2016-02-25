@@ -60,6 +60,9 @@ namespace life_assurance
 				: _lock_counter_and_alive_flag(alive_flag), _ref_count(2) // One ref in signal, another in token
 			{ }
 
+			virtual ~life_assurance()
+			{ }
+
 			life_assurance(const life_assurance&) = delete;
 			life_assurance& operator = (const life_assurance&) = delete;
 
@@ -69,10 +72,8 @@ namespace life_assurance
 
 			void release() const
 			{
-				if (--_ref_count == 0)
-					WIGWAG_ASSERT(false, "Inconsistent reference counter!");
-
-				WIGWAG_ANNOTATE_HAPPENS_BEFORE(this);
+				if (release_node())
+					delete this;
 			}
 
 			void reset_life_assurance(const shared_data& sd)
@@ -83,26 +84,23 @@ namespace life_assurance
 					sd._cond_var.wait(l);
 			}
 
-			bool node_deleted_on_finalize() const
-			{ return true; }
-
-			bool should_be_finalized() const
+			bool node_should_be_released() const
 			{ return _ref_count == 1; }
 
-			template < typename HandlerNode_ >
-			void release_external_ownership(const HandlerNode_*)
-			{ release(); }
-
-			template < typename HandlerNode_ >
-			void finalize(const HandlerNode_* node)
+			bool release_node() const
 			{
-				if (--_ref_count != 0)
-					WIGWAG_ASSERT(false, "Inconsistent reference counter!");
+				if (--_ref_count == 0)
+				{
+					WIGWAG_ANNOTATE_HAPPENS_AFTER(this);
+					WIGWAG_ANNOTATE_RELEASE(this);
 
-				WIGWAG_ANNOTATE_HAPPENS_AFTER(this);
-				WIGWAG_ANNOTATE_RELEASE(this);
-
-				delete node;
+					return true;
+				}
+				else
+				{
+					WIGWAG_ANNOTATE_HAPPENS_BEFORE(this);
+					return false;
+				}
 			}
 		};
 

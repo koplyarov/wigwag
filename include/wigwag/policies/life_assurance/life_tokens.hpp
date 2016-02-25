@@ -38,32 +38,30 @@ namespace life_assurance
 			friend class life_checker;
 			friend class execution_guard;
 
-			life_token			_token;
-			std::atomic<bool>	_should_be_finalized { false };
+			life_token					_token;
+			mutable std::atomic<int>	_ref_count { 2 };
 
 		public:
 			void reset_life_assurance(const shared_data&)
 			{ _token.reset(); }
 
-			bool node_deleted_on_finalize() const
-			{ return true; }
+			bool node_should_be_released() const
+			{ return _ref_count == 1; }
 
-			bool should_be_finalized() const
-			{ return _should_be_finalized; }
-
-			template < typename HandlerNode_ >
-			void release_external_ownership(const HandlerNode_*)
+			bool release_node() const
 			{
-				WIGWAG_ANNOTATE_HAPPENS_BEFORE(&_should_be_finalized);
-				_should_be_finalized = true;
-			}
+				if (--_ref_count == 0)
+				{
+					WIGWAG_ANNOTATE_HAPPENS_AFTER(this);
+					WIGWAG_ANNOTATE_RELEASE(this);
 
-			template < typename HandlerNode_ >
-			void finalize(const HandlerNode_* node)
-			{
-				WIGWAG_ANNOTATE_HAPPENS_AFTER(&_should_be_finalized);
-				WIGWAG_ANNOTATE_RELEASE(&_should_be_finalized);
-				delete node;
+					return true;
+				}
+				else
+				{
+					WIGWAG_ANNOTATE_HAPPENS_BEFORE(this);
+					return false;
+				}
 			}
 		};
 

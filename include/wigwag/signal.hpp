@@ -46,7 +46,12 @@ namespace wigwag
 		{ }
 
 		~signal()
-		{ _impl->finalize_nodes(); }
+		{
+			_impl->get_lock_primitive().lock_nonrecursive();
+			auto sg = detail::at_scope_exit([&] { _impl->get_lock_primitive().unlock_nonrecursive(); } );
+
+			_impl->finalize_nodes();
+		}
 
 		signal(const signal&) = delete;
 		signal& operator = (const signal&) = delete;
