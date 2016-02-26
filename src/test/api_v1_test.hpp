@@ -142,6 +142,46 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	static void test_handler_attributes()
+	{
+		using h_type = const std::function<void(int)>&;
+
+		std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
+		signal<void(int), exception_handling::default_, threading::default_, state_populating::populator_and_withdrawer> s(std::make_pair([](h_type h){ h(1); }, [](h_type h){ h(3); }));
+
+		{
+			int sync_state = 0;
+			token t = s.connect([&](int i) { sync_state = i; }, handler_attributes::none);
+			TS_ASSERT_EQUALS(sync_state, 1);
+			s(2);
+			TS_ASSERT_EQUALS(sync_state, 2);
+			t.reset();
+			TS_ASSERT_EQUALS(sync_state, 3);
+		}
+
+		{
+			mutexed<int> async_state(0);
+			token t = s.connect(worker, [&](int i) { async_state.set(i); }, handler_attributes::none);
+			thread::sleep(100);
+			TS_ASSERT_EQUALS(async_state.get(), 1);
+			s(2);
+			thread::sleep(100);
+			TS_ASSERT_EQUALS(async_state.get(), 2);
+		}
+
+		{
+			int sync_state = 0;
+			token t = s.connect([&](int i) { sync_state = i; }, handler_attributes::suppress_populator);
+			TS_ASSERT_EQUALS(sync_state, 0);
+			s(2);
+			TS_ASSERT_EQUALS(sync_state, 2);
+			t.reset();
+			TS_ASSERT_EQUALS(sync_state, 2);
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	static void test__exception_handling__default()
 	{
 		signal<void()> s;
