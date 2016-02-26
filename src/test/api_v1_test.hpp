@@ -398,6 +398,24 @@ public:
 		}
 
 		{
+			std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
+			token_pool tp;
+			Signal_ s;
+			tp += s.connect(worker, []{ });
+			s();
+			thread::sleep(200);
+		}
+
+		{
+			std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
+			Signal_ s;
+			token_pool tp;
+			tp += s.connect(worker, []{ });
+			s();
+			thread::sleep(200);
+		}
+
+		{
 			Signal_ s;
 			thread th([&](const std::atomic<bool>& alive) { while (alive) { s(); thread::sleep(100); } });
 			mutexed<bool> handler_invoked(false);
@@ -460,6 +478,40 @@ public:
 
 	static void test__life_assurance__single_threaded()
 	{
+		{
+			std::shared_ptr<threadless_task_executor> worker = std::make_shared<threadless_task_executor>();
+			token_pool tp;
+			signal<void(), exception_handling::default_, threading::default_, state_populating::default_, life_assurance::single_threaded> s;
+			tp += s.connect(worker, []{ });
+			s();
+		}
+
+		{
+			std::shared_ptr<threadless_task_executor> worker = std::make_shared<threadless_task_executor>();
+			signal<void(), exception_handling::default_, threading::default_, state_populating::default_, life_assurance::single_threaded> s;
+			token_pool tp;
+			tp += s.connect(worker, []{ });
+			s();
+		}
+
+		{
+			std::shared_ptr<threadless_task_executor> worker = std::make_shared<threadless_task_executor>();
+			token_pool tp;
+			signal<void(), exception_handling::default_, threading::default_, state_populating::default_, life_assurance::single_threaded> s;
+			tp += s.connect(worker, []{ });
+			s();
+			worker->process_tasks();
+		}
+
+		{
+			std::shared_ptr<threadless_task_executor> worker = std::make_shared<threadless_task_executor>();
+			signal<void(), exception_handling::default_, threading::default_, state_populating::default_, life_assurance::single_threaded> s;
+			token_pool tp;
+			tp += s.connect(worker, []{ });
+			s();
+			worker->process_tasks();
+		}
+
 		std::shared_ptr<threadless_task_executor> worker = std::make_shared<threadless_task_executor>();
 		signal<void(), exception_handling::default_, threading::default_, state_populating::default_, life_assurance::single_threaded> s;
 
