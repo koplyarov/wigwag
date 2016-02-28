@@ -56,6 +56,14 @@ target_link_libraries(wigwag_pedantic_compilation_test)
 
 ######################################################################
 
+add_library(example_common ${CMAKE_CURRENT_SOURCE_DIR}/examples/common/Logger.cpp)
+target_link_libraries(example_common ${CMAKE_THREAD_LIBS_INIT})
+
+add_executable(example_observable_dictionary ${CMAKE_CURRENT_SOURCE_DIR}/examples/observable_dictionary/ObservableDictionaryExample.cpp)
+target_link_libraries(example_observable_dictionary example_common)
+
+######################################################################
+
 find_package(CxxTest)
 if(CXXTEST_FOUND)
 	message(STATUS "Found cxxtest, enabling wigwag_test")
