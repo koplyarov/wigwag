@@ -11,6 +11,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/config.hpp>
+
 #include <functional>
 
 
@@ -38,9 +40,9 @@ namespace state_populating
 			void populate_state(const HandlerType_& handler) const { _populator(handler); }
 
 			template < typename LockPrimitive_ >
-			void withdraw_state(LockPrimitive_&, const HandlerType_&) const noexcept { }
+			void withdraw_state(LockPrimitive_&, const HandlerType_&) const WIGWAG_NOEXCEPT { }
 
-			static void empty_handler(const HandlerType_&) noexcept { }
+			static void empty_handler(const HandlerType_&) WIGWAG_NOEXCEPT { }
 		};
 	};
 

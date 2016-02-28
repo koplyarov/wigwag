@@ -11,6 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/config.hpp>
 #include <wigwag/detail/enabler.hpp>
 
 #include <type_traits>
@@ -34,7 +35,7 @@ namespace detail
 			: _raw(rawPtr)
 		{ }
 
-		intrusive_ptr(intrusive_ptr&& other) noexcept
+		intrusive_ptr(intrusive_ptr&& other) WIGWAG_NOEXCEPT
 			: _raw(other._raw)
 		{ other._raw = nullptr; }
 

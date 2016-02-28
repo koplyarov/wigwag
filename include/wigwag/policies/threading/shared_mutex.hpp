@@ -11,6 +11,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/config.hpp>
+
 #include <memory>
 #include <thread>
 
@@ -33,13 +35,13 @@ namespace threading
 				: _mutex(mutex)
 			{ }
 
-			std::shared_ptr<std::mutex> get_primitive() const noexcept { return _mutex; }
+			std::shared_ptr<std::mutex> get_primitive() const WIGWAG_NOEXCEPT { return _mutex; }
 
 			void lock_nonrecursive() const { _mutex->lock(); }
 			void unlock_nonrecursive() const { _mutex->unlock(); }
 
-			void lock_recursive() const noexcept { }
-			void unlock_recursive() const noexcept { }
+			void lock_recursive() const WIGWAG_NOEXCEPT { }
+			void unlock_recursive() const WIGWAG_NOEXCEPT { }
 		};
 	};
 

@@ -11,6 +11,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/config.hpp>
+
 #include <functional>
 #include <mutex>
 
@@ -52,7 +54,7 @@ namespace state_populating
 				_withdrawer(handler);
 			}
 
-			static void empty_handler(const HandlerType_&) noexcept { }
+			static void empty_handler(const HandlerType_&) WIGWAG_NOEXCEPT { }
 		};
 	};
 

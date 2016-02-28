@@ -12,6 +12,7 @@
 
 
 #include <wigwag/detail/annotations.hpp>
+#include <wigwag/detail/config.hpp>
 
 #include <atomic>
 #include <condition_variable>
@@ -53,7 +54,7 @@ namespace wigwag
 			: _impl(std::make_shared<impl>()), _reset(false)
 		{ }
 
-		life_token(life_token&& other) noexcept
+		life_token(life_token&& other) WIGWAG_NOEXCEPT
 			: _impl(other._impl)
 		{ other._impl.reset(); }
 
@@ -86,7 +87,7 @@ namespace wigwag
 		impl_ptr		_impl;
 
 	public:
-		checker(const life_token& token) noexcept
+		checker(const life_token& token) WIGWAG_NOEXCEPT
 			: _impl(token._impl)
 		{ }
 	};

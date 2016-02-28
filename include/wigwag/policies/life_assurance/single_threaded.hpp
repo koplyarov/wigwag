@@ -76,7 +76,7 @@ namespace life_assurance
 			detail::intrusive_ptr<const life_assurance>		_la;
 
 		public:
-			life_checker(const shared_data&, const life_assurance& la) noexcept
+			life_checker(const shared_data&, const life_assurance& la) WIGWAG_NOEXCEPT
 				: _la(&la)
 			{ la.add_ref(); }
 		};
@@ -97,7 +97,7 @@ namespace life_assurance
 			~execution_guard()
 			{ }
 
-			int is_alive() const noexcept
+			int is_alive() const WIGWAG_NOEXCEPT
 			{ return _la->_alive; }
 		};
 	};

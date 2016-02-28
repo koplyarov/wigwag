@@ -11,6 +11,9 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/config.hpp>
+
+
 namespace wigwag {
 namespace life_assurance
 {
@@ -36,14 +39,14 @@ namespace life_assurance
 
 		struct life_checker
 		{
-			life_checker(const shared_data&, const life_assurance&) noexcept { }
+			life_checker(const shared_data&, const life_assurance&) WIGWAG_NOEXCEPT { }
 		};
 
 		struct execution_guard
 		{
-			execution_guard(const life_checker&) noexcept { }
-			execution_guard(const shared_data&, const life_assurance&) noexcept { }
-			int is_alive() const noexcept { return true; }
+			execution_guard(const life_checker&) WIGWAG_NOEXCEPT { }
+			execution_guard(const shared_data&, const life_assurance&) WIGWAG_NOEXCEPT { }
+			int is_alive() const WIGWAG_NOEXCEPT { return true; }
 		};
 	};
 

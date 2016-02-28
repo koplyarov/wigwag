@@ -11,6 +11,9 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/config.hpp>
+
+
 namespace wigwag {
 namespace threading
 {
@@ -22,13 +25,13 @@ namespace threading
 		class lock_primitive
 		{
 		public:
-			void get_primitive() const noexcept { }
+			void get_primitive() const WIGWAG_NOEXCEPT { }
 
-			void lock_nonrecursive() const noexcept { }
-			void unlock_nonrecursive() const noexcept { }
+			void lock_nonrecursive() const WIGWAG_NOEXCEPT { }
+			void unlock_nonrecursive() const WIGWAG_NOEXCEPT { }
 
-			void lock_recursive() const noexcept { }
-			void unlock_recursive() const noexcept { }
+			void lock_recursive() const WIGWAG_NOEXCEPT { }
+			void unlock_recursive() const WIGWAG_NOEXCEPT { }
 		};
 	};
 

@@ -12,6 +12,7 @@
 
 
 #include <wigwag/detail/annotations.hpp>
+#include <wigwag/detail/config.hpp>
 #include <wigwag/life_token.hpp>
 
 #include <atomic>
@@ -73,7 +74,7 @@ namespace life_assurance
 			life_token::checker		_checker;
 
 		public:
-			life_checker(const shared_data&, const life_assurance& la) noexcept : _checker(la._token) { }
+			life_checker(const shared_data&, const life_assurance& la) WIGWAG_NOEXCEPT : _checker(la._token) { }
 		};
 
 
@@ -82,9 +83,9 @@ namespace life_assurance
 			life_token::execution_guard		_guard;
 
 		public:
-			execution_guard(const life_checker& c) : _guard(c._checker) { } // TODO: looks like noexcept here makes the code faster, check it on other machines
+			execution_guard(const life_checker& c) : _guard(c._checker) { } // TODO: looks like WIGWAG_NOEXCEPT here makes the code faster, check it on other machines
 			execution_guard(const shared_data&, const life_assurance& la) : _guard(la._token) { }
-			int is_alive() const noexcept { return _guard.is_alive(); }
+			int is_alive() const WIGWAG_NOEXCEPT { return _guard.is_alive(); }
 		};
 	};
 
