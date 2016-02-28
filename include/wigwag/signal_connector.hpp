@@ -24,8 +24,10 @@ namespace wigwag
 	template < typename Signature_ >
 	class signal_connector
 	{
+	public:
 		using handler_type = std::function<Signature_>;
 
+	private:
 		using impl_type = detail::signal_connector_impl<Signature_>;
 		using impl_type_ptr = detail::intrusive_ptr<impl_type>;
 

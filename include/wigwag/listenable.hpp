@@ -29,6 +29,9 @@ namespace wigwag
 		>
 	class listenable
 	{
+	public:
+		using listener_type = ListenerType_;
+
 	private:
 		using impl_type = detail::listenable_impl<ListenerType_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>;
 		using impl_type_ptr = detail::intrusive_ptr<impl_type>;

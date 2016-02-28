@@ -30,9 +30,10 @@ namespace wigwag
 		>
 	class signal
 	{
-	private:
+	public:
 		using handler_type = std::function<Signature_>;
 
+	private:
 		using impl_type = detail::signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>;
 		using impl_type_with_attr = detail::signal_with_attributes_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>;
 		using impl_type_ptr = detail::intrusive_ptr<impl_type>;
