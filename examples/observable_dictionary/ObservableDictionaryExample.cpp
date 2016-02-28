@@ -50,7 +50,8 @@ int main()
 	try
 	{
 		IObservableDictionaryPtr<int, std::string> dict = std::make_shared<SortedObservableDictionary<int, std::string>>();
-		std::atomic<bool> alive(true);
+		dict->Set(101, "qwe");
+		dict->Set(102, "asd");
 
 		wigwag::token_pool tp;
 		tp += dict->AddListener(std::make_shared<DictListener>());
@@ -74,6 +75,7 @@ int main()
 
 		Random r;
 
+		std::atomic<bool> alive(true);
 		std::thread t([&]()
 			{
 				int size = 5;
