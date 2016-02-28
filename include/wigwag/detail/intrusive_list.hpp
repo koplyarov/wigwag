@@ -106,9 +106,11 @@ namespace detail
 	public:
 		iterator begin() { return iterator(_root._next); }
 		iterator end() { return iterator(&_root); }
+		iterator pre_end() { return iterator(_root._prev); }
 
 		const_iterator begin() const { return const_iterator(_root._next); }
 		const_iterator end() const { return const_iterator(&_root); }
+		const_iterator pre_end() const { return const_iterator(_root._prev); }
 
 		bool empty() const { return _root.unlinked(); }
 		size_t size() const { return std::distance(begin(), end()); }

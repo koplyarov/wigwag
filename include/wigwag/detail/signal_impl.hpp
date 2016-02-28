@@ -88,8 +88,16 @@ namespace detail
 		{
 			this->get_lock_primitive().lock_recursive();
 			auto sg = detail::at_scope_exit([&] { this->get_lock_primitive().unlock_recursive(); } );
-			for (auto it = this->_handlers.begin(); it != this->_handlers.end();)
+
+			if (this->_handlers.empty())
+				return;
+			auto it = this->_handlers.begin(), e = this->_handlers.pre_end();
+
+			bool last_iter = false;
+			while (!last_iter)
 			{
+				last_iter = it == e;
+
 				if (it->should_be_finalized())
 				{
 					(it++)->finalize_node();

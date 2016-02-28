@@ -110,6 +110,60 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	static void test_connect_from_handler()
+	{
+		{
+			token_pool tp;
+			signal<void()> s;
+			bool second_handler_invoked = false;
+
+			tp += s.connect([&]{ tp += s.connect([&] { second_handler_invoked = true; }); });
+			s();
+			TS_ASSERT(!second_handler_invoked);
+			s();
+			TS_ASSERT(second_handler_invoked);
+		}
+		{
+			token_pool tp;
+			listenable<test_listener> l;
+			bool second_handler_invoked = false;
+
+			tp += l.connect(test_listener([&] { tp += l.connect(test_listener([&] { second_handler_invoked = true; }, [](int){})); }, [](int){}));
+			l.invoke([](const test_listener& f) { f.f(); });
+			TS_ASSERT(!second_handler_invoked);
+			l.invoke([](const test_listener& f) { f.f(); });
+			TS_ASSERT(second_handler_invoked);
+		}
+	}
+
+	static void test_disconnect_from_handler()
+	{
+		{
+			signal<void()> s;
+			bool second_handler_invoked = false;
+
+			std::unique_ptr<token> t2;
+			token t1 = s.connect([&] { t2.reset(); });
+			t2.reset(new token(s.connect([&] { second_handler_invoked = true; })));
+
+			s();
+			TS_ASSERT(!second_handler_invoked);
+		}
+		{
+			listenable<test_listener> l;
+			bool second_handler_invoked = false;
+
+			std::unique_ptr<token> t2;
+			token t1 = l.connect(test_listener([&] { t2.reset(); }, [](int){}));
+			t2.reset(new token(l.connect(test_listener([&] { second_handler_invoked = true; }, [](int){}))));
+
+			l.invoke([](const test_listener& f) { f.f(); });
+			TS_ASSERT(!second_handler_invoked);
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	static void test_signal_attributes()
 	{
 		std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
