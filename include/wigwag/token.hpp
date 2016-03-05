@@ -41,11 +41,21 @@ namespace wigwag
 			: _impl(other._impl)
 		{ other._impl = nullptr; }
 
+		~token()
+		{ reset(); }
+
 		token(const token&) = delete;
 		token& operator = (const token&) = delete;
 
-		~token()
-		{ reset(); }
+		token& operator = (token&& other)
+		{
+			reset();
+
+			_impl = other._impl;
+			other._impl = nullptr;
+
+			return *this;
+		}
 
 		void reset()
 		{
