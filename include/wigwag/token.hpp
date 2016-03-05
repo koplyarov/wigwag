@@ -37,6 +37,10 @@ namespace wigwag
 		{ }
 
 	public:
+		token()
+			: _impl(nullptr)
+		{ }
+
 		token(token&& other)
 			: _impl(other._impl)
 		{ other._impl = nullptr; }
