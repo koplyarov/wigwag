@@ -27,7 +27,7 @@ namespace life_assurance
 
 		struct life_assurance
 		{
-			void reset_life_assurance(const shared_data&)
+			void release_life_assurance(const shared_data&)
 			{ }
 
 			bool node_should_be_released() const

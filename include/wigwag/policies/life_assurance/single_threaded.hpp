@@ -59,7 +59,7 @@ namespace life_assurance
 					delete this;
 			}
 
-			void reset_life_assurance(const shared_data&)
+			void release_life_assurance(const shared_data&)
 			{ _alive = false; }
 
 			bool node_should_be_released() const

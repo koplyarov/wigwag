@@ -47,23 +47,23 @@ namespace wigwag
 
 	private:
 		impl_ptr		_impl;
-		bool			_reset;
+		bool			_released;
 
 	public:
 		life_token()
-			: _impl(std::make_shared<impl>()), _reset(false)
+			: _impl(std::make_shared<impl>()), _released(false)
 		{ }
 
 		life_token(life_token&& other) WIGWAG_NOEXCEPT
 			: _impl(other._impl)
-		{ other._impl.reset(); }
+		{ other._released = true; }
 
 		~life_token()
-		{ reset(); }
+		{ release(); }
 
-		void reset()
+		void release()
 		{
-			if (_reset)
+			if (_released)
 				return;
 
 			_impl->lock_counter_and_alive_flag -= alive_flag;
@@ -71,7 +71,7 @@ namespace wigwag
 			while (_impl->lock_counter_and_alive_flag != 0)
 				_impl->cond_var.wait(l);
 
-			_reset = true;
+			_released = true;
 		}
 
 		life_token(const life_token&) = delete;

@@ -101,7 +101,7 @@ namespace detail
 
 			virtual void release_token_impl()
 			{
-				life_assurance::reset_life_assurance(*_listenable_impl);
+				life_assurance::release_life_assurance(*_listenable_impl);
 
 				if (!suppress_populator())
 				{

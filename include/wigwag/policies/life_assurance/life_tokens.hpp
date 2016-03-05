@@ -43,8 +43,8 @@ namespace life_assurance
 			mutable std::atomic<int>	_ref_count { 2 };
 
 		public:
-			void reset_life_assurance(const shared_data&)
-			{ _token.reset(); }
+			void release_life_assurance(const shared_data&)
+			{ _token.release(); }
 
 			bool node_should_be_released() const
 			{ return _ref_count == 1; }

@@ -76,7 +76,7 @@ namespace life_assurance
 					delete this;
 			}
 
-			void reset_life_assurance(const shared_data& sd)
+			void release_life_assurance(const shared_data& sd)
 			{
 				_lock_counter_and_alive_flag -= alive_flag;
 				std::unique_lock<std::mutex> l(sd._mutex);
