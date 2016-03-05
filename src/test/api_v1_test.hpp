@@ -616,6 +616,89 @@ public:
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	static void test_life_token()
+	{
+		{
+			life_token lt;
+
+			thread th(
+				[&](const std::atomic<bool>& alive)
+				{
+					life_token::execution_guard g(lt);
+					if (g.is_alive())
+						thread::sleep(300);
+				});
+
+			thread::sleep(100);
+
+			profiler p;
+			lt.release();
+			auto release_time = duration_cast<milliseconds>(p.reset()).count();
+			TS_ASSERT_LESS_THAN_EQUALS(150, release_time);
+		}
+
+		{
+			life_token lt;
+
+			thread th(
+				[&](const std::atomic<bool>& alive)
+				{
+					thread::sleep(100);
+
+					life_token::execution_guard g(lt);
+					if (g.is_alive())
+						thread::sleep(300);
+				});
+
+			profiler p;
+			lt.release();
+			auto release_time = duration_cast<milliseconds>(p.reset()).count();
+			TS_ASSERT_LESS_THAN_EQUALS(release_time, 100);
+		}
+
+		{
+			life_token lt;
+			life_token::checker lc(lt);
+
+			thread th(
+				[&](const std::atomic<bool>& alive)
+				{
+					life_token::execution_guard g(lc);
+					if (g.is_alive())
+						thread::sleep(300);
+				});
+
+			thread::sleep(100);
+
+			profiler p;
+			lt.release();
+			auto release_time = duration_cast<milliseconds>(p.reset()).count();
+			TS_ASSERT_LESS_THAN_EQUALS(150, release_time);
+		}
+
+		{
+			life_token lt;
+			life_token::checker lc(lt);
+
+			thread th(
+				[&](const std::atomic<bool>& alive)
+				{
+					thread::sleep(100);
+
+					life_token::execution_guard g(lc);
+					if (g.is_alive())
+						thread::sleep(300);
+				});
+
+			profiler p;
+			lt.release();
+			auto release_time = duration_cast<milliseconds>(p.reset()).count();
+			TS_ASSERT_LESS_THAN_EQUALS(release_time, 100);
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	static void test_task_executors()
 	{
 		{
