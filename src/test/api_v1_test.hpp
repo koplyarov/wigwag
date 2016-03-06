@@ -78,6 +78,33 @@ public:
 		{ auto l = lock(m); TS_ASSERT_EQUALS(value, 147); }
 	}
 
+	static void test_signal_connector()
+	{
+		signal<void(int)> s;
+		signal_connector<void(int)> c = s.connector();
+		std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
+
+		std::mutex m;
+		int value = 0;
+
+		token t0 = c.connect([&](int i) { auto l = lock(m); value += i; });
+		s(1);
+		{ auto l = lock(m); TS_ASSERT_EQUALS(value, 1); }
+
+		token t1 = c.connect([&](int i) { auto l = lock(m); value += 10 * i; });
+		s(3);
+		{ auto l = lock(m); TS_ASSERT_EQUALS(value, 34); }
+
+		t0.reset();
+		s(5);
+		{ auto l = lock(m); TS_ASSERT_EQUALS(value, 84); }
+
+		token t2 = c.connect(worker, [&](int i) { auto l = lock(m); value -= i; });
+		s(7);
+		thread::sleep(100);
+		{ auto l = lock(m); TS_ASSERT_EQUALS(value, 147); }
+	}
+
 	static void test_listenable()
 	{
 		listenable<test_listener> l;
