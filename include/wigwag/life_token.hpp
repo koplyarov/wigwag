@@ -55,7 +55,7 @@ namespace wigwag
 		{ }
 
 		life_token(life_token&& other) WIGWAG_NOEXCEPT
-			: _impl(other._impl)
+			: _impl(other._impl), _released(false)
 		{ other._released = true; }
 
 		~life_token()

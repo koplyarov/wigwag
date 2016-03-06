@@ -657,8 +657,11 @@ public:
 			thread::sleep(100);
 
 			profiler p;
-			lt.release();
+			life_token lt2(std::move(lt));
+			auto move_time = duration_cast<milliseconds>(p.reset()).count();
+			lt2.release();
 			auto release_time = duration_cast<milliseconds>(p.reset()).count();
+			TS_ASSERT_LESS_THAN_EQUALS(move_time, 100);
 			TS_ASSERT_LESS_THAN_EQUALS(150, release_time);
 		}
 
@@ -676,8 +679,11 @@ public:
 				});
 
 			profiler p;
-			lt.release();
+			life_token lt2(std::move(lt));
+			auto move_time = duration_cast<milliseconds>(p.reset()).count();
+			lt2.release();
 			auto release_time = duration_cast<milliseconds>(p.reset()).count();
+			TS_ASSERT_LESS_THAN_EQUALS(move_time, 100);
 			TS_ASSERT_LESS_THAN_EQUALS(release_time, 100);
 		}
 
@@ -696,8 +702,11 @@ public:
 			thread::sleep(100);
 
 			profiler p;
-			lt.release();
+			life_token lt2(std::move(lt));
+			auto move_time = duration_cast<milliseconds>(p.reset()).count();
+			lt2.release();
 			auto release_time = duration_cast<milliseconds>(p.reset()).count();
+			TS_ASSERT_LESS_THAN_EQUALS(move_time, 100);
 			TS_ASSERT_LESS_THAN_EQUALS(150, release_time);
 		}
 
@@ -716,8 +725,11 @@ public:
 				});
 
 			profiler p;
-			lt.release();
+			life_token lt2(std::move(lt));
+			auto move_time = duration_cast<milliseconds>(p.reset()).count();
+			lt2.release();
 			auto release_time = duration_cast<milliseconds>(p.reset()).count();
+			TS_ASSERT_LESS_THAN_EQUALS(move_time, 100);
 			TS_ASSERT_LESS_THAN_EQUALS(release_time, 100);
 		}
 	}
