@@ -8,6 +8,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/life_token.hpp>
 #include <wigwag/signal.hpp>
 
 #include <boost/core/typeinfo.hpp>
@@ -185,9 +186,6 @@ void connect_invoke_tracked(int64_t num_slots, int64_t num_calls)
 template < typename Signature_ >
 using ui_signal = signal<Signature_, exception_handling::none, threading::none, state_populating::none, life_assurance::none>;
 
-template < typename Signature_ >
-using ui_signal2 = signal<Signature_, exception_handling::none, threading::none, state_populating::none, life_assurance::life_tokens>;
-
 
 struct cmdline_exception : public std::runtime_error
 { cmdline_exception(const std::string& msg) : std::runtime_error(msg) { } };
@@ -250,8 +248,6 @@ int main(int argc, char* argv[])
 				create<signal<void()>>(count);
 			else if (obj == "ui_signal")
 				create<ui_signal<void()>>(count);
-			else if (obj == "ui_signal_life_tokens")
-				create<ui_signal2<void()>>(count);
 
 			else if (obj == "boost_signal2")
 				create<boost::signals2::signal<void()>>(count);
@@ -294,8 +290,6 @@ int main(int argc, char* argv[])
 				connect_invoke<signal<void()>, token>(count, secondary_count);
 			else if (obj == "ui_signal")
 				connect_invoke<ui_signal<void()>, token>(count, secondary_count);
-			else if (obj == "ui_signal_life_tokens")
-				connect_invoke<ui_signal2<void()>, token>(count, secondary_count);
 
 			else if (obj == "boost_signal2")
 				connect_invoke<boost::signals2::signal<void()>, boost::signals2::scoped_connection>(count, secondary_count);

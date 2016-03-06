@@ -11,6 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/life_token.hpp>
 #include <wigwag/listenable.hpp>
 #include <wigwag/signal.hpp>
 #include <wigwag/thread_task_executor.hpp>
@@ -441,9 +442,6 @@ public:
 
 	static void test__life_assurance__intrusive_life_tokens()
 	{ do__test__life_assurance__common<signal<void(), exception_handling::default_, threading::default_, state_populating::default_, life_assurance::intrusive_life_tokens>>(); }
-
-	static void test__life_assurance__life_tokens()
-	{ do__test__life_assurance__common<signal<void(), exception_handling::default_, threading::default_, state_populating::default_, life_assurance::life_tokens>>(); }
 
 	template < typename Signal_ >
 	static void do__test__life_assurance__common()

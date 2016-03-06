@@ -12,7 +12,6 @@
 
 
 #include <wigwag/policies/life_assurance/intrusive_life_tokens.hpp>
-#include <wigwag/policies/life_assurance/life_tokens.hpp>
 #include <wigwag/policies/life_assurance/none.hpp>
 #include <wigwag/policies/life_assurance/single_threaded.hpp>
 
