@@ -1,13 +1,13 @@
-create					signal						3000000
 create					ui_signal					3000000
+create					signal						3000000
 create					boost_signal2				3000000
 
-connect_invoke			signal						3000000		1
 connect_invoke			ui_signal					3000000		1
+connect_invoke			signal						3000000		1
 connect_invoke			boost_signal2				3000000		1
 connect_invoke_tracked	boost_signal2				3000000		1
 
-connect_invoke			signal						1			30000000
 connect_invoke			ui_signal					1			100000000
+connect_invoke			signal						1			30000000
 connect_invoke			boost_signal2				1			30000000
 connect_invoke_tracked	boost_signal2				1			30000000
