@@ -151,6 +151,22 @@ public:
 		TS_ASSERT_EQUALS(counter, 101);
 	}
 
+	static void test_token_pool()
+	{
+		signal<void()> s;
+		token_pool tp;
+		int counter = 0;
+		tp += s.connect([&] { ++counter; });
+		s();
+		TS_ASSERT_EQUALS(counter, 1);
+		tp.add_token(s.connect([&] { counter += 100; }));
+		s();
+		TS_ASSERT_EQUALS(counter, 102);
+		tp.release();
+		s();
+		TS_ASSERT_EQUALS(counter, 102);
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	static void test_connect_from_handler()
