@@ -244,16 +244,18 @@ void connect_invoke_tracking(int64_t num_slots, int64_t num_calls)
 }
 
 
-
 template < typename Signal_, typename Connection_ >
-void disconnect(int64_t num_slots, int64_t num_iterations)
+void connect_disconnect(int64_t num_slots, int64_t num_iterations)
 {
 	Signal_ *s = new Signal_[(size_t)num_iterations];
 	storage_for<Connection_> *v = new storage_for<Connection_>[(size_t)(num_slots * num_iterations)];
 
-	for (int64_t j = 0; j < num_iterations; ++j)
-		for (int64_t i = 0; i < num_slots; ++i)
-			new(&v[i + j * num_slots].obj) Connection_(s[j].connect(g_empty_handler));
+	{
+		operation_profiler op("connecting", num_slots * num_iterations);
+		for (int64_t j = 0; j < num_iterations; ++j)
+			for (int64_t i = 0; i < num_slots; ++i)
+				new(&v[i + j * num_slots].obj) Connection_(s[j].connect(g_empty_handler));
+	}
 
 	{
 		operation_profiler op("disconnecting", num_slots * num_iterations);
@@ -267,20 +269,23 @@ void disconnect(int64_t num_slots, int64_t num_iterations)
 
 
 template < typename Signal_, typename Connection_ >
-void disconnect_tracking(int64_t num_slots, int64_t num_iterations)
+void connect_disconnect_tracking(int64_t num_slots, int64_t num_iterations)
 {
 	Signal_ *s = new Signal_[(size_t)num_iterations];
 	storage_for<Connection_> *v = new storage_for<Connection_>[(size_t)(num_slots * num_iterations)];
 
 	boost::shared_ptr<std::string> tracked(new std::string);
 
-	for (int64_t j = 0; j < num_iterations; ++j)
-		for (int64_t i = 0; i < num_slots; ++i)
-		{
-			typename Signal_::slot_type slot(g_empty_handler);
-			slot.track(tracked);
-			new(&v[i + j * num_slots].obj) Connection_(s[j].connect(slot));
-		}
+	{
+		operation_profiler op("connecting", num_slots * num_iterations);
+		for (int64_t j = 0; j < num_iterations; ++j)
+			for (int64_t i = 0; i < num_slots; ++i)
+			{
+				typename Signal_::slot_type slot(g_empty_handler);
+				slot.track(tracked);
+				new(&v[i + j * num_slots].obj) Connection_(s[j].connect(slot));
+			}
+	}
 
 	{
 		operation_profiler op("disconnecting", num_slots * num_iterations);
@@ -321,14 +326,17 @@ void connect_invoke_qt5(int64_t num_slots, int64_t num_calls)
 	delete[] v;
 }
 
-void disconnect_qt5(int64_t num_slots, int64_t num_iterations)
+void connect_disconnect_qt5(int64_t num_slots, int64_t num_iterations)
 {
 	SignalOwner *s = new SignalOwner[(size_t)num_iterations];
 	SlotOwner *v = new SlotOwner[(size_t)(num_slots * num_iterations)];
 
-	for (int64_t j = 0; j < num_iterations; ++j)
-		for (int64_t i = 0; i < num_slots; ++i)
-			QObject::connect(&s[j], SIGNAL(testSignal()), &v[i + j * num_slots], SLOT(testSlot()));
+	{
+		operation_profiler op("connecting", num_slots * num_iterations);
+		for (int64_t j = 0; j < num_iterations; ++j)
+			for (int64_t i = 0; i < num_slots; ++i)
+				QObject::connect(&s[j], SIGNAL(testSignal()), &v[i + j * num_slots], SLOT(testSlot()));
+	}
 
 	{
 		operation_profiler op("disconnecting a single slot", num_slots * num_iterations);
@@ -493,29 +501,29 @@ int main(int argc, char* argv[])
 			else
 				throw cmdline_exception("obj " + obj + " not supported");
 		}
-		else if (task == "disconnect")
+		else if (task == "connect_disconnect")
 		{
 			if (vm.count("secondary-count") == 0)
 				throw cmdline_exception("secondary-count option is required");
 
 			if (obj == "signal")
-				disconnect<signal<void()>, token>(count, secondary_count);
+				connect_disconnect<signal<void()>, token>(count, secondary_count);
 			else if (obj == "ui_signal")
-				disconnect<ui_signal<void()>, token>(count, secondary_count);
+				connect_disconnect<ui_signal<void()>, token>(count, secondary_count);
 
 			else if (obj == "boost_signal2")
-				disconnect<boost::signals2::signal<void()>, boost::signals2::scoped_connection>(count, secondary_count);
+				connect_disconnect<boost::signals2::signal<void()>, boost::signals2::scoped_connection>(count, secondary_count);
 
 			else if (obj == "sigc_signal")
 #if WIGWAG_BENCHMARKS_SIGCPP2
-				disconnect<sigc::signal<void>, scoped_connection<sigc::connection>>(count, secondary_count);
+				connect_disconnect<sigc::signal<void>, scoped_connection<sigc::connection>>(count, secondary_count);
 #else
 				throw cmdline_exception("wigwag_benchmarks were built without sigc++ support");
 #endif
 
 			else if (obj == "qt5_signal")
 #if WIGWAG_BENCHMARKS_QT5
-				disconnect_qt5(count, secondary_count);
+				connect_disconnect_qt5(count, secondary_count);
 #else
 				throw cmdline_exception("wigwag_benchmarks were built without Qt5 support");
 #endif
@@ -523,13 +531,13 @@ int main(int argc, char* argv[])
 			else
 				throw cmdline_exception("obj " + obj + " not supported");
 		}
-		else if (task == "disconnect_tracking")
+		else if (task == "connect_disconnect_tracking")
 		{
 			if (vm.count("secondary-count") == 0)
 				throw cmdline_exception("secondary-count option is required");
 
 			if (obj == "boost_signal2")
-				disconnect_tracking<boost::signals2::signal<void()>, boost::signals2::scoped_connection>(count, secondary_count);
+				connect_disconnect_tracking<boost::signals2::signal<void()>, boost::signals2::scoped_connection>(count, secondary_count);
 			else
 				throw cmdline_exception("obj " + obj + " not supported");
 		}
