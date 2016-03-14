@@ -6,8 +6,6 @@ compiler:
   - gcc
 
 before_install:
-  - sudo apt-add-repository -y ppa:dhart/ppa
-  - sudo apt-get update -yq
   - sudo apt-get install -yq cxxtest
 
 install:
