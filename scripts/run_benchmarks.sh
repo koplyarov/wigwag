@@ -33,6 +33,7 @@ Benchmark() {
 
 	echo "=== $@ ==="
 	"$BENCHMARKS_DIR/wigwag_benchmarks" $ARGS | OutputParser
+	sleep 1
 }
 
 

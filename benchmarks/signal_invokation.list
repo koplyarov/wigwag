@@ -1,34 +1,94 @@
-connect_invoke			ui_signal					1			30000000
-connect_invoke			signal						1			30000000
-connect_invoke			boost_signal2				1			30000000
-connect_invoke_tracked	boost_signal2				1			30000000
+connect_invoke            ui_signal                    1           30000000
+connect_invoke            ui_signal                    10          3000000
+connect_invoke            ui_signal                    100         300000
+connect_invoke            ui_signal                    1000        30000
+connect_invoke            ui_signal                    10000       3000
+connect_invoke            ui_signal                    100000      300
+connect_invoke            ui_signal                    1000000     30
 
-connect_invoke			ui_signal					10			3000000
-connect_invoke			signal						10			3000000
-connect_invoke			boost_signal2				10			3000000
-connect_invoke_tracked	boost_signal2				10			3000000
+connect_invoke            signal                       1           30000000
+connect_invoke            signal                       10          3000000
+connect_invoke            signal                       100         300000
+connect_invoke            signal                       1000        30000
+connect_invoke            signal                       10000       3000
+connect_invoke            signal                       100000      300
+connect_invoke            signal                       1000000     30
 
-connect_invoke			ui_signal					100			300000
-connect_invoke			signal						100			300000
-connect_invoke			boost_signal2				100			300000
-connect_invoke_tracked	boost_signal2				100			300000
+connect_invoke            sigc_signal                  1           30000000
+connect_invoke            sigc_signal                  10          3000000
+connect_invoke            sigc_signal                  100         300000
+connect_invoke            sigc_signal                  1000        30000
+connect_invoke            sigc_signal                  10000       3000
+connect_invoke            sigc_signal                  100000      300
+connect_invoke            sigc_signal                  1000000     30
 
-connect_invoke			ui_signal					1000		30000
-connect_invoke			signal						1000		30000
-connect_invoke			boost_signal2				1000		30000
-connect_invoke_tracked	boost_signal2				1000		30000
+connect_invoke            boost_signal2                1           30000000
+connect_invoke            boost_signal2                10          3000000
+connect_invoke            boost_signal2                100         300000
+connect_invoke            boost_signal2                1000        30000
+connect_invoke            boost_signal2                10000       3000
+connect_invoke            boost_signal2                100000      300
+connect_invoke            boost_signal2                1000000     30
 
-connect_invoke			ui_signal					10000		3000
-connect_invoke			signal						10000		3000
-connect_invoke			boost_signal2				10000		3000
-connect_invoke_tracked	boost_signal2				10000		3000
+connect_invoke_tracking   boost_signal2                1           30000000
+connect_invoke_tracking   boost_signal2                10          3000000
+connect_invoke_tracking   boost_signal2                100         300000
+connect_invoke_tracking   boost_signal2                1000        30000
+connect_invoke_tracking   boost_signal2                10000       3000
+connect_invoke_tracking   boost_signal2                100000      300
+connect_invoke_tracking   boost_signal2                1000000     30
 
-connect_invoke			ui_signal					100000		300
-connect_invoke			signal						100000		300
-connect_invoke			boost_signal2				100000		300
-connect_invoke_tracked	boost_signal2				100000		300
+connect_invoke            qt5_signal                   1           30000000
+connect_invoke            qt5_signal                   10          3000000
+connect_invoke            qt5_signal                   100         300000
+connect_invoke            qt5_signal                   1000        30000
+connect_invoke            qt5_signal                   10000       3000
+connect_invoke            qt5_signal                   100000      300
+connect_invoke            qt5_signal                   1000000     30
 
-connect_invoke			ui_signal					1000000		30
-connect_invoke			signal						1000000		30
-connect_invoke			boost_signal2				1000000		30
-connect_invoke_tracked	boost_signal2				1000000		30
+
+disconnect                ui_signal                    1000000      1
+disconnect                ui_signal                    10000        100
+disconnect                ui_signal                    100          10000
+disconnect                ui_signal                    10           100000
+disconnect                ui_signal                    3            300000
+disconnect                ui_signal                    1            1000000
+
+disconnect                signal                       1000000      1
+disconnect                signal                       10000        100
+disconnect                signal                       100          10000
+disconnect                signal                       10           100000
+disconnect                signal                       3            300000
+disconnect                signal                       1            1000000
+
+disconnect                sigc_signal                  1000000      1
+disconnect                sigc_signal                  10000        100
+disconnect                sigc_signal                  100          10000
+disconnect                sigc_signal                  10           100000
+disconnect                sigc_signal                  3            300000
+disconnect                sigc_signal                  1            1000000
+
+disconnect                boost_signal2                1000000      1
+disconnect                boost_signal2                10000        100
+disconnect                boost_signal2                100          10000
+disconnect                boost_signal2                10           100000
+disconnect                boost_signal2                3            300000
+disconnect                boost_signal2                1            1000000
+
+disconnect_tracking       boost_signal2                1000000      1
+disconnect_tracking       boost_signal2                10000        100
+disconnect_tracking       boost_signal2                100          10000
+disconnect_tracking       boost_signal2                10           100000
+disconnect_tracking       boost_signal2                3            300000
+disconnect_tracking       boost_signal2                1            1000000
+
+disconnect                qt5_signal                   30000       1
+disconnect                qt5_signal                   10000       1
+disconnect                qt5_signal                   3000        3
+disconnect                qt5_signal                   1000        10
+disconnect                qt5_signal                   300         100
+disconnect                qt5_signal                   100         1000
+disconnect                qt5_signal                   30          3000
+disconnect                qt5_signal                   10          10000
+disconnect                qt5_signal                   3           30000
+disconnect                qt5_signal                   1           100000

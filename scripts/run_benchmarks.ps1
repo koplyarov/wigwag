@@ -33,6 +33,7 @@ function Benchmark($task, $obj, $count, $secondary_count)
 
 	echo "=== $task $obj $count $secondary_count ==="
 	&"$benchmarks_dir\wigwag_benchmarks" @a | OutputParser
+	sleep -s 1
 }
 
 

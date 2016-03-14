@@ -33,7 +33,10 @@ namespace wigwag
 	public:
 		operation_profiler(const std::string& name, int64_t count)
 			: _name(name), _count(count)
-		{ std::cout << "<" << _name << ">" << std::endl; }
+		{
+			std::cout << "<" << _name << ">" << std::endl;
+			_prof.reset();
+		}
 
 		~operation_profiler()
 		{

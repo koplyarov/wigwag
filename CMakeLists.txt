@@ -1,5 +1,5 @@
 project(wigwag)
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.12)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -94,7 +94,32 @@ if (Boost_FOUND)
 	message(STATUS "Found boost, enabling wigwag_benchmarks")
 	include_directories(${Boost_INCLUDE_DIRS})
 
+
+	find_package(PkgConfig REQUIRED)
+	pkg_check_modules(SIGCPP2 REQUIRED sigc++-2.0)
+	if (SIGCPP2_FOUND)
+		add_definitions(-DWIGWAG_BENCHMARKS_SIGCPP2=1)
+		include_directories(${SIGCPP2_INCLUDE_DIRS})
+	endif()
+
+	find_package(Qt5Core)
+	if (Qt5Core_FOUND)
+		set(CMAKE_INCLUDE_CURRENT_DIR ON)
+		set(CMAKE_AUTOMOC ON)
+		add_definitions(-DWIGWAG_BENCHMARKS_QT5=1)
+		include_directories(${Qt5Core_INCLUDE_DIRS})
+		add_definitions(${Qt5Core_DEFINITIONS})
+		set(CMAKE_CXX_FLAGS "${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
+	endif()
+
 	add_executable(wigwag_benchmarks ${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/benchmarks.cpp)
+
+	if (SIGCPP2_FOUND)
+		target_link_libraries(wigwag_benchmarks ${SIGCPP2_LIBRARIES})
+	endif()
+	if (Qt5Core_FOUND)
+		target_link_libraries(wigwag_benchmarks ${Qt5Core_LIBRARIES})
+	endif()
 
 	target_link_libraries(wigwag_benchmarks
 		${Boost_LIBRARIES}
