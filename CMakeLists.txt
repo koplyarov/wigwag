@@ -96,7 +96,7 @@ if (Boost_FOUND)
 
 
 	find_package(PkgConfig REQUIRED)
-	pkg_check_modules(SIGCPP2 REQUIRED sigc++-2.0)
+	pkg_check_modules(SIGCPP2 sigc++-2.0)
 	if (SIGCPP2_FOUND)
 		add_definitions(-DWIGWAG_BENCHMARKS_SIGCPP2=1)
 		include_directories(${SIGCPP2_INCLUDE_DIRS})
