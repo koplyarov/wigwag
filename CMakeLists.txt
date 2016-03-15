@@ -94,9 +94,24 @@ if (Boost_FOUND)
 	message(STATUS "Found boost, enabling wigwag_benchmarks")
 	include_directories(${Boost_INCLUDE_DIRS})
 
+	if (NOT WIN32)
+		find_package(PkgConfig REQUIRED)
+		pkg_check_modules(SIGCPP2 sigc++-2.0)
+	else()
+		find_path(SIGCPP2_INCLUDE_DIR NAMES "sigc++/sigc++.h")  
+		find_path(SIGCPP2_CONFIG_INCLUDE_DIR NAMES sigc++config.h)
+		find_library(SIGCPP2_LIBRARY NAMES sigc-2.0 PATH_SUFFIXES "lib" "sigc++/.libs") 
 
-	find_package(PkgConfig REQUIRED)
-	pkg_check_modules(SIGCPP2 sigc++-2.0)
+		set(SIGCPP2_LIBRARIES ${SIGCPP2_LIBRARY})
+		set(SIGCPP2_INCLUDE_DIRS ${SIGCPP2_INCLUDE_DIR} ${SIGCPP2_CONFIG_INCLUDE_DIR})
+
+		include(FindPackageHandleStandardArgs)
+		find_package_handle_standard_args(SIGCPP2 "Could NOT find SIGC++, try to set the path to SIGC++ root folder in the system variable SIGC++"
+			SIGCPP2_LIBRARIES
+			SIGCPP2_INCLUDE_DIRS
+		)
+	endif()
+
 	if (SIGCPP2_FOUND)
 		add_definitions(-DWIGWAG_BENCHMARKS_SIGCPP2=1)
 		include_directories(${SIGCPP2_INCLUDE_DIRS})
@@ -109,7 +124,9 @@ if (Boost_FOUND)
 		add_definitions(-DWIGWAG_BENCHMARKS_QT5=1)
 		include_directories(${Qt5Core_INCLUDE_DIRS})
 		add_definitions(${Qt5Core_DEFINITIONS})
-		set(CMAKE_CXX_FLAGS "${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
+		if (NOT MSVC)
+			set(CMAKE_CXX_FLAGS "${Qt5Core_EXECUTABLE_COMPILE_FLAGS}")
+		endif()
 	endif()
 
 	add_executable(wigwag_benchmarks ${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/benchmarks.cpp)
