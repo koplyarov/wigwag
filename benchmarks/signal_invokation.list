@@ -1,4 +1,5 @@
 connect_invoke                    ui_signal                    1           30000000
+connect_invoke                    ui_signal                    3           10000000
 connect_invoke                    ui_signal                    10          3000000
 connect_invoke                    ui_signal                    100         300000
 connect_invoke                    ui_signal                    1000        30000
@@ -7,6 +8,7 @@ connect_invoke                    ui_signal                    100000      300
 connect_invoke                    ui_signal                    1000000     30
 
 connect_invoke                    signal                       1           30000000
+connect_invoke                    signal                       3           10000000
 connect_invoke                    signal                       10          3000000
 connect_invoke                    signal                       100         300000
 connect_invoke                    signal                       1000        30000
@@ -15,6 +17,7 @@ connect_invoke                    signal                       100000      300
 connect_invoke                    signal                       1000000     30
 
 connect_invoke                    sigc_signal                  1           30000000
+connect_invoke                    sigc_signal                  3           10000000
 connect_invoke                    sigc_signal                  10          3000000
 connect_invoke                    sigc_signal                  100         300000
 connect_invoke                    sigc_signal                  1000        30000
@@ -23,6 +26,7 @@ connect_invoke                    sigc_signal                  100000      300
 connect_invoke                    sigc_signal                  1000000     30
 
 connect_invoke                    boost_signal2                1           30000000
+connect_invoke                    boost_signal2                3           10000000
 connect_invoke                    boost_signal2                10          3000000
 connect_invoke                    boost_signal2                100         300000
 connect_invoke                    boost_signal2                1000        30000
@@ -31,6 +35,7 @@ connect_invoke                    boost_signal2                100000      300
 connect_invoke                    boost_signal2                1000000     30
 
 connect_invoke_tracking           boost_signal2                1           30000000
+connect_invoke_tracking           boost_signal2                3           10000000
 connect_invoke_tracking           boost_signal2                10          3000000
 connect_invoke_tracking           boost_signal2                100         300000
 connect_invoke_tracking           boost_signal2                1000        30000
