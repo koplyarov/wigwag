@@ -1,5 +1,5 @@
-#ifndef WIGWAG_POLICIES_EXCEPTION_HANDLING_POLICIES_HPP
-#define WIGWAG_POLICIES_EXCEPTION_HANDLING_POLICIES_HPP
+#ifndef WIGWAG_POLICIES_EXCEPTION_HANDLING_POLICY_CONCEPT_HPP
+#define WIGWAG_POLICIES_EXCEPTION_HANDLING_POLICY_CONCEPT_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,15 +11,26 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/policies/exception_handling/none.hpp>
-#include <wigwag/policies/exception_handling/policy_concept.hpp>
-#include <wigwag/policies/exception_handling/print_to_stderr.hpp>
+#include <wigwag/detail/type_expression_check.hpp>
+
+#include <functional>
+
 
 namespace wigwag {
 namespace exception_handling
 {
 
-	using default_ = none;
+	namespace detail
+	{
+		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(check_handle_exceptions, std::declval<T_>().handle_exceptions(std::function<void(int, double)>(), 42, 3.14));
+	}
+
+
+	template < typename T_ >
+	struct policy_concept
+	{
+		static constexpr bool matches = detail::check_handle_exceptions<T_>::value;
+	};
 
 }}
 
