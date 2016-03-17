@@ -123,12 +123,12 @@ void create(int64_t n)
 template < typename T_ >
 void create_lock_unlock(int64_t n)
 {
-	storage_for<T_> *v = new storage_for<T_>[(size_t)n];
+	storage_for<T_> *l = new storage_for<T_>[(size_t)n];
 
 	{
 		operation_profiler op("creating", n);
 		for (int64_t i = 0; i < n; ++i)
-			new(&v[i].obj) T_();
+			new(&l[i].obj) T_();
 	}
 
 	measure_memory("object", n);
@@ -136,22 +136,22 @@ void create_lock_unlock(int64_t n)
 	{
 		operation_profiler op("locking", n);
 		for (int64_t i = 0; i < n; ++i)
-			v[i].obj.lock();
+			l[i].obj.lock();
 	}
 
 	{
 		operation_profiler op("unlocking", n);
 		for (int64_t i = 0; i < n; ++i)
-			v[i].obj.unlock();
+			l[i].obj.unlock();
 	}
 
 	{
 		operation_profiler op("destroying", n);
 		for (int64_t i = 0; i < n; ++i)
-			v[i].obj.~T_();
+			l[i].obj.~T_();
 	}
 
-	delete[] v;
+	delete[] l;
 }
 
 
@@ -182,12 +182,12 @@ template < typename Signal_, typename Connection_ >
 void connect_invoke(int64_t num_slots, int64_t num_calls)
 {
 	Signal_ s;
-	storage_for<Connection_> *v = new storage_for<Connection_>[(size_t)num_slots];
+	storage_for<Connection_> *c = new storage_for<Connection_>[(size_t)num_slots];
 
 	{
 		operation_profiler op("connecting", num_slots);
 		for (int64_t i = 0; i < num_slots; ++i)
-			new(&v[i].obj) Connection_(s.connect(g_empty_handler));
+			new(&c[i].obj) Connection_(s.connect(g_empty_handler));
 	}
 
 	measure_memory("connection", num_slots);
@@ -201,10 +201,10 @@ void connect_invoke(int64_t num_slots, int64_t num_calls)
 	{
 		operation_profiler op("disconnecting", num_slots);
 		for (int64_t i = 0; i < num_slots; ++i)
-			v[i].obj.~Connection_();
+			c[i].obj.~Connection_();
 	}
 
-	delete[] v;
+	delete[] c;
 }
 
 
@@ -212,7 +212,7 @@ template < typename Signal_, typename Connection_ >
 void connect_invoke_tracking(int64_t num_slots, int64_t num_calls)
 {
 	Signal_ s;
-	storage_for<Connection_> *v = new storage_for<Connection_>[(size_t)num_slots];
+	storage_for<Connection_> *c = new storage_for<Connection_>[(size_t)num_slots];
 
 	boost::shared_ptr<std::string> tracked(new std::string);
 
@@ -222,7 +222,7 @@ void connect_invoke_tracking(int64_t num_slots, int64_t num_calls)
 		{
 			typename Signal_::slot_type slot(g_empty_handler);
 			slot.track(tracked);
-			new(&v[i].obj) Connection_(s.connect(slot));
+			new(&c[i].obj) Connection_(s.connect(slot));
 		}
 	}
 
@@ -237,10 +237,10 @@ void connect_invoke_tracking(int64_t num_slots, int64_t num_calls)
 	{
 		operation_profiler op("disconnecting", num_slots);
 		for (int64_t i = 0; i < num_slots; ++i)
-			v[i].obj.~Connection_();
+			c[i].obj.~Connection_();
 	}
 
-	delete[] v;
+	delete[] c;
 }
 
 
@@ -248,23 +248,22 @@ template < typename Signal_, typename Connection_ >
 void connect_disconnect(int64_t num_slots, int64_t num_iterations)
 {
 	Signal_ *s = new Signal_[(size_t)num_iterations];
-	storage_for<Connection_> *v = new storage_for<Connection_>[(size_t)(num_slots * num_iterations)];
+	storage_for<Connection_> *c = new storage_for<Connection_>[(size_t)(num_slots * num_iterations)];
 
 	{
 		operation_profiler op("connecting", num_slots * num_iterations);
 		for (int64_t j = 0; j < num_iterations; ++j)
 			for (int64_t i = 0; i < num_slots; ++i)
-				new(&v[i + j * num_slots].obj) Connection_(s[j].connect(g_empty_handler));
+				new(&c[i + j * num_slots].obj) Connection_(s[j].connect(g_empty_handler));
 	}
 
 	{
 		operation_profiler op("disconnecting", num_slots * num_iterations);
-		for (int64_t j = 0; j < num_iterations; ++j)
-			for (int64_t i = 0; i < num_slots; ++i)
-				v[i + j * num_slots].obj.~Connection_();
+		for (int64_t i = 0; i < num_slots * num_iterations; ++i)
+			c[i].obj.~Connection_();
 	}
 
-	delete[] v;
+	delete[] c;
 }
 
 
@@ -272,7 +271,7 @@ template < typename Signal_, typename Connection_ >
 void connect_disconnect_tracking(int64_t num_slots, int64_t num_iterations)
 {
 	Signal_ *s = new Signal_[(size_t)num_iterations];
-	storage_for<Connection_> *v = new storage_for<Connection_>[(size_t)(num_slots * num_iterations)];
+	storage_for<Connection_> *c = new storage_for<Connection_>[(size_t)(num_slots * num_iterations)];
 
 	boost::shared_ptr<std::string> tracked(new std::string);
 
@@ -283,18 +282,17 @@ void connect_disconnect_tracking(int64_t num_slots, int64_t num_iterations)
 			{
 				typename Signal_::slot_type slot(g_empty_handler);
 				slot.track(tracked);
-				new(&v[i + j * num_slots].obj) Connection_(s[j].connect(slot));
+				new(&c[i + j * num_slots].obj) Connection_(s[j].connect(slot));
 			}
 	}
 
 	{
 		operation_profiler op("disconnecting", num_slots * num_iterations);
-		for (int64_t j = 0; j < num_iterations; ++j)
-			for (int64_t i = 0; i < num_slots; ++i)
-				v[i + j * num_slots].obj.~Connection_();
+		for (int64_t i = 0; i < num_slots * num_iterations; ++i)
+			c[i].obj.~Connection_();
 	}
 
-	delete[] v;
+	delete[] c;
 }
 
 
@@ -302,12 +300,13 @@ void connect_disconnect_tracking(int64_t num_slots, int64_t num_iterations)
 void connect_invoke_qt5(int64_t num_slots, int64_t num_calls)
 {
 	SignalOwner s;
-	SlotOwner *v = new SlotOwner[(size_t)num_slots];
+	SlotOwner *h = new SlotOwner[(size_t)num_slots];
+	QMetaObject::Connection *c = new QMetaObject::Connection[(size_t)(num_slots)];
 
 	{
 		operation_profiler op("connecting", num_slots);
 		for (int64_t i = 0; i < num_slots; ++i)
-			QObject::connect(&s, SIGNAL(testSignal()), &v[i], SLOT(testSlot()));
+			c[i] = QObject::connect(&s, SIGNAL(testSignal()), &h[i], SLOT(testSlot()));
 	}
 
 	measure_memory("connection", num_slots);
@@ -319,33 +318,34 @@ void connect_invoke_qt5(int64_t num_slots, int64_t num_calls)
 	}
 
 	{
-		operation_profiler op("disconnecting all", num_slots);
-		QObject::disconnect(&s, 0, 0, 0);
+		operation_profiler op("disconnecting", num_slots);
+		for (int64_t i = 0; i < num_slots; ++i)
+			QObject::disconnect(c[i]);
 	}
 
-	delete[] v;
+	delete[] h;
 }
 
 void connect_disconnect_qt5(int64_t num_slots, int64_t num_iterations)
 {
 	SignalOwner *s = new SignalOwner[(size_t)num_iterations];
-	SlotOwner *v = new SlotOwner[(size_t)(num_slots * num_iterations)];
+	SlotOwner *h = new SlotOwner[(size_t)(num_slots * num_iterations)];
+	QMetaObject::Connection *c = new QMetaObject::Connection[(size_t)(num_slots * num_iterations)];
 
 	{
 		operation_profiler op("connecting", num_slots * num_iterations);
 		for (int64_t j = 0; j < num_iterations; ++j)
 			for (int64_t i = 0; i < num_slots; ++i)
-				QObject::connect(&s[j], SIGNAL(testSignal()), &v[i + j * num_slots], SLOT(testSlot()));
+				c[i + j * num_slots] = QObject::connect(&s[j], SIGNAL(testSignal()), &h[i + j * num_slots], SLOT(testSlot()));
 	}
 
 	{
 		operation_profiler op("disconnecting a single slot", num_slots * num_iterations);
-		for (int64_t j = 0; j < num_iterations; ++j)
-			for (int64_t i = 0; i < num_slots; ++i)
-				QObject::disconnect(&s[j], SIGNAL(testSignal()), &v[i + j * num_slots], SLOT(testSlot()));
+		for (int64_t i = 0; i < num_slots * num_iterations; ++i)
+			QObject::disconnect(c[i]);
 	}
 
-	delete[] v;
+	delete[] h;
 }
 #endif
 

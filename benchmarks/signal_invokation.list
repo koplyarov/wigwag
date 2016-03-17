@@ -88,9 +88,9 @@ connect_disconnect_tracking       boost_signal2                100          1000
 connect_disconnect_tracking       boost_signal2                1000         1000
 connect_disconnect_tracking       boost_signal2                10000        100
 
-connect_disconnect                qt5_signal                   1           100000
-connect_disconnect                qt5_signal                   3           30000
-connect_disconnect                qt5_signal                   10          10000
-connect_disconnect                qt5_signal                   100         1000
-connect_disconnect                qt5_signal                   1000        10
-connect_disconnect                qt5_signal                   10000       1
+connect_disconnect                qt5_signal                   1           1000000
+connect_disconnect                qt5_signal                   3           300000
+connect_disconnect                qt5_signal                   10          100000
+connect_disconnect                qt5_signal                   100         10000
+connect_disconnect                qt5_signal                   1000        100
+connect_disconnect                qt5_signal                   10000       10
