@@ -121,12 +121,12 @@ namespace life_assurance
 		class execution_guard
 		{
 			const shared_data&								_sd;
-			detail::intrusive_ptr<const life_assurance>		_la;
+			const life_assurance*							_la;
 			life_assurance::int_type						_alive;
 
 		public:
 			execution_guard(const life_checker& c)
-				: _sd(*c._sd), _la(c._la), _alive(++c._la->_lock_counter_and_alive_flag & life_assurance::alive_flag)
+				: _sd(*c._sd), _la(c._la.get()), _alive(++c._la->_lock_counter_and_alive_flag & life_assurance::alive_flag)
 			{
 				if (!_alive)
 					unlock();
@@ -135,7 +135,6 @@ namespace life_assurance
 			execution_guard(const shared_data& sd, const life_assurance& la)
 				: _sd(sd), _la(&la), _alive(++la._lock_counter_and_alive_flag & life_assurance::alive_flag)
 			{
-				la.add_ref();
 				if (!_alive)
 					unlock();
 			}
