@@ -19,9 +19,21 @@
 
 #include <utils/profiler.hpp>
 
+#if defined(_MSC_VER)
+#	include <intrin.h>
+#endif
+
 
 namespace wigwag
 {
+
+#if defined(__GNUC__)
+#	define WIGWAG_BARRIER asm volatile ("":::"memory")
+#elif defined(_MSC_VER)
+#	define WIGWAG_BARRIER _ReadWriteBarrier()
+#else
+#	define WIGWAG_BARRIER do { std::mutex m; std::lock_guard<std::mutex> l(m); } while (false)
+#endif
 
 	class operation_profiler
 	{
@@ -35,12 +47,17 @@ namespace wigwag
 			: _name(name), _count(count)
 		{
 			std::cout << "<" << _name << ">" << std::endl;
+			std::this_thread::sleep_for(std::chrono::milliseconds(200));
+			WIGWAG_BARRIER;
 			_prof.reset();
+			WIGWAG_BARRIER;
 		}
 
 		~operation_profiler()
 		{
+			WIGWAG_BARRIER;
 			auto d = _prof.reset();
+			WIGWAG_BARRIER;
 			auto d_ms = std::chrono::duration_cast<std::chrono::milliseconds>(d);
 			auto d_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(d);
 
