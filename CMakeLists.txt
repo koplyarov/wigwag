@@ -129,7 +129,9 @@ if (Boost_FOUND)
 		endif()
 	endif()
 
-	add_executable(wigwag_benchmarks ${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/benchmarks.cpp)
+	add_executable(wigwag_benchmarks
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/benchmarks.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/markers.cpp)
 
 	if (SIGCPP2_FOUND)
 		target_link_libraries(wigwag_benchmarks ${SIGCPP2_LIBRARIES})
