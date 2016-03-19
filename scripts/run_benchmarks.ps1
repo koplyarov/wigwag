@@ -11,7 +11,6 @@ function OutputParser
 		{
 			$op = $m.Groups[1].Value
 			$ns = $m.Groups[2].Value -as [int]
-			#$r += @{ "${op}, ns" = $ns }
 			$r.Add("${op}, ns", $ns)
 		}
 		$m = [regex]::Match($_, "^<measure memory, name: (.*), count: (.*)>$")
@@ -20,7 +19,6 @@ function OutputParser
 			$name = $m.Groups[1].Value
 			$count = $m.Groups[2].Value -as [int]
 			$rss = (ps wigwag_benchmarks).WorkingSet64
-			#$r += @{ "memory per ${name}" = $($rss / $count -as [int]) }
 			$r.Add("memory per ${name}", $($rss / $count -as [int]))
 		}
 	}
@@ -40,7 +38,6 @@ function Benchmark($task, $obj, $count, $secondary_count)
 	}
 
 	$data = &"$benchmarks_dir\wigwag_benchmarks" @a | OutputParser
-	#$r += @{ 'name' = "$task $obj $count $secondary_count"; "data" = $data }
 	$r = New-Object 'System.Collections.Generic.SortedDictionary[string,object]'
 	$r.Add('name', "$task $obj $count $secondary_count")
 	$r.Add("data", $data)
@@ -55,7 +52,6 @@ function GetSystemInfo
 	$r.Add('os', [System.Environment]::OSVersion.VersionString)
 	$r.Add('cpu', $(Get-WmiObject Win32_Processor).Name)
 	return $r
-	#return @{ 'os' = [System.Environment]::OSVersion.VersionString; 'cpu' = $(Get-WmiObject Win32_Processor).Name }
 }
 
 
@@ -72,7 +68,6 @@ for ($i = 0; $i -lt $args.Length; ++$i)
 if ($filename -eq $null) { $filename = "benchmarks\benchmarks.list" }
 if ($benchmarks_dir -eq $null) { $benchmarks_dir = "$PSScriptRoot\..\build\bin\Release" }
 
-#$result = @{ 'script' = $filename; 'systemInfo' = GetSystemInfo; 'results' = @{ } }
 $result = New-Object 'System.Collections.Generic.SortedDictionary[string,object]'
 $result.Add('script', $filename)
 $result.Add('systemInfo', (GetSystemInfo))
@@ -85,7 +80,6 @@ foreach ($line in $(Get-Content $filename))
 
 	$benchmark_args = $line -Split "\s+"
 	$b = Benchmark @benchmark_args
-	#$result.results += @{ $b.name = $b.data }
 	$result.results.Add($b.name, $b.data)
 }
 

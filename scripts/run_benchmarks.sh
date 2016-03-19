@@ -3,6 +3,13 @@
 SCRIPT_DIR=`dirname $0`
 TABSTOP=48
 
+JsonBeginObj() { echo -n '{'; JSON_COMMA=0; }
+JsonEndObj() { echo -n '}'; JSON_COMMA=1; }
+JsonValue() { [ -z "${1//[0-9]/}" ] && echo -n "$1" || echo -n "\"$1\""; JSON_COMMA=1; }
+JsonFieldName() { [ $JSON_COMMA -ne 0 ] && echo -n ','; echo -n "\"$1\":"; JSON_COMMA=1; }
+JsonField() { JsonFieldName "$1" && JsonValue "$2"; }
+
+
 GetMemoryConsumption() {
 	echo $(($(ps --no-headers -p $(pidof wigwag_benchmarks) -o rss) * 1024))
 }
@@ -13,13 +20,13 @@ OutputParser() {
 		if echo "$DATA" | grep -q "^<.* finished: .*>$"; then
 			OP=$(echo "$DATA" | sed "s/^<\(.*\) finished: \(.*\)>$/\1/g")
 			NS=$(echo "$DATA" | sed "s/^<\(.*\) finished: \(.*\)>$/\2/g")
-			echo "  $OP:	$NS ns" | expand -t $TABSTOP
+			JsonField "$OP, ns" "$NS"
 		fi
 		if echo "$DATA" | grep -q "^<measure memory, name: .*, count: .*>$"; then
 			NAME=$(echo "$DATA" | sed "s/^<measure memory, name: \(.*\), count: \(.*\)>$/\1/g")
 			COUNT=$(echo "$DATA" | sed "s/^<measure memory, name: \(.*\), count: \(.*\)>$/\2/g")
 			RSS=$(GetMemoryConsumption)
-			echo "  memory per $NAME:	$(($RSS / $COUNT)) bytes" | expand -t $TABSTOP
+			JsonField "memory per $NAME" "$(($RSS / $COUNT))"
 		fi
 	done
 }
@@ -31,16 +38,19 @@ Benchmark() {
 		ARGS="$ARGS --secondary-count $4"
 	fi
 
-	echo "=== $@ ==="
-	"$BENCHMARKS_DIR/wigwag_benchmarks" $ARGS | OutputParser
+	JsonFieldName "$*"
+	JsonBeginObj
+		"$BENCHMARKS_DIR/wigwag_benchmarks" $ARGS | OutputParser
+	JsonEndObj
 	sleep 1
 }
 
 
-PrintSystemInfo() {
-	echo "### System info ###"
-	echo "  $(lsb_release -sd)"
-	echo "  $(grep "^model name\>" /proc/cpuinfo | head -n1 | sed "s/[^:]*:\s*\(.*\)$/\1/g")"
+GetSystemInfo() {
+	JsonBeginObj
+		JsonField os "$(lsb_release -sd)"
+		JsonField cpu "$(grep "^model name\>" /proc/cpuinfo | head -n1 | sed "s/[^:]*:\s*\(.*\)$/\1/g")"
+	JsonEndObj
 }
 
 
@@ -58,22 +68,18 @@ done
 [ "$BENCHMARKS_DIR" ] || BENCHMARKS_DIR="$SCRIPT_DIR/../build/bin"
 
 
-echo "Benchmark script: $FILENAME"
-echo
+{
+	JsonBeginObj
+		JsonFieldName "systemInfo" && GetSystemInfo 
+		JsonField script "$FILENAME"
+		JsonFieldName "results"
+		JsonBeginObj
+			while read -r LINE; do
+				if echo "$LINE" | grep -q "^#"; then continue; fi
+				if echo "$LINE" | grep -q "^\s*$"; then continue; fi
+				Benchmark $LINE
+			done < "$FILENAME"
+		JsonEndObj
+	JsonEndObj
+} | jq -S .
 
-
-PrintSystemInfo
-echo
-
-SKIP_EMPTY_STRINGS=1
-while read -r LINE; do
-	if echo "$LINE" | grep -q "^#"; then
-		continue
-	fi
-	if echo "$LINE" | grep -q "^\s*$"; then
-		[ $SKIP_EMPTY_STRINGS -eq 0 ] && echo
-		continue
-	fi
-	Benchmark $LINE
-	SKIP_EMPTY_STRINGS=0
-done < "$FILENAME"
