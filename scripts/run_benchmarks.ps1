@@ -1,15 +1,18 @@
-$tabstop = 48
-
 function OutputParser
 {
+	Begin
+	{
+		$r = New-Object 'System.Collections.Generic.SortedDictionary[string,object]'
+	}
 	Process
 	{
 		$m = [regex]::Match($_, "^<(.*) finished: (.*)>$")
 		if ($m.Success)
 		{
 			$op = $m.Groups[1].Value
-			$ns = $m.Groups[2].Value
-			"  {0,-$tabstop}{1,-8}" -f @("${op}:", "$ns ns")
+			$ns = $m.Groups[2].Value -as [int]
+			#$r += @{ "${op}, ns" = $ns }
+			$r.Add("${op}, ns", $ns)
 		}
 		$m = [regex]::Match($_, "^<measure memory, name: (.*), count: (.*)>$")
 		if ($m.Success)
@@ -17,8 +20,13 @@ function OutputParser
 			$name = $m.Groups[1].Value
 			$count = $m.Groups[2].Value -as [int]
 			$rss = (ps wigwag_benchmarks).WorkingSet64
-			"  {0,-$tabstop}{1,-8}" -f @("memory per ${name}:", "$($rss / $count -as [int]) bytes")
+			#$r += @{ "memory per ${name}" = $($rss / $count -as [int]) }
+			$r.Add("memory per ${name}", $($rss / $count -as [int]))
 		}
+	}
+	End
+	{
+		return $r
 	}
 }
 
@@ -31,17 +39,23 @@ function Benchmark($task, $obj, $count, $secondary_count)
 		$a += @("--secondary-count", $secondary_count)
 	}
 
-	echo "=== $task $obj $count $secondary_count ==="
-	&"$benchmarks_dir\wigwag_benchmarks" @a | OutputParser
+	$data = &"$benchmarks_dir\wigwag_benchmarks" @a | OutputParser
+	#$r += @{ 'name' = "$task $obj $count $secondary_count"; "data" = $data }
+	$r = New-Object 'System.Collections.Generic.SortedDictionary[string,object]'
+	$r.Add('name', "$task $obj $count $secondary_count")
+	$r.Add("data", $data)
 	sleep -s 1
+	return $r
 }
 
 
-function PrintSystemInfo
+function GetSystemInfo
 {
-	"### System info ###"
-	"  $([System.Environment]::OSVersion.VersionString)"
-	"  $((Get-WmiObject Win32_Processor).Name)"
+	$r = New-Object 'System.Collections.Generic.SortedDictionary[string,object]'
+	$r.Add('os', [System.Environment]::OSVersion.VersionString)
+	$r.Add('cpu', $(Get-WmiObject Win32_Processor).Name)
+	return $r
+	#return @{ 'os' = [System.Environment]::OSVersion.VersionString; 'cpu' = $(Get-WmiObject Win32_Processor).Name }
 }
 
 
@@ -51,29 +65,28 @@ for ($i = 0; $i -lt $args.Length; ++$i)
 	{
 		--bin-dir { $benchmarks_dir = "$($args[++$i])"  }
 		--file { $filename = "$($args[++$i])" }
-		default { echo "Unknown option: $($args[$i])"; exit 1 }
+		default { [Console]::Error.WriteLine("Unknown option: $($args[$i])"); exit 1 }
 	}
 }
 
 if ($filename -eq $null) { $filename = "benchmarks\benchmarks.list" }
 if ($benchmarks_dir -eq $null) { $benchmarks_dir = "$PSScriptRoot\..\build\bin\Release" }
 
-echo "Benchmark script: $filename"
-echo ""
+#$result = @{ 'script' = $filename; 'systemInfo' = GetSystemInfo; 'results' = @{ } }
+$result = New-Object 'System.Collections.Generic.SortedDictionary[string,object]'
+$result.Add('script', $filename)
+$result.Add('systemInfo', (GetSystemInfo))
+$result.Add('results', (New-Object 'System.Collections.Generic.SortedDictionary[string,object]'))
 
-PrintSystemInfo
-echo ""
-
-$skip_empty_lines = $True
 foreach ($line in $(Get-Content $filename))
 {
 	if ($line -match "^#" ) { continue }
-	if ($line -match "^\s*$") 
-	{ 
-		if (-not $skip_empty_lines) { echo "" }
-		continue
-	}
+	if ($line -match "^\s*$") { continue }
+
 	$benchmark_args = $line -Split "\s+"
-	Benchmark @benchmark_args
-	$skip_empty_lines = $False
+	$b = Benchmark @benchmark_args
+	#$result.results += @{ $b.name = $b.data }
+	$result.results.Add($b.name, $b.data)
 }
+
+ConvertTo-Json $result

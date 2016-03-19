@@ -11,12 +11,34 @@ for ($i = 0; $i -lt $args.Length; ++$i)
 if ($benchmarks_dir -eq $null) { $benchmarks_dir = "$PSScriptRoot\..\build\bin\Release" }
 if ($out_dir -eq $null) { $out_dir = "$PSScriptRoot\..\benchmarks.out" }
 
+$num_passes = 30
+
 mkdir -Force "$out_dir"
 foreach ($f in dir "$PSScriptRoot\..\benchmarks")
 {
-	for ($i = 0; $i -lt 10; ++$i)
+	$results = $null
+	for ($i = 0; $i -lt $num_passes; ++$i)
 	{
 		echo "$($f.BaseName): $i"
-		&"$PSScriptRoot\run_benchmarks.ps1" --file "$($f.FullName)" > "$out_dir/$($f.BaseName).$i.out"
+		$tmp = &"$PSScriptRoot\run_benchmarks.ps1" --file "$($f.FullName)" | ConvertFrom-Json
+		if ($results -eq $null)
+		{
+			$results = $tmp
+		}
+		else
+		{
+			foreach ($b in $tmp.results.PSObject.Properties)
+			{
+				$out_results = $results.results.PSObject.Properties[$b.Name].Value
+				$tmp_results = $b.Value
+				foreach ($k in $tmp_results.PSObject.Properties)
+				{
+					$a = $out_results.PSObject.Properties[$k.Name].Value
+					$b = $tmp_results.PSObject.Properties[$k.Name].Value
+					$out_results.PSObject.Properties[$k.Name].Value = [Math]::Min($a, $b)
+				}
+			}
+		}
 	}
+	$results | ConvertTo-Json > "$out_dir/$($f.BaseName).json"
 }
