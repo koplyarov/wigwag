@@ -37,10 +37,13 @@ namespace wigwag
 		>
 	class listenable
 	{
-		using exception_handling_policy = typename detail::policy_picker<exception_handling::policy_concept, detail::listenable_default_policies, Policies_...>::type;
-		using threading_policy = typename detail::policy_picker<threading::policy_concept, detail::listenable_default_policies, Policies_...>::type;
-		using state_populating_policy = typename detail::policy_picker<state_populating::policy_concept, detail::listenable_default_policies, Policies_...>::type;
-		using life_assurance_policy = typename detail::policy_picker<life_assurance::policy_concept, detail::listenable_default_policies, Policies_...>::type;
+		template < template <typename> class PolicyConcept_ >
+		using policy = typename detail::policy_picker<PolicyConcept_, detail::listenable_default_policies, Policies_...>::type;
+
+		using exception_handling_policy = policy<exception_handling::policy_concept>;
+		using threading_policy = policy<threading::policy_concept>;
+		using state_populating_policy = policy<state_populating::policy_concept>;
+		using life_assurance_policy = policy<life_assurance::policy_concept>;
 
 	public:
 		using listener_type = ListenerType_;
