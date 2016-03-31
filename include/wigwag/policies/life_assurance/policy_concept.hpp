@@ -80,7 +80,7 @@ namespace life_assurance
 				check_life_checker<T_>::value &&
 				check_execution_guard<T_>::value;
 
-			using version = typename std::conditional<matches, wigwag::detail::api_version<1, 0>, std::false_type>::type;
+			using version = typename std::conditional<matches, api_version<1, 0>, std::false_type>::type;
 		};
 	}
 

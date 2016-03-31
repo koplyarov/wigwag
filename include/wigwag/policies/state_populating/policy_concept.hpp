@@ -40,7 +40,7 @@ namespace state_populating
 				has_populate_state<handler_processor>::value &&
 				has_withdraw_state<handler_processor>::value;
 
-			using version = typename std::conditional<matches, wigwag::detail::api_version<1, 0>, std::false_type>::type;
+			using version = typename std::conditional<matches, api_version<1, 0>, std::false_type>::type;
 		};
 	}
 

@@ -1,5 +1,5 @@
-#ifndef WIGWAG_DETAIL_API_VERSION_HPP
-#define WIGWAG_DETAIL_API_VERSION_HPP
+#ifndef WIGWAG_API_VERSION_HPP
+#define WIGWAG_API_VERSION_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,8 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-namespace wigwag {
-namespace detail
+namespace wigwag
 {
 
 	template < int Major_, int Minor_ >
@@ -22,6 +21,6 @@ namespace detail
 		static constexpr int minor = Minor_;
 	};
 
-}}
+}
 
 #endif

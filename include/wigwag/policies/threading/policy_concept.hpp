@@ -11,7 +11,6 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/detail/api_version.hpp>
 #include <wigwag/detail/policy_version_detector.hpp>
 #include <wigwag/detail/type_expression_check.hpp>
 
@@ -44,7 +43,7 @@ namespace threading
 				has_lock_nonrecursive<lock_primitive>::value &&
 				has_unlock_nonrecursive<lock_primitive>::value;
 
-			using version = typename std::conditional<matches, wigwag::detail::api_version<1, 0>, std::false_type>::type;
+			using version = typename std::conditional<matches, api_version<1, 0>, std::false_type>::type;
 		};
 	}
 

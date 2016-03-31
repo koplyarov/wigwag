@@ -25,13 +25,9 @@ namespace exception_handling
 	{
 		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_handle_exceptions, std::declval<T_>().handle_exceptions(std::function<void(int, double)>(), 42, 3.14));
 
-		template < typename T_, bool HasHandleExceptions = has_handle_exceptions<T_>::value >
-		struct check_policy_v1_0
-		{ using version = std::false_type; };
-
 		template < typename T_ >
-		struct check_policy_v1_0<T_, true>
-		{ using version = typename std::conditional<has_handle_exceptions<T_>::value, wigwag::detail::api_version<1, 0>, std::false_type>::type; };
+		struct check_policy_v1_0
+		{ using version = typename std::conditional<has_handle_exceptions<T_>::value, api_version<1, 0>, std::false_type>::type; };
 	}
 
 
