@@ -11,6 +11,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/api_version.hpp>
+#include <wigwag/detail/policy_version_detector.hpp>
 #include <wigwag/detail/type_expression_check.hpp>
 
 
@@ -27,20 +29,22 @@ namespace threading
 		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_lock_nonrecursive, std::declval<T_>().lock_nonrecursive());
 		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_unlock_nonrecursive, std::declval<T_>().unlock_nonrecursive());
 
-		template < typename T_, bool HasLockPrimitive_ =  detail::has_lock_primitive<T_>::value >
-		struct check_lock_primitive
-		{ static constexpr bool value = false; };
+		template < typename T_, bool HasLockPrimitive_ = has_lock_primitive<T_>::value >
+		struct check_lock_primitive_v1_0
+		{ using version = std::false_type; };
 
 		template < typename T_ >
-		struct check_lock_primitive<T_, true>
+		struct check_lock_primitive_v1_0<T_, true>
 		{
 			using lock_primitive = typename T_::lock_primitive;
-			static constexpr bool value =
-				detail::has_get_primitive<lock_primitive>::value &&
-				detail::has_lock_recursive<lock_primitive>::value &&
-				detail::has_unlock_recursive<lock_primitive>::value &&
-				detail::has_lock_nonrecursive<lock_primitive>::value &&
-				detail::has_unlock_nonrecursive<lock_primitive>::value;
+			static constexpr bool matches =
+				has_get_primitive<lock_primitive>::value &&
+				has_lock_recursive<lock_primitive>::value &&
+				has_unlock_recursive<lock_primitive>::value &&
+				has_lock_nonrecursive<lock_primitive>::value &&
+				has_unlock_nonrecursive<lock_primitive>::value;
+
+			using version = typename std::conditional<matches, wigwag::detail::api_version<1, 0>, std::false_type>::type;
 		};
 	}
 
@@ -48,7 +52,7 @@ namespace threading
 	template < typename T_ >
 	struct policy_concept
 	{
-		static constexpr bool matches = detail::check_lock_primitive<T_>::value;
+		using version = typename wigwag::detail::policy_version_detector<detail::check_lock_primitive_v1_0<T_>>::version;
 	};
 
 }}

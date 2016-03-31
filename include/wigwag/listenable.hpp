@@ -23,11 +23,11 @@ namespace wigwag
 
 	namespace detail
 	{
-		template <template <typename> class PolicyConcept_> struct signal_default_policies;
-		template <> struct signal_default_policies<exception_handling::policy_concept> { using type = exception_handling::default_; };
-		template <> struct signal_default_policies<threading::policy_concept> { using type = threading::default_; };
-		template <> struct signal_default_policies<state_populating::policy_concept> { using type = state_populating::default_; };
-		template <> struct signal_default_policies<life_assurance::policy_concept> { using type = life_assurance::default_; };
+		template <template <typename> class PolicyConcept_> struct listenable_default_policies;
+		template <> struct listenable_default_policies<exception_handling::policy_concept> { using type = exception_handling::default_; };
+		template <> struct listenable_default_policies<threading::policy_concept> { using type = threading::default_; };
+		template <> struct listenable_default_policies<state_populating::policy_concept> { using type = state_populating::default_; };
+		template <> struct listenable_default_policies<life_assurance::policy_concept> { using type = life_assurance::default_; };
 	}
 
 
@@ -37,10 +37,10 @@ namespace wigwag
 		>
 	class listenable
 	{
-		using exception_handling_policy = typename detail::policy_picker<exception_handling::policy_concept, detail::signal_default_policies, Policies_...>::type;
-		using threading_policy = typename detail::policy_picker<threading::policy_concept, detail::signal_default_policies, Policies_...>::type;
-		using state_populating_policy = typename detail::policy_picker<state_populating::policy_concept, detail::signal_default_policies, Policies_...>::type;
-		using life_assurance_policy = typename detail::policy_picker<life_assurance::policy_concept, detail::signal_default_policies, Policies_...>::type;
+		using exception_handling_policy = typename detail::policy_picker<exception_handling::policy_concept, detail::listenable_default_policies, Policies_...>::type;
+		using threading_policy = typename detail::policy_picker<threading::policy_concept, detail::listenable_default_policies, Policies_...>::type;
+		using state_populating_policy = typename detail::policy_picker<state_populating::policy_concept, detail::listenable_default_policies, Policies_...>::type;
+		using life_assurance_policy = typename detail::policy_picker<life_assurance::policy_concept, detail::listenable_default_policies, Policies_...>::type;
 
 	public:
 		using listener_type = ListenerType_;

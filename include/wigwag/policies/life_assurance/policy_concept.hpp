@@ -70,18 +70,25 @@ namespace life_assurance
 			using execution_guard = typename T_::execution_guard;
 			static constexpr bool value = has_is_alive<execution_guard>::value;
 		};
+
+		template < typename T_ >
+		struct check_policy_v1_0
+		{
+			static constexpr bool matches =
+				has_shared_data<T_>::value &&
+				check_life_assurance<T_>::value &&
+				check_life_checker<T_>::value &&
+				check_execution_guard<T_>::value;
+
+			using version = typename std::conditional<matches, wigwag::detail::api_version<1, 0>, std::false_type>::type;
+		};
 	}
 
 
 	template < typename T_ >
-	class policy_concept
+	struct policy_concept
 	{
-	public:
-		static constexpr bool matches =
-			detail::has_shared_data<T_>::value &&
-			detail::check_life_assurance<T_>::value &&
-			detail::check_life_checker<T_>::value &&
-			detail::check_execution_guard<T_>::value;
+		using version = typename wigwag::detail::policy_version_detector<detail::check_policy_v1_0<T_>>::version;
 	};
 
 }}

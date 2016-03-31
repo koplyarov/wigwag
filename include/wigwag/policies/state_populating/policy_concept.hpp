@@ -11,6 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/policy_version_detector.hpp>
 #include <wigwag/detail/type_expression_check.hpp>
 
 #include <functional>
@@ -28,16 +29,18 @@ namespace state_populating
 		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_withdraw_state, std::declval<T_>().withdraw_state(std::declval<std::mutex&>(), std::function<void()>()));
 
 		template < typename T_, bool HasLockPrimitive_ =  detail::has_handler_processor<T_>::value >
-		struct check_handler_processor
-		{ static constexpr bool value = false; };
+		struct check_handler_processor_v1_0
+		{ using version = std::false_type; };
 
 		template < typename T_ >
-		struct check_handler_processor<T_, true>
+		struct check_handler_processor_v1_0<T_, true>
 		{
 			using handler_processor = typename T_::template handler_processor<std::function<void()>>;
-			static constexpr bool value =
-				detail::has_populate_state<handler_processor>::value &&
-				detail::has_withdraw_state<handler_processor>::value;
+			static constexpr bool matches =
+				has_populate_state<handler_processor>::value &&
+				has_withdraw_state<handler_processor>::value;
+
+			using version = typename std::conditional<matches, wigwag::detail::api_version<1, 0>, std::false_type>::type;
 		};
 	}
 
@@ -45,7 +48,7 @@ namespace state_populating
 	template < typename T_ >
 	struct policy_concept
 	{
-		static constexpr bool matches = detail::check_handler_processor<T_>::value;
+		using version = typename wigwag::detail::policy_version_detector<detail::check_handler_processor_v1_0<T_>>::version;
 	};
 
 }}
