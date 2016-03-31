@@ -33,8 +33,8 @@ namespace detail
 	struct policy_picker<PolicyConcept_, DefaultImplementationGetter_, PoliciesHead_, Policies_...>
 	{
 		using type = typename std::conditional<
-			!std::is_same<typename PolicyConcept_<PoliciesHead_>::version, std::false_type>::value,
-			PoliciesHead_,
+			!std::is_same<typename PolicyConcept_<PoliciesHead_>::adapted_policy, void>::value,
+			typename PolicyConcept_<PoliciesHead_>::adapted_policy,
 			typename policy_picker<PolicyConcept_, DefaultImplementationGetter_, Policies_...>::type>::type;
 	};
 

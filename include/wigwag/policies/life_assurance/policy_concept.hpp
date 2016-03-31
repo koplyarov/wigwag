@@ -80,7 +80,7 @@ namespace life_assurance
 				check_life_checker<T_>::value &&
 				check_execution_guard<T_>::value;
 
-			using version = typename std::conditional<matches, api_version<1, 0>, std::false_type>::type;
+			using adapted_policy = typename std::conditional<matches, T_, void>::type;
 		};
 	}
 
@@ -88,7 +88,7 @@ namespace life_assurance
 	template < typename T_ >
 	struct policy_concept
 	{
-		using version = typename wigwag::detail::policy_version_detector<detail::check_policy_v1_0<T_>>::version;
+		using adapted_policy = typename wigwag::detail::policy_version_detector<detail::check_policy_v1_0<T_>>::adapted_policy;
 	};
 
 }}

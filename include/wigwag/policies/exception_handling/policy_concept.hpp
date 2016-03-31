@@ -11,6 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/enabler.hpp>
 #include <wigwag/detail/policy_version_detector.hpp>
 #include <wigwag/detail/type_expression_check.hpp>
 
@@ -27,14 +28,14 @@ namespace exception_handling
 
 		template < typename T_ >
 		struct check_policy_v1_0
-		{ using version = typename std::conditional<has_handle_exceptions<T_>::value, api_version<1, 0>, std::false_type>::type; };
+		{ using adapted_policy = typename std::conditional<has_handle_exceptions<T_>::value, T_, void>::type; };
 	}
 
 
 	template < typename T_ >
 	struct policy_concept
 	{
-		using version = typename wigwag::detail::policy_version_detector<detail::check_policy_v1_0<T_>>::version;
+		using adapted_policy = typename wigwag::detail::policy_version_detector<detail::check_policy_v1_0<T_>>::adapted_policy;
 	};
 
 }}

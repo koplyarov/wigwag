@@ -30,7 +30,7 @@ namespace state_populating
 
 		template < typename T_, bool HasLockPrimitive_ =  detail::has_handler_processor<T_>::value >
 		struct check_handler_processor_v1_0
-		{ using version = std::false_type; };
+		{ using adapted_policy = void; };
 
 		template < typename T_ >
 		struct check_handler_processor_v1_0<T_, true>
@@ -40,16 +40,14 @@ namespace state_populating
 				has_populate_state<handler_processor>::value &&
 				has_withdraw_state<handler_processor>::value;
 
-			using version = typename std::conditional<matches, api_version<1, 0>, std::false_type>::type;
+			using adapted_policy = typename std::conditional<matches, T_, void>::type;
 		};
 	}
 
 
 	template < typename T_ >
 	struct policy_concept
-	{
-		using version = typename wigwag::detail::policy_version_detector<detail::check_handler_processor_v1_0<T_>>::version;
-	};
+	{ using adapted_policy = typename wigwag::detail::policy_version_detector<detail::check_handler_processor_v1_0<T_>>::adapted_policy; };
 
 }}
 

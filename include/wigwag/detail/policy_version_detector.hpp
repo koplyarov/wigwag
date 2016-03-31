@@ -11,8 +11,6 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/api_version.hpp>
-
 #include <type_traits>
 
 
@@ -21,23 +19,19 @@ namespace detail
 {
 
 	template < typename... VersionChecks_ >
-	class policy_version_detector
+	struct policy_version_detector
 	{
-	public:
-		using version = std::false_type;
+		using adapted_policy = void;
 	};
 
 
 	template < typename HeadVersionCheck_, typename... TailVersionChecks_ >
-	class policy_version_detector<HeadVersionCheck_, TailVersionChecks_...>
+	struct policy_version_detector<HeadVersionCheck_, TailVersionChecks_...>
 	{
-		using head_version = typename HeadVersionCheck_::version;
-
-	public:
-		using version = typename std::conditional<
-				std::is_same<head_version, std::false_type>::value,
-				typename policy_version_detector<TailVersionChecks_...>::version,
-				head_version
+		using adapted_policy = typename std::conditional<
+				std::is_same<typename HeadVersionCheck_::adapted_policy, void>::value,
+				typename policy_version_detector<TailVersionChecks_...>::adapted_policy,
+				typename HeadVersionCheck_::adapted_policy
 			>::type;
 	};
 

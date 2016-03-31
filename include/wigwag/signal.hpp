@@ -25,6 +25,7 @@ namespace wigwag
 	namespace detail
 	{
 		template <template <typename> class PolicyConcept_> struct signal_default_policies;
+
 		template <> struct signal_default_policies<exception_handling::policy_concept> { using type = exception_handling::default_; };
 		template <> struct signal_default_policies<threading::policy_concept> { using type = threading::default_; };
 		template <> struct signal_default_policies<state_populating::policy_concept> { using type = state_populating::default_; };
@@ -38,10 +39,13 @@ namespace wigwag
 		>
 	class signal
 	{
-		using exception_handling_policy = typename detail::policy_picker<exception_handling::policy_concept, detail::signal_default_policies, Policies_...>::type;
-		using threading_policy = typename detail::policy_picker<threading::policy_concept, detail::signal_default_policies, Policies_...>::type;
-		using state_populating_policy = typename detail::policy_picker<state_populating::policy_concept, detail::signal_default_policies, Policies_...>::type;
-		using life_assurance_policy = typename detail::policy_picker<life_assurance::policy_concept, detail::signal_default_policies, Policies_...>::type;
+		template < template <typename> class PolicyConcept_ >
+		using policy = typename detail::policy_picker<PolicyConcept_, detail::signal_default_policies, Policies_...>::type;
+
+		using exception_handling_policy = policy<exception_handling::policy_concept>;
+		using threading_policy = policy<threading::policy_concept>;
+		using state_populating_policy = policy<state_populating::policy_concept>;
+		using life_assurance_policy = policy<life_assurance::policy_concept>;
 
 	public:
 		using handler_type = std::function<Signature_>;
