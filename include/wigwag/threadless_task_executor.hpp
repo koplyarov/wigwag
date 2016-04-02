@@ -23,12 +23,29 @@ namespace wigwag
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	template < typename ExceptionHandlingPolicy_ = exception_handling::default_, typename ThreadingPolicy_ = threading::default_ >
-	class basic_threadless_task_executor : public task_executor, private ExceptionHandlingPolicy_
+	namespace detail
 	{
+		using threadless_task_executor_policies_config = policies_config<
+				policies_config_entry<exception_handling::policy_concept, exception_handling::default_>,
+				policies_config_entry<threading::policy_concept, threading::default_>
+			>;
+	}
+
+
+	template < typename... Policies_ >
+	class basic_threadless_task_executor :
+		public task_executor,
+		private detail::policy_picker<exception_handling::policy_concept, detail::threadless_task_executor_policies_config, Policies_...>::type
+	{
+		template < template <typename> class PolicyConcept_ >
+		using policy = typename detail::policy_picker<PolicyConcept_, detail::threadless_task_executor_policies_config, Policies_...>::type;
+
+		using exception_handling_policy = policy<exception_handling::policy_concept>;
+		using threading_policy = policy<threading::policy_concept>;
+
 		using task_queue = std::queue<std::function<void()>>;
 
-		using lock_primitive = typename ThreadingPolicy_::lock_primitive;
+		using lock_primitive = typename threading_policy::lock_primitive;
 
 	private:
 		task_queue				_tasks;
@@ -37,7 +54,7 @@ namespace wigwag
 	public:
 		template < typename... Args_ >
 		basic_threadless_task_executor(Args_&... args)
-			: ExceptionHandlingPolicy_(std::forward<Args_>(args)...)
+			: exception_handling_policy(std::forward<Args_>(args)...)
 		{ }
 
 		~basic_threadless_task_executor()
@@ -58,7 +75,7 @@ namespace wigwag
 
 			while (!_tasks.empty())
 			{
-				ExceptionHandlingPolicy_::handle_exceptions([&]() {
+				exception_handling_policy::handle_exceptions([&]() {
 						std::function<void()> task = _tasks.front();
 						_tasks.pop();
 
