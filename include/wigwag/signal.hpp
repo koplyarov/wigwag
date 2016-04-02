@@ -24,12 +24,12 @@ namespace wigwag
 
 	namespace detail
 	{
-		template <template <typename> class PolicyConcept_> struct signal_default_policies;
-
-		template <> struct signal_default_policies<exception_handling::policy_concept> { using type = exception_handling::default_; };
-		template <> struct signal_default_policies<threading::policy_concept> { using type = threading::default_; };
-		template <> struct signal_default_policies<state_populating::policy_concept> { using type = state_populating::default_; };
-		template <> struct signal_default_policies<life_assurance::policy_concept> { using type = life_assurance::default_; };
+		using signal_policies_config = policies_config<
+				policies_config_entry<exception_handling::policy_concept, exception_handling::default_>,
+				policies_config_entry<threading::policy_concept, threading::default_>,
+				policies_config_entry<state_populating::policy_concept, state_populating::default_>,
+				policies_config_entry<life_assurance::policy_concept, life_assurance::default_>
+			>;
 	}
 
 
@@ -40,7 +40,7 @@ namespace wigwag
 	class signal
 	{
 		template < template <typename> class PolicyConcept_ >
-		using policy = typename detail::policy_picker<PolicyConcept_, detail::signal_default_policies, Policies_...>::type;
+		using policy = typename detail::policy_picker<PolicyConcept_, detail::signal_policies_config, Policies_...>::type;
 
 		using exception_handling_policy = policy<exception_handling::policy_concept>;
 		using threading_policy = policy<threading::policy_concept>;
