@@ -18,6 +18,8 @@ namespace wigwag {
 namespace detail
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 	template < typename Func_ >
 	class scope_guard
 	{
@@ -43,6 +45,8 @@ namespace detail
 	template < typename Func_ >
 	scope_guard<Func_> at_scope_exit(Func_&& f)
 	{ return scope_guard<Func_>(std::move(f)); }
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }}
 

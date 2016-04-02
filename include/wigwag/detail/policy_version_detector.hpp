@@ -18,6 +18,8 @@ namespace wigwag {
 namespace detail
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 	template < typename... VersionChecks_ >
 	struct policy_version_detector
 	{
@@ -34,6 +36,8 @@ namespace detail
 				typename HeadVersionCheck_::adapted_policy
 			>::type;
 	};
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }}
 

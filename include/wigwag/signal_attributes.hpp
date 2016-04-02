@@ -17,6 +17,8 @@
 namespace wigwag
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 	enum class signal_attributes
 	{
 		none				= 0x0,
@@ -25,6 +27,8 @@ namespace wigwag
 	};
 
 	WIGWAG_DECLARE_ENUM_BITWISE_OPERATORS(signal_attributes)
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }
 

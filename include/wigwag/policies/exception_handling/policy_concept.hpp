@@ -11,7 +11,6 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/detail/enabler.hpp>
 #include <wigwag/detail/policy_version_detector.hpp>
 #include <wigwag/detail/type_expression_check.hpp>
 
@@ -21,6 +20,8 @@
 namespace wigwag {
 namespace exception_handling
 {
+
+#include <wigwag/detail/disable_warnings.hpp>
 
 	namespace detail
 	{
@@ -37,6 +38,8 @@ namespace exception_handling
 	{
 		using adapted_policy = typename wigwag::detail::policy_version_detector<detail::check_policy_v1_0<T_>>::adapted_policy;
 	};
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }}
 

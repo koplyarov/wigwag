@@ -19,6 +19,8 @@ namespace wigwag {
 namespace threading
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 	namespace detail
 	{
 		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_lock_primitive, std::declval<typename T_::lock_primitive>());
@@ -55,6 +57,8 @@ namespace threading
 	{
 		using adapted_policy = typename wigwag::detail::policy_version_detector<detail::check_lock_primitive_v1_0<T_>>::adapted_policy;
 	};
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }}
 

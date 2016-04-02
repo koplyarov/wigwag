@@ -18,6 +18,8 @@ namespace wigwag {
 namespace detail
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 	template < template <typename> class PolicyConcept_, typename DefaultPolicy_ >
 	struct policies_config_entry
 	{
@@ -77,6 +79,7 @@ namespace detail
 			typename policy_picker<PolicyConcept_, PoliciesConfig_, Policies_...>::type>::type;
 	};
 
+#include <wigwag/detail/enable_warnings.hpp>
 
 }}
 

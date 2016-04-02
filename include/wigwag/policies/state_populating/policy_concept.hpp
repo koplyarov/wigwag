@@ -22,6 +22,8 @@ namespace wigwag {
 namespace state_populating
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 	namespace detail
 	{
 		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_handler_processor, std::declval<typename T_::template handler_processor<std::function<void()>>>());
@@ -48,6 +50,8 @@ namespace state_populating
 	template < typename T_ >
 	struct policy_concept
 	{ using adapted_policy = typename wigwag::detail::policy_version_detector<detail::check_handler_processor_v1_0<T_>>::adapted_policy; };
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }}
 
