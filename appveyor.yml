@@ -27,4 +27,4 @@ before_build:
 build:
   project: C:\projects\wigwag\build\wigwag.sln
   parallel: true
-  verbosity: normal
+  verbosity: minimal
