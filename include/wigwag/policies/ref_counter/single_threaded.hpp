@@ -1,5 +1,5 @@
-#ifndef WIGWAG_POLICIES_HPP
-#define WIGWAG_POLICIES_HPP
+#ifndef WIGWAG_POLICIES_REF_COUNTER_SINGLE_THREADED_HPP
+#define WIGWAG_POLICIES_REF_COUNTER_SINGLE_THREADED_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,11 +11,31 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/policies/creation/policies.hpp>
-#include <wigwag/policies/exception_handling/policies.hpp>
-#include <wigwag/policies/life_assurance/policies.hpp>
-#include <wigwag/policies/ref_counter/policies.hpp>
-#include <wigwag/policies/state_populating/policies.hpp>
-#include <wigwag/policies/threading/policies.hpp>
+namespace wigwag {
+namespace ref_counter
+{
+
+#include <wigwag/detail/disable_warnings.hpp>
+
+	class single_threaded
+	{
+	private:
+		mutable int		_counter;
+
+	public:
+		single_threaded(int initVal)
+			: _counter(initVal)
+		{ }
+
+		int add_ref() const
+		{ return ++_counter; }
+
+		int release() const
+		{ return --_counter; }
+	};
+
+#include <wigwag/detail/enable_warnings.hpp>
+
+}}
 
 #endif

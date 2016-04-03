@@ -29,7 +29,8 @@ namespace wigwag
 				policies_config_entry<threading::policy_concept, threading::default_>,
 				policies_config_entry<state_populating::policy_concept, state_populating::default_>,
 				policies_config_entry<life_assurance::policy_concept, life_assurance::default_>,
-				policies_config_entry<creation::policy_concept, creation::default_>
+				policies_config_entry<creation::policy_concept, creation::default_>,
+				policies_config_entry<ref_counter::policy_concept, ref_counter::default_>
 			>;
 	}
 
@@ -49,13 +50,14 @@ namespace wigwag
 		using state_populating_policy = policy<state_populating::policy_concept>;
 		using life_assurance_policy = policy<life_assurance::policy_concept>;
 		using creation_policy = policy<creation::policy_concept>;
+		using ref_counter_policy = policy<ref_counter::policy_concept>;
 
 	public:
 		using handler_type = std::function<Signature_>;
 
 	private:
-		using impl_type = detail::signal_impl<Signature_, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy>;
-		using impl_type_with_attr = detail::signal_with_attributes_impl<Signature_, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy>;
+		using impl_type = detail::signal_impl<Signature_, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy, ref_counter_policy>;
+		using impl_type_with_attr = detail::signal_with_attributes_impl<Signature_, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy, ref_counter_policy>;
 		using impl_type_ptr = detail::intrusive_ptr<impl_type>;
 
 	private:

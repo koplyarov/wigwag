@@ -32,17 +32,18 @@ namespace detail
 			typename ExceptionHandlingPolicy_,
 			typename ThreadingPolicy_,
 			typename StatePopulatingPolicy_,
-			typename LifeAssurancePolicy_
+			typename LifeAssurancePolicy_,
+			typename RefCounterPolicy_
 		>
 	class listenable_impl
-		:	private intrusive_ref_counter<listenable_impl<HandlerType_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>>,
+		:	private intrusive_ref_counter<RefCounterPolicy_, listenable_impl<HandlerType_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_, RefCounterPolicy_>>,
 			protected LifeAssurancePolicy_::shared_data,
 			protected ExceptionHandlingPolicy_,
 			protected ThreadingPolicy_::lock_primitive,
 			protected StatePopulatingPolicy_::template handler_processor<HandlerType_>
 	{
-		friend class intrusive_ref_counter<listenable_impl<HandlerType_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>>;
-		using ref_counter_base = intrusive_ref_counter<listenable_impl<HandlerType_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>>;
+		friend class intrusive_ref_counter<RefCounterPolicy_, listenable_impl<HandlerType_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_, RefCounterPolicy_>>;
+		using ref_counter_base = intrusive_ref_counter<RefCounterPolicy_, listenable_impl<HandlerType_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_, RefCounterPolicy_>>;
 
 	public:
 		using handler_type = HandlerType_;

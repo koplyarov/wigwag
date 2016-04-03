@@ -1,5 +1,5 @@
-#ifndef WIGWAG_POLICIES_HPP
-#define WIGWAG_POLICIES_HPP
+#ifndef WIGWAG_POLICIES_REF_COUNTER_POLICIES_HPP
+#define WIGWAG_POLICIES_REF_COUNTER_POLICIES_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,11 +11,17 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/policies/creation/policies.hpp>
-#include <wigwag/policies/exception_handling/policies.hpp>
-#include <wigwag/policies/life_assurance/policies.hpp>
-#include <wigwag/policies/ref_counter/policies.hpp>
-#include <wigwag/policies/state_populating/policies.hpp>
-#include <wigwag/policies/threading/policies.hpp>
+#include <wigwag/policies/ref_counter/atomic.hpp>
+#include <wigwag/policies/ref_counter/policy_concept.hpp>
+#include <wigwag/policies/ref_counter/single_threaded.hpp>
+
+
+namespace wigwag {
+namespace ref_counter
+{
+
+	using default_ = atomic;
+
+}}
 
 #endif

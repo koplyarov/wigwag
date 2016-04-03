@@ -1,5 +1,5 @@
-#ifndef WIGWAG_DETAIL_INTRUSIVE_REF_COUNTER_HPP
-#define WIGWAG_DETAIL_INTRUSIVE_REF_COUNTER_HPP
+#ifndef WIGWAG_POLICIES_REF_COUNTER_POLICY_CONCEPT_HPP
+#define WIGWAG_POLICIES_REF_COUNTER_POLICY_CONCEPT_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,34 +11,30 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/detail/annotations.hpp>
-
-
 namespace wigwag {
-namespace detail
+namespace ref_counter
 {
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	template < typename RefCounterPolicy_, typename Derived_ >
-	class intrusive_ref_counter : private RefCounterPolicy_
+	namespace detail
 	{
-	public:
-		intrusive_ref_counter()
-			: RefCounterPolicy_(1)
-		{ }
+		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_ctor, T_(0));
+		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_add_ref, std::declval<T_>().add_ref() == 0);
+		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_release, std::declval<T_>().release() == 0);
 
-		intrusive_ref_counter(const intrusive_ref_counter&) = delete;
-		intrusive_ref_counter& operator = (const intrusive_ref_counter&) = delete;
-
-		void add_ref() const
-		{ RefCounterPolicy_::add_ref(); }
-
-		void release() const
+		template < typename T_ >
+		struct check_policy_v1_0
 		{
-			if (RefCounterPolicy_::release() == 0)
-				delete static_cast<const Derived_*>(this);
-		}
+			using adapted_policy = typename std::conditional<has_ctor<T_>::value && has_add_ref<T_>::value && has_release<T_>::value, T_, void>::type;
+		};
+	}
+
+
+	template < typename T_ >
+	struct policy_concept
+	{
+		using adapted_policy = typename wigwag::detail::policy_version_detector<detail::check_policy_v1_0<T_>>::adapted_policy;
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>

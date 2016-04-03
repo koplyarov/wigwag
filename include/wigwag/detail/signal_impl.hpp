@@ -28,13 +28,14 @@ namespace detail
 			typename ExceptionHandlingPolicy_,
 			typename ThreadingPolicy_,
 			typename StatePopulatingPolicy_,
-			typename LifeAssurancePolicy_
+			typename LifeAssurancePolicy_,
+			typename RefCounterPolicy_
 		>
 	class signal_impl
 		:	public signal_connector_impl<Signature_>,
-			private listenable_impl<std::function<Signature_>, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>
+			private listenable_impl<std::function<Signature_>, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_, RefCounterPolicy_>
 	{
-		using listenable_base = listenable_impl<std::function<Signature_>, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>;
+		using listenable_base = listenable_impl<std::function<Signature_>, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_, RefCounterPolicy_>;
 
 		using handler_type = std::function<Signature_>;
 
@@ -121,11 +122,12 @@ namespace detail
 			typename ExceptionHandlingPolicy_,
 			typename ThreadingPolicy_,
 			typename StatePopulatingPolicy_,
-			typename LifeAssurancePolicy_
+			typename LifeAssurancePolicy_,
+			typename RefCounterPolicy_
 		>
-	class signal_with_attributes_impl : public signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>
+	class signal_with_attributes_impl : public signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_, RefCounterPolicy_>
 	{
-		using base = signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>;
+		using base = signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_, RefCounterPolicy_>;
 
 	private:
 		signal_attributes	_attributes;
