@@ -11,6 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include <wigwag/policies/state_populating/none.hpp>
+#include <wigwag/policies/state_populating/policy_concept.hpp>
 #include <wigwag/policies/state_populating/populator_and_withdrawer.hpp>
 #include <wigwag/policies/state_populating/populator_only.hpp>
 

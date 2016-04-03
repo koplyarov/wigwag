@@ -20,6 +20,8 @@ namespace wigwag {
 namespace detail
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 	template < typename Signature_, typename LifeAssurancePolicy_ >
 	class async_handler
 	{
@@ -49,6 +51,8 @@ namespace detail
 				func(std::forward<Args_>(args)...);
 		}
 	};
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }}
 

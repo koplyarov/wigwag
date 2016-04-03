@@ -1,5 +1,5 @@
-#ifndef WIGWAG_HANDLER_ATTRIBUTES_HPP
-#define WIGWAG_HANDLER_ATTRIBUTES_HPP
+#ifndef WIGWAG_DETAIL_POLICY_VERSION_DETECTOR_HPP
+#define WIGWAG_DETAIL_POLICY_VERSION_DETECTOR_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,24 +11,34 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/detail/flags.hpp>
+#include <type_traits>
 
 
-namespace wigwag
+namespace wigwag {
+namespace detail
 {
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	enum class handler_attributes : uint8_t
+	template < typename... VersionChecks_ >
+	struct policy_version_detector
 	{
-		none					= 0x0,
-		suppress_populator		= 0x1
+		using adapted_policy = void;
 	};
 
-	WIGWAG_DECLARE_ENUM_BITWISE_OPERATORS(handler_attributes)
+
+	template < typename HeadVersionCheck_, typename... TailVersionChecks_ >
+	struct policy_version_detector<HeadVersionCheck_, TailVersionChecks_...>
+	{
+		using adapted_policy = typename std::conditional<
+				std::is_same<typename HeadVersionCheck_::adapted_policy, void>::value,
+				typename policy_version_detector<TailVersionChecks_...>::adapted_policy,
+				typename HeadVersionCheck_::adapted_policy
+			>::type;
+	};
 
 #include <wigwag/detail/enable_warnings.hpp>
 
-}
+}}
 
 #endif

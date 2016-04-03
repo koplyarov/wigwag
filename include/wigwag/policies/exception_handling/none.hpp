@@ -22,6 +22,9 @@ namespace exception_handling
 		template < typename Func_, typename... Args_ >
 		void handle_exceptions(Func_&& func, Args_&&... args) const
 		{ func(std::forward<Args_>(args)...); }
+
+		void AZAZA() const
+		{ printf("AZAZA\n"); }
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>

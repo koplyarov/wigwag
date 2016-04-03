@@ -21,6 +21,8 @@ namespace wigwag {
 namespace detail
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 	template < typename T_ >
 	class intrusive_ptr
 	{
@@ -94,6 +96,8 @@ namespace detail
 		T_& operator * () const
 		{ return *_raw; }
 	};
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }}
 

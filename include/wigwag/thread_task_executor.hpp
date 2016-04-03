@@ -23,9 +23,21 @@ namespace wigwag
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	template < typename ExceptionHandlingPolicy_ = exception_handling::default_ >
-	class basic_thread_task_executor : public task_executor, private ExceptionHandlingPolicy_
+	namespace detail
 	{
+		using thread_task_executor_policies_config = policies_config<
+				policies_config_entry<exception_handling::policy_concept, exception_handling::default_>
+			>;
+	}
+
+
+	template < typename... Policies_ >
+	class basic_thread_task_executor :
+		public task_executor,
+		private detail::policy_picker<exception_handling::policy_concept, detail::thread_task_executor_policies_config, Policies_...>::type
+	{
+		using exception_handling_policy = typename detail::policy_picker<exception_handling::policy_concept, detail::thread_task_executor_policies_config, Policies_...>::type;
+
 		using task_queue = std::queue<std::function<void()>>;
 
 	private:
@@ -38,7 +50,7 @@ namespace wigwag
 	public:
 		template < typename... Args_ >
 		basic_thread_task_executor(Args_&... args)
-			: ExceptionHandlingPolicy_(std::forward<Args_>(args)...), _alive(true)
+			: exception_handling_policy(std::forward<Args_>(args)...), _alive(true)
 		{ _thread = std::thread(&basic_thread_task_executor::thread_func, this); }
 
 		~basic_thread_task_executor()
@@ -73,7 +85,7 @@ namespace wigwag
 					continue;
 				}
 
-				ExceptionHandlingPolicy_::handle_exceptions([&]() {
+				exception_handling_policy::handle_exceptions([&]() {
 						std::function<void()> task = _tasks.front();
 						_tasks.pop();
 

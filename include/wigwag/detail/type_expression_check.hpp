@@ -1,5 +1,5 @@
-#ifndef WIGWAG_HANDLER_ATTRIBUTES_HPP
-#define WIGWAG_HANDLER_ATTRIBUTES_HPP
+#ifndef WIGWAG_DETAIL_TYPE_EXPRESSION_CHECK_HPP
+#define WIGWAG_DETAIL_TYPE_EXPRESSION_CHECK_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,24 +11,21 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/detail/flags.hpp>
+#include <type_traits>
 
 
-namespace wigwag
+namespace wigwag {
+namespace detail
 {
 
-#include <wigwag/detail/disable_warnings.hpp>
+#define WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(Name_, ...) \
+	template < typename T_, typename Enabler = std::true_type > \
+	struct Name_ \
+	{ static const bool value = false; }; \
+	template < typename T_ > \
+	struct Name_<T_, decltype(__VA_ARGS__, std::true_type())> \
+	{ static const bool value = true; }
 
-	enum class handler_attributes : uint8_t
-	{
-		none					= 0x0,
-		suppress_populator		= 0x1
-	};
-
-	WIGWAG_DECLARE_ENUM_BITWISE_OPERATORS(handler_attributes)
-
-#include <wigwag/detail/enable_warnings.hpp>
-
-}
+}}
 
 #endif

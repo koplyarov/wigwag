@@ -73,7 +73,7 @@ namespace life_assurance
 		{
 			friend class execution_guard;
 
-			detail::intrusive_ptr<const life_assurance>		_la;
+			wigwag::detail::intrusive_ptr<const life_assurance>		_la;
 
 		public:
 			life_checker(const shared_data&, const life_assurance& la) WIGWAG_NOEXCEPT
@@ -83,7 +83,7 @@ namespace life_assurance
 
 		class execution_guard
 		{
-			detail::intrusive_ptr<const life_assurance>		_la;
+			wigwag::detail::intrusive_ptr<const life_assurance>		_la;
 
 		public:
 			execution_guard(const life_checker& c)

@@ -110,7 +110,7 @@ namespace life_assurance
 			friend class execution_guard;
 
 			const shared_data*								_sd;
-			detail::intrusive_ptr<const life_assurance>		_la;
+			wigwag::detail::intrusive_ptr<const life_assurance>		_la;
 
 		public:
 			life_checker(const shared_data& sd, const life_assurance& la) WIGWAG_NOEXCEPT

@@ -12,6 +12,7 @@
 
 
 #include <wigwag/detail/listenable_impl.hpp>
+#include <wigwag/detail/policy_picker.hpp>
 #include <wigwag/policies.hpp>
 
 
@@ -20,20 +21,36 @@ namespace wigwag
 
 #include <wigwag/detail/disable_warnings.hpp>
 
+	namespace detail
+	{
+		using listenable_policies_config = policies_config<
+				policies_config_entry<exception_handling::policy_concept, exception_handling::default_>,
+				policies_config_entry<threading::policy_concept, threading::default_>,
+				policies_config_entry<state_populating::policy_concept, state_populating::default_>,
+				policies_config_entry<life_assurance::policy_concept, life_assurance::default_>
+			>;
+	}
+
+
 	template <
 			typename ListenerType_,
-			typename ExceptionHandlingPolicy_ = exception_handling::default_,
-			typename ThreadingPolicy_ = threading::default_,
-			typename StatePopulatingPolicy_ = state_populating::default_,
-			typename LifeAssurancePolicy_ = life_assurance::default_
+			typename... Policies_
 		>
 	class listenable
 	{
+		template < template <typename> class PolicyConcept_ >
+		using policy = typename detail::policy_picker<PolicyConcept_, detail::listenable_policies_config, Policies_...>::type;
+
+		using exception_handling_policy = policy<exception_handling::policy_concept>;
+		using threading_policy = policy<threading::policy_concept>;
+		using state_populating_policy = policy<state_populating::policy_concept>;
+		using life_assurance_policy = policy<life_assurance::policy_concept>;
+
 	public:
 		using listener_type = ListenerType_;
 
 	private:
-		using impl_type = detail::listenable_impl<ListenerType_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_>;
+		using impl_type = detail::listenable_impl<ListenerType_, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy>;
 		using impl_type_ptr = detail::intrusive_ptr<impl_type>;
 
 	private:

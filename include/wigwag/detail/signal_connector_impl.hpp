@@ -20,6 +20,7 @@ namespace wigwag {
 namespace detail
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
 
 	template < typename Signature_ >
 	struct signal_connector_impl
@@ -33,6 +34,7 @@ namespace detail
 		virtual void release() = 0;
 	};
 
+#include <wigwag/detail/enable_warnings.hpp>
 
 }}
 

@@ -122,3 +122,18 @@ private:
 	void func_handler(const std::function<void(int)>& f) { f(42); }
 	void string_ref_handler(std::string& s) { s = "qwe"; }
 };
+
+
+class instantiations_test
+{
+public:
+	signal<void(), exception_handling::none> s1;
+	signal<void(), threading::shared_mutex> s2;
+	signal<void(), life_assurance::none, state_populating::none> s3;
+
+	listenable<std::function<void()>, exception_handling::none> l1;
+	listenable<std::function<void()>, threading::shared_mutex> l2;
+	listenable<std::function<void()>, life_assurance::none, state_populating::none> l3;
+
+	instantiations_test();
+};

@@ -20,6 +20,8 @@ namespace wigwag {
 namespace detail
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 	template < typename Derived_ >
 	class intrusive_ref_counter
 	{
@@ -50,6 +52,8 @@ namespace detail
 				WIGWAG_ANNOTATE_HAPPENS_BEFORE(this);
 		}
 	};
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }}
 

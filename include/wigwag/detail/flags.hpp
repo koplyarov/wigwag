@@ -18,6 +18,8 @@ namespace wigwag {
 namespace detail
 {
 
+#include <wigwag/detail/disable_warnings.hpp>
+
 #define WIGWAG_DECLARE_ENUM_BITWISE_OPERATORS(EnumClass_) \
 	inline EnumClass_ operator | (EnumClass_ l, EnumClass_ r) \
 	{ \
@@ -33,6 +35,8 @@ namespace detail
 	template < typename T_ >
 	inline bool contains_flag(T_ val, T_ flag)
 	{ return (val & flag) != T_(); }
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }}
 

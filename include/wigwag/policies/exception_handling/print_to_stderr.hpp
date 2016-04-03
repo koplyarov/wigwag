@@ -23,17 +23,17 @@ namespace exception_handling
 #include <wigwag/detail/disable_warnings.hpp>
 
 #if !WIGWAG_NOEXCEPTIONS
-		struct print_to_stderr
+	struct print_to_stderr
+	{
+		template < typename Func_, typename... Args_ >
+		void handle_exceptions(Func_&& func, Args_&&... args) const
 		{
-			template < typename Func_, typename... Args_ >
-			void handle_exceptions(Func_&& func, Args_&&... args) const
-			{
-				try
-				{ func(std::forward<Args_>(args)...); }
-				catch (const std::exception& ex)
-				{ fprintf(stderr, "Uncaught std::exception: %s\n", ex.what()); }
-			}
-		};
+			try
+			{ func(std::forward<Args_>(args)...); }
+			catch (const std::exception& ex)
+			{ fprintf(stderr, "Uncaught std::exception: %s\n", ex.what()); }
+		}
+	};
 #endif
 
 #include <wigwag/detail/enable_warnings.hpp>

@@ -1,5 +1,5 @@
-#ifndef WIGWAG_HANDLER_ATTRIBUTES_HPP
-#define WIGWAG_HANDLER_ATTRIBUTES_HPP
+#ifndef WIGWAG_POLICIES_EXCEPTION_HANDLING_POLICY_CONCEPT_HPP
+#define WIGWAG_POLICIES_EXCEPTION_HANDLING_POLICY_CONCEPT_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,24 +11,36 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/detail/flags.hpp>
+#include <wigwag/detail/policy_version_detector.hpp>
+#include <wigwag/detail/type_expression_check.hpp>
+
+#include <functional>
 
 
-namespace wigwag
+namespace wigwag {
+namespace exception_handling
 {
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	enum class handler_attributes : uint8_t
+	namespace detail
 	{
-		none					= 0x0,
-		suppress_populator		= 0x1
-	};
+		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_handle_exceptions, std::declval<T_>().handle_exceptions(std::function<void(int, double)>(), 42, 3.14));
 
-	WIGWAG_DECLARE_ENUM_BITWISE_OPERATORS(handler_attributes)
+		template < typename T_ >
+		struct check_policy_v1_0
+		{ using adapted_policy = typename std::conditional<has_handle_exceptions<T_>::value, T_, void>::type; };
+	}
+
+
+	template < typename T_ >
+	struct policy_concept
+	{
+		using adapted_policy = typename wigwag::detail::policy_version_detector<detail::check_policy_v1_0<T_>>::adapted_policy;
+	};
 
 #include <wigwag/detail/enable_warnings.hpp>
 
-}
+}}
 
 #endif
