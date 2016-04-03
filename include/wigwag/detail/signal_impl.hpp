@@ -44,7 +44,7 @@ namespace detail
 		using execution_guard = typename listenable_base::execution_guard;
 
 	public:
-		template < typename... Args_ >
+		template < typename... Args_, typename = typename std::enable_if<std::is_constructible<listenable_base, Args_...>::value>::type >
 		signal_impl(Args_&&... args)
 			: listenable_base(std::forward<Args_>(args)...)
 		{ }

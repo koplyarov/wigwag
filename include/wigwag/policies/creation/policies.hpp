@@ -1,5 +1,5 @@
-#ifndef WIGWAG_DETAIL_TYPE_EXPRESSION_CHECK_HPP
-#define WIGWAG_DETAIL_TYPE_EXPRESSION_CHECK_HPP
+#ifndef WIGWAG_POLICIES_CREATION_POLICIES_HPP
+#define WIGWAG_POLICIES_CREATION_POLICIES_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,20 +11,16 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <type_traits>
+#include <wigwag/policies/creation/ahead_of_time.hpp>
+#include <wigwag/policies/creation/lazy.hpp>
+#include <wigwag/policies/creation/policy_concept.hpp>
 
 
 namespace wigwag {
-namespace detail
+namespace creation
 {
 
-#define WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(Name_, ...) \
-	template < typename T_, typename Enabler = std::true_type > \
-	struct Name_ \
-	{ static const bool value = false; }; \
-	template < typename T_ > \
-	struct Name_<T_, decltype((__VA_ARGS__), std::true_type())> \
-	{ static const bool value = true; }
+	using default_ = ahead_of_time;
 
 }}
 

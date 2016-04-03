@@ -11,6 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/policies/creation/policies.hpp>
 #include <wigwag/policies/exception_handling/policies.hpp>
 #include <wigwag/policies/life_assurance/policies.hpp>
 #include <wigwag/policies/state_populating/policies.hpp>

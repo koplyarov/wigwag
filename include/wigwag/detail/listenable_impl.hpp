@@ -163,7 +163,15 @@ namespace detail
 		handlers_container					_handlers;
 
 	public:
+		template <
+				bool has_default_ctor =
+					std::is_constructible<exception_handler>::value &&
+					std::is_constructible<lock_primitive>::value &&
+					std::is_constructible<handler_processor>::value,
+				typename = typename std::enable_if<has_default_ctor>::type
+			>
 		listenable_impl() { }
+
 		virtual ~listenable_impl() { }
 
 #define DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(...) typename std::enable_if<__VA_ARGS__, enabler>::type = enabler()

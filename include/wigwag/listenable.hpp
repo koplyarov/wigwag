@@ -27,7 +27,8 @@ namespace wigwag
 				policies_config_entry<exception_handling::policy_concept, exception_handling::default_>,
 				policies_config_entry<threading::policy_concept, threading::default_>,
 				policies_config_entry<state_populating::policy_concept, state_populating::default_>,
-				policies_config_entry<life_assurance::policy_concept, life_assurance::default_>
+				policies_config_entry<life_assurance::policy_concept, life_assurance::default_>,
+				policies_config_entry<creation::policy_concept, creation::default_>
 			>;
 	}
 
@@ -36,7 +37,8 @@ namespace wigwag
 			typename ListenerType_,
 			typename... Policies_
 		>
-	class listenable
+	class listenable :
+		private detail::policy_picker<creation::policy_concept, detail::listenable_policies_config, Policies_...>::type
 	{
 		template < template <typename> class PolicyConcept_ >
 		using policy = typename detail::policy_picker<PolicyConcept_, detail::listenable_policies_config, Policies_...>::type;
@@ -45,6 +47,7 @@ namespace wigwag
 		using threading_policy = policy<threading::policy_concept>;
 		using state_populating_policy = policy<state_populating::policy_concept>;
 		using life_assurance_policy = policy<life_assurance::policy_concept>;
+		using creation_policy = policy<creation::policy_concept>;
 
 	public:
 		using listener_type = ListenerType_;
@@ -54,34 +57,63 @@ namespace wigwag
 		using impl_type_ptr = detail::intrusive_ptr<impl_type>;
 
 	private:
-		impl_type_ptr		_impl;
+		mutable impl_type_ptr		_impl;
 
 	public:
+		template < bool has_default_ctor = std::is_constructible<impl_type>::value, typename = typename std::enable_if<has_default_ctor>::type>
+		listenable()
+			: _impl(creation_policy::template create_ahead_of_time<impl_type>())
+		{ }
+
 		template < typename... Args_ >
 		listenable(Args_&&... args)
-			: _impl(new impl_type(std::forward<Args_>(args)...))
+			: _impl(creation_policy::template create_just_in_time<impl_type>(std::forward<Args_>(args)...))
 		{ }
 
 		~listenable()
 		{
-			_impl->get_lock_primitive().lock_nonrecursive();
-			auto sg = detail::at_scope_exit([&] { _impl->get_lock_primitive().unlock_nonrecursive(); } );
+			if (_impl)
+			{
+				_impl->get_lock_primitive().lock_nonrecursive();
+				auto sg = detail::at_scope_exit([&] { _impl->get_lock_primitive().unlock_nonrecursive(); } );
 
-			_impl->finalize_nodes();
+				_impl->finalize_nodes();
+			}
 		}
 
 		listenable(const listenable&) = delete;
 		listenable& operator = (const listenable&) = delete;
 
 		auto lock_primitive() const -> decltype(_impl->get_lock_primitive().get_primitive())
-		{ return _impl->get_lock_primitive().get_primitive(); }
+		{
+			ensure_impl_created();
+			return _impl->get_lock_primitive().get_primitive();
+		}
 
 		token connect(const ListenerType_& handler, handler_attributes attributes = handler_attributes::none) const
-		{ return _impl->connect(handler, attributes); }
+		{
+			ensure_impl_created();
+			return _impl->connect(handler, attributes);
+		}
 
 		template < typename InvokeListenerFunc_ >
 		void invoke(const InvokeListenerFunc_& invoke_listener_func)
-		{ _impl->invoke(invoke_listener_func); }
+		{
+			if (_impl)
+				_impl->invoke(invoke_listener_func);
+		}
+
+	private:
+		template < bool has_default_ctor = std::is_constructible<impl_type>::value>
+		void ensure_impl_created(typename std::enable_if<has_default_ctor, detail::enabler>::type = detail::enabler()) const
+		{
+			if (!_impl)
+				_impl.reset(creation_policy::template create_just_in_time<impl_type>());
+		}
+
+		template < bool has_default_ctor = std::is_constructible<impl_type>::value>
+		void ensure_impl_created(typename std::enable_if<!has_default_ctor, detail::enabler>::type = detail::enabler()) const
+		{ WIGWAG_ASSERT(_impl, "Internal wigwag error, _impl must have been initialized before!"); }
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>

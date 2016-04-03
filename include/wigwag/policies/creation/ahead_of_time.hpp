@@ -1,5 +1,5 @@
-#ifndef WIGWAG_DETAIL_TYPE_EXPRESSION_CHECK_HPP
-#define WIGWAG_DETAIL_TYPE_EXPRESSION_CHECK_HPP
+#ifndef WIGWAG_POLICIES_CREATION_AHEAD_OF_TIME_HPP
+#define WIGWAG_POLICIES_CREATION_AHEAD_OF_TIME_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,20 +11,27 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <type_traits>
+#include <utility>
 
 
 namespace wigwag {
-namespace detail
+namespace creation
 {
 
-#define WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(Name_, ...) \
-	template < typename T_, typename Enabler = std::true_type > \
-	struct Name_ \
-	{ static const bool value = false; }; \
-	template < typename T_ > \
-	struct Name_<T_, decltype((__VA_ARGS__), std::true_type())> \
-	{ static const bool value = true; }
+#include <wigwag/detail/disable_warnings.hpp>
+
+	struct ahead_of_time
+	{
+		template < typename T_, typename... Args_ >
+		T_* create_ahead_of_time(Args_&&... args) const
+		{ return new T_(std::forward<Args_>(args)...); }
+
+		template < typename T_, typename... Args_ >
+		T_* create_just_in_time(Args_&&... args) const
+		{ return new T_(std::forward<Args_>(args)...); }
+	};
+
+#include <wigwag/detail/enable_warnings.hpp>
 
 }}
 
