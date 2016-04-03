@@ -76,7 +76,7 @@ namespace detail
 		{ return !(*this == other); }
 
 		explicit operator bool() const
-		{ return _raw; }
+		{ return _raw != nullptr; }
 
 		void reset(T_* ptr = nullptr)
 		{
