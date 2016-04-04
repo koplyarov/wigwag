@@ -25,14 +25,10 @@
 #include <src/benchmarks/adapters/boost.hpp>
 #include <src/benchmarks/adapters/qt5.hpp>
 #include <src/benchmarks/adapters/sigcpp.hpp>
+#include <src/benchmarks/adapters/wigwag.hpp>
 #include <utils/profiler.hpp>
 #include <utils/storage_for.hpp>
 #include <utils/thread_priority.hpp>
-
-
-#if WIGWAG_BENCHMARKS_SIGCPP2
-#	include <sigc++/sigc++.h>
-#endif
 
 
 using namespace wigwag;
@@ -122,16 +118,21 @@ void create_function(int64_t n, const Functor_& f)
 }
 
 
-template < typename Signal_, typename Connection_, typename SlotType_ = std::function<void()> >
-void connect_invoke(int64_t num_slots, int64_t num_calls, const SlotType_& slot = g_empty_handler)
+template < typename SignalsDesc_ >
+void connect_invoke(int64_t num_slots, int64_t num_calls)
 {
-	Signal_ s;
-	storage_for<Connection_> *c = new storage_for<Connection_>[(size_t)num_slots];
+	using signal_type = typename SignalsDesc_::signal_type;
+	using handler_type = typename SignalsDesc_::handler_type;
+	using connection_type = typename SignalsDesc_::connection_type;
+
+	handler_type handler = SignalsDesc_::make_handler();
+	signal_type s;
+	storage_for<connection_type> *c = new storage_for<connection_type>[(size_t)num_slots];
 
 	{
 		operation_profiler op("connecting", num_slots);
 		for (int64_t i = 0; i < num_slots; ++i)
-			new(&c[i].obj) Connection_(s.connect(slot));
+			new(&c[i].obj) connection_type(s.connect(handler));
 	}
 
 	measure_memory("connection", num_slots);
@@ -145,30 +146,35 @@ void connect_invoke(int64_t num_slots, int64_t num_calls, const SlotType_& slot 
 	{
 		operation_profiler op("disconnecting", num_slots);
 		for (int64_t i = 0; i < num_slots; ++i)
-			c[i].obj.~Connection_();
+			c[i].obj.~connection_type();
 	}
 
 	delete[] c;
 }
 
 
-template < typename Signal_, typename Connection_, typename SlotType_ = std::function<void()> >
-void connect_disconnect(int64_t num_slots, int64_t num_iterations, const SlotType_& slot = g_empty_handler)
+template < typename SignalsDesc_ >
+void connect_disconnect(int64_t num_slots, int64_t num_iterations)
 {
-	Signal_ *s = new Signal_[(size_t)num_iterations];
-	storage_for<Connection_> *c = new storage_for<Connection_>[(size_t)(num_slots * num_iterations)];
+	using signal_type = typename SignalsDesc_::signal_type;
+	using handler_type = typename SignalsDesc_::handler_type;
+	using connection_type = typename SignalsDesc_::connection_type;
+
+	handler_type handler = SignalsDesc_::make_handler();
+	signal_type *s = new signal_type[(size_t)num_iterations];
+	storage_for<connection_type> *c = new storage_for<connection_type>[(size_t)(num_slots * num_iterations)];
 
 	{
 		operation_profiler op("connecting", num_slots * num_iterations);
 		for (int64_t j = 0; j < num_iterations; ++j)
 			for (int64_t i = 0; i < num_slots; ++i)
-				new(&c[i + j * num_slots].obj) Connection_(s[j].connect(slot));
+				new(&c[i + j * num_slots].obj) connection_type(s[j].connect(handler));
 	}
 
 	{
 		operation_profiler op("disconnecting", num_slots * num_iterations);
 		for (int64_t i = 0; i < num_slots * num_iterations; ++i)
-			c[i].obj.~Connection_();
+			c[i].obj.~connection_type();
 	}
 
 	delete[] c;
@@ -292,23 +298,23 @@ int main(int argc, char* argv[])
 				throw cmdline_exception("secondary-count option is required");
 
 			if (obj == "signal")
-				connect_invoke<signal<void()>, token>(count, secondary_count);
+				connect_invoke<wigwag_adapters::adapters>(count, secondary_count);
 			else if (obj == "ui_signal")
-				connect_invoke<ui_signal<void()>, token>(count, secondary_count);
+				connect_invoke<wigwag_adapters::ui_adapters>(count, secondary_count);
 
 			else if (obj == "boost_signal2")
-				connect_invoke<boost::signals2::signal<void()>, boost::signals2::scoped_connection>(count, secondary_count);
+				connect_invoke<boost_adapters::adapters>(count, secondary_count);
 
 			else if (obj == "sigc_signal")
 #if WIGWAG_BENCHMARKS_SIGCPP2
-				connect_invoke<sigc::signal<void>, sigcpp_adapters::scoped_connection<sigc::connection>>(count, secondary_count);
+				connect_invoke<sigcpp_adapters::adapters>(count, secondary_count);
 #else
 				throw cmdline_exception("wigwag_benchmarks were built without sigc++ support");
 #endif
 
 			else if (obj == "qt5_signal")
 #if WIGWAG_BENCHMARKS_QT5
-				connect_invoke<qt5_adapters::SignalOwner, qt5_adapters::SignalConnectionWrapper>(count, secondary_count, qt5_adapters::SlotWrapper(qt5_adapters::SlotOwner(), SLOT(testSlot())));
+				connect_invoke<qt5_adapters::adapters>(count, secondary_count);
 #else
 				throw cmdline_exception("wigwag_benchmarks were built without Qt5 support");
 #endif
@@ -322,11 +328,8 @@ int main(int argc, char* argv[])
 				throw cmdline_exception("secondary-count option is required");
 
 			else if (obj == "boost_signal2")
-				connect_invoke<boost::signals2::signal<void()>, boost::signals2::scoped_connection>(count, secondary_count,
-					boost_adapters::make_tracking_slot_wrapper(g_empty_handler, boost::make_shared<std::string>()));
-			else if (obj == "boost_signal2_std")
-				connect_invoke<boost::signals2::signal<void()>, boost::signals2::scoped_connection>(count, secondary_count,
-					boost_adapters::make_tracking_slot_wrapper(g_empty_handler, std::make_shared<std::string>()));
+				connect_invoke<boost_adapters::tracking_adapters>(count, secondary_count);
+
 			else
 				throw cmdline_exception("obj " + obj + " not supported");
 		}
@@ -336,23 +339,23 @@ int main(int argc, char* argv[])
 				throw cmdline_exception("secondary-count option is required");
 
 			if (obj == "signal")
-				connect_disconnect<signal<void()>, token>(count, secondary_count);
+				connect_disconnect<wigwag_adapters::adapters>(count, secondary_count);
 			else if (obj == "ui_signal")
-				connect_disconnect<ui_signal<void()>, token>(count, secondary_count);
+				connect_disconnect<wigwag_adapters::ui_adapters>(count, secondary_count);
 
 			else if (obj == "boost_signal2")
-				connect_disconnect<boost::signals2::signal<void()>, boost::signals2::scoped_connection>(count, secondary_count);
+				connect_disconnect<boost_adapters::adapters>(count, secondary_count);
 
 			else if (obj == "sigc_signal")
 #if WIGWAG_BENCHMARKS_SIGCPP2
-				connect_disconnect<sigc::signal<void>, sigcpp_adapters::scoped_connection<sigc::connection>>(count, secondary_count);
+				connect_disconnect<sigcpp_adapters::adapters>(count, secondary_count);
 #else
 				throw cmdline_exception("wigwag_benchmarks were built without sigc++ support");
 #endif
 
 			else if (obj == "qt5_signal")
 #if WIGWAG_BENCHMARKS_QT5
-				connect_disconnect<qt5_adapters::SignalOwner, qt5_adapters::SignalConnectionWrapper>(count, secondary_count, qt5_adapters::SlotWrapper(qt5_adapters::SlotOwner(), SLOT(testSlot())));
+				connect_disconnect<qt5_adapters::adapters>(count, secondary_count);
 #else
 				throw cmdline_exception("wigwag_benchmarks were built without Qt5 support");
 #endif
@@ -366,12 +369,7 @@ int main(int argc, char* argv[])
 				throw cmdline_exception("secondary-count option is required");
 
 			if (obj == "boost_signal2")
-			{
-				connect_disconnect<boost::signals2::signal<void()>, boost::signals2::scoped_connection>(count, secondary_count,
-					boost_adapters::make_tracking_slot_wrapper(g_empty_handler, boost::make_shared<std::string>()));
-				connect_disconnect<boost::signals2::signal<void()>, boost::signals2::scoped_connection>(count, secondary_count,
-					boost_adapters::make_tracking_slot_wrapper(g_empty_handler, std::make_shared<std::string>()));
-			}
+				connect_disconnect<boost_adapters::tracking_adapters>(count, secondary_count);
 			else
 				throw cmdline_exception("obj " + obj + " not supported");
 		}

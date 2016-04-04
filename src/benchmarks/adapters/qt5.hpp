@@ -72,6 +72,16 @@ namespace qt5_adapters
 		void testSignal();
 	};
 
+
+	struct adapters
+	{
+		using signal_type = SignalOwner;
+		using handler_type = SlotWrapper;
+		using connection_type = SignalConnectionWrapper;
+
+		static handler_type make_handler() { return SlotWrapper(SlotOwner(), SLOT(testSlot())); }
+	};
+
 }
 
 #endif

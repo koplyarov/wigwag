@@ -43,6 +43,25 @@ namespace boost_adapters
 	{ return tracking_slot_wrapper<Signature_, TrackablePtr_>(f, t); }
 
 
+	struct tracking_adapters
+	{
+		using signal_type = boost::signals2::signal<void()>;
+		using handler_type = tracking_slot_wrapper<void(), boost::shared_ptr<std::string>>;
+		using connection_type = boost::signals2::scoped_connection;
+
+		static handler_type make_handler() { return handler_type([]{}, boost::make_shared<std::string>()); }
+	};
+
+	struct adapters
+	{
+		using signal_type = boost::signals2::signal<void()>;
+		using handler_type = std::function<void()>;
+		using connection_type = boost::signals2::scoped_connection;
+
+		static handler_type make_handler() { return []{}; }
+	};
+
+
 }
 
 
