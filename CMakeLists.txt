@@ -131,6 +131,7 @@ if (Boost_FOUND)
 	endif()
 
 	add_executable(wigwag_benchmarks
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/adapters/qt5.hpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/benchmarks.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/markers.cpp)
 
