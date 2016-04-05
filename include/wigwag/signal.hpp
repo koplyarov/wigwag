@@ -39,9 +39,17 @@ namespace wigwag
 			typename Signature_,
 			typename... Policies_
 		>
-	class signal :
+	class signal;
+
+	template <
+			typename RetType_,
+			typename... ArgTypes_,
+			typename... Policies_
+		>
+	class signal<RetType_(ArgTypes_...), Policies_...> :
 		private detail::policy_picker<creation::policy_concept, detail::signal_policies_config, Policies_...>::type
 	{
+		using signature = RetType_(ArgTypes_...);
 		template < template <typename> class PolicyConcept_ >
 		using policy = typename detail::policy_picker<PolicyConcept_, detail::signal_policies_config, Policies_...>::type;
 
@@ -53,11 +61,11 @@ namespace wigwag
 		using ref_counter_policy = policy<ref_counter::policy_concept>;
 
 	public:
-		using handler_type = std::function<Signature_>;
+		using handler_type = std::function<signature>;
 
 	private:
-		using impl_type = detail::signal_impl<Signature_, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy, ref_counter_policy>;
-		using impl_type_with_attr = detail::signal_with_attributes_impl<Signature_, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy, ref_counter_policy>;
+		using impl_type = detail::signal_impl<signature, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy, ref_counter_policy>;
+		using impl_type_with_attr = detail::signal_with_attributes_impl<signature, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy, ref_counter_policy>;
 		using impl_type_ptr = detail::intrusive_ptr<impl_type>;
 
 	private:
@@ -101,10 +109,10 @@ namespace wigwag
 			return _impl->get_lock_primitive().get_primitive();
 		}
 
-		signal_connector<Signature_> connector() const
+		signal_connector<signature> connector() const
 		{
 			ensure_impl_created();
-			return signal_connector<Signature_>(_impl);
+			return signal_connector<signature>(_impl);
 		}
 
 		template < typename HandlerFunc_ >
@@ -121,11 +129,10 @@ namespace wigwag
 			return _impl->connect(worker, handler, attributes);
 		}
 
-		template < typename... Args_ >
-		void operator() (Args_&&... args) const
+		void operator() (ArgTypes_... args) const
 		{
 			if (_impl)
-				_impl->invoke(std::forward<Args_>(args)...);
+				_impl->invoke(args...);
 		}
 
 	private:
