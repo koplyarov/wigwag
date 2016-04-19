@@ -19,6 +19,7 @@ namespace wigwag_adapters
 		using connection_type = wigwag::token;
 
 		static handler_type make_handler() { return []{}; }
+		static std::string GetName() { return "wigwag"; }
 	};
 
 
@@ -29,6 +30,7 @@ namespace wigwag_adapters
 		using connection_type = wigwag::token;
 
 		static handler_type make_handler() { return []{}; }
+		static std::string GetName() { return "wigwag_ui"; }
 	};
 
 }

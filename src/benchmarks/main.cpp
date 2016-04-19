@@ -21,11 +21,13 @@
 #include <iostream>
 #include <thread>
 
+#include <benchmarks/BenchmarkSuite.hpp>
+#include <benchmarks/SignalsBenchmarks.hpp>
+#include <benchmarks/adapters/boost.hpp>
+#include <benchmarks/adapters/qt5.hpp>
+#include <benchmarks/adapters/sigcpp.hpp>
+#include <benchmarks/adapters/wigwag.hpp>
 #include <benchmarks/markers.hpp>
-#include <src/benchmarks/adapters/boost.hpp>
-#include <src/benchmarks/adapters/qt5.hpp>
-#include <src/benchmarks/adapters/sigcpp.hpp>
-#include <src/benchmarks/adapters/wigwag.hpp>
 #include <utils/profiler.hpp>
 #include <utils/storage_for.hpp>
 #include <utils/thread_priority.hpp>
@@ -193,6 +195,20 @@ int main(int argc, char* argv[])
 {
 	try
 	{
+		using namespace benchmarks;
+		BenchmarkSuite s;
+		s.RegisterBenchmarks<SignalsBenchmarks,
+			wigwag_adapters::adapters,
+			wigwag_adapters::ui_adapters,
+			boost_adapters::adapters,
+			sigcpp_adapters::adapters,
+			qt5_adapters::adapters>();
+
+		s.InvokeBenchmark({"signals", "create", "wigwag"}, {});
+
+		return 0;
+
+
 		set_max_thread_priority();
 
 		std::string task, obj;

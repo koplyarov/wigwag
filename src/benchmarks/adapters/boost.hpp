@@ -50,6 +50,7 @@ namespace boost_adapters
 		using connection_type = boost::signals2::scoped_connection;
 
 		static handler_type make_handler() { return handler_type([]{}, boost::make_shared<std::string>()); }
+		static std::string GetName() { return "boost_tracking"; }
 	};
 
 	struct adapters
@@ -59,6 +60,7 @@ namespace boost_adapters
 		using connection_type = boost::signals2::scoped_connection;
 
 		static handler_type make_handler() { return []{}; }
+		static std::string GetName() { return "boost"; }
 	};
 
 

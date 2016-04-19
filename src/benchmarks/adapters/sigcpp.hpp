@@ -30,6 +30,7 @@ namespace sigcpp_adapters
 		using connection_type = scoped_connection;
 
 		static handler_type make_handler() { return []{}; }
+		static std::string GetName() { return "sigcpp"; }
 	};
 
 }

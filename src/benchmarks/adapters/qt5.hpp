@@ -80,6 +80,7 @@ namespace qt5_adapters
 		using connection_type = SignalConnectionWrapper;
 
 		static handler_type make_handler() { return SlotWrapper(SlotOwner(), SLOT(testSlot())); }
+		static std::string GetName() { return "qt5"; }
 	};
 
 }
