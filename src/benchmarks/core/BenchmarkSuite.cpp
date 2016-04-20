@@ -1,51 +1,88 @@
+// Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
+//
+// Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted,
+// provided that the above copyright notice and this permission notice appear in all copies.
+//
+// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS.
+// IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+// WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+
 #include <benchmarks/core/BenchmarkSuite.hpp>
 
-#include <benchmarks/markers.hpp>
+#include <algorithm>
+#include <iostream>
+#include <thread>
+
+#include <benchmarks/core/utils/Barrier.hpp>
+#include <benchmarks/core/utils/Memory.hpp>
+#include <benchmarks/core/utils/Profiler.hpp>
 
 
 namespace benchmarks
 {
 
+	using namespace std::chrono;
+
+
 	class BenchmarkSuite::PreMeasureBenchmarkContext : public BenchmarkContext
 	{
-		using DurationsMap = std::map<std::string, std::chrono::milliseconds>;
+	public:
+		using DurationsMap = std::map<std::string, nanoseconds>;
 
+	private:
 		class OperationProfiler : public IOperationProfiler
 		{
 		private:
 			PreMeasureBenchmarkContext*		_inst;
 			std::string						_name;
 			int64_t							_count;
-			wigwag::profiler				_prof;
+			Profiler						_prof;
 
 		public:
 			OperationProfiler(PreMeasureBenchmarkContext* inst, const std::string& name, int64_t count)
 				: _inst(inst), _name(name), _count(count)
-			{ _prof.reset(); }
+			{
+				BENCHMARKS_BARRIER;
+				_prof.Reset();
+				BENCHMARKS_BARRIER;
+			}
 
 			~OperationProfiler()
 			{
-				auto d = _prof.reset();
-				_inst->_durations.insert({_name, std::chrono::duration_cast<std::chrono::milliseconds>(d)});
+				BENCHMARKS_BARRIER;
+				auto d = _prof.Reset();
+				BENCHMARKS_BARRIER;
+				_inst->_durations.insert({_name, duration_cast<nanoseconds>(d)});
 			}
 		};
 
 	private:
 		DurationsMap		_durations;
+		int64_t				_maxRss;
 
 	public:
 		PreMeasureBenchmarkContext(int64_t iterationsCount)
-			: BenchmarkContext(iterationsCount)
+			: BenchmarkContext(iterationsCount), _maxRss(0)
 		{ }
 
 		const DurationsMap& GetDurationsMap() const { return _durations; }
+		int64_t GetMaxRss() const { return _maxRss; }
 
-		virtual void MeasureMemory(const std::string& name, int64_t count) const
-		{ }
+		virtual void MeasureMemory(const std::string& name, int64_t count)
+		{
+			BENCHMARKS_BARRIER;
+			auto rss = Memory::GetRss();
+			BENCHMARKS_BARRIER;
+			_maxRss = std::max(rss, _maxRss);
+		}
 
 		virtual IOperationProfilerPtr Profile(const std::string& name, int64_t count)
 		{ return std::make_shared<OperationProfiler>(this, name, count); }
 	};
+
+
+	////////////////////////////////////////////////////////////////////////////////
 
 
 	class BenchmarkSuite::MeasureBenchmarkContext : public BenchmarkContext
@@ -53,10 +90,28 @@ namespace benchmarks
 		class OperationProfiler : public IOperationProfiler
 		{
 		private:
-			wigwag::operation_profiler	_p;
+			MeasureBenchmarkContext*		_inst;
+			std::string						_name;
+			int64_t							_count;
+			Profiler						_prof;
 
 		public:
-			OperationProfiler(const std::string& name, int64_t count) : _p(name, count) { }
+			OperationProfiler(MeasureBenchmarkContext* inst, const std::string& name, int64_t count)
+				: _inst(inst), _name(name), _count(count)
+			{
+				BENCHMARKS_BARRIER;
+				_prof.Reset();
+				BENCHMARKS_BARRIER;
+			}
+
+			~OperationProfiler()
+			{
+				BENCHMARKS_BARRIER;
+				auto d = _prof.Reset();
+				BENCHMARKS_BARRIER;
+				auto ns = duration_cast<duration<double, std::nano>>(d).count();
+				std::cout << _name << ": " << (ns / _count) << " ns" << std::endl;
+			}
 		};
 
 	public:
@@ -64,39 +119,76 @@ namespace benchmarks
 			: BenchmarkContext(iterationsCount)
 		{ }
 
-		virtual void MeasureMemory(const std::string& name, int64_t count) const
-		{ wigwag::measure_memory(name, count); }
+		virtual void MeasureMemory(const std::string& name, int64_t count)
+		{
+			BENCHMARKS_BARRIER;
+			auto rss = Memory::GetRss();
+			BENCHMARKS_BARRIER;
+			std::cout << name << ": " << (rss / count) << " bytes" << std::endl;
+		}
 
 		virtual IOperationProfilerPtr Profile(const std::string& name, int64_t count)
-		{ return std::make_shared<OperationProfiler>(name, count); }
+		{ return std::make_shared<OperationProfiler>(this, name, count); }
 	};
+
+
+	////////////////////////////////////////////////////////////////////////////////
 
 
 	void BenchmarkSuite::InvokeBenchmark(const BenchmarkId& id, const SerializedParamsMap& serializedParams)
 	{
+		const int multiplier = 2;
+
 		auto it = _benchmarks.find(id);
 		if (it == _benchmarks.end())
 			throw std::runtime_error("Benchmark " + id.ToString() + " not found!");
 
+		int64_t available_mem = Memory::GetAvailablePhys();
 		int64_t num_iterations = 1;
 		while (true)
 		{
 			PreMeasureBenchmarkContext ctx(num_iterations);
 			it->second->Perform(ctx, serializedParams);
 
-			bool enough_iterations = true;
-			for (auto p : ctx.GetDurationsMap())
-				if (p.second < std::chrono::milliseconds(300))
-				{
-					enough_iterations = false;
-					break;
-				}
+			using DurationsMapPair = PreMeasureBenchmarkContext::DurationsMap::value_type;
+			auto& dm = ctx.GetDurationsMap();
+			auto minmax_element = std::minmax_element(dm.begin(), dm.end(), [](const DurationsMapPair& l, const DurationsMapPair& r) { return l.second < r.second; } );
+			auto min_duration = minmax_element.first->second;
+			auto max_duration = minmax_element.second->second;
 
-			if (enough_iterations)
+			auto max_rss = ctx.GetMaxRss();
+
+			auto next_min_duration = min_duration * multiplier;
+			auto next_max_duration = max_duration * multiplier;
+			auto next_max_rss = max_rss * multiplier;
+
+			if (max_duration > seconds(10))
+			{
+				std::cerr << "Max time limit exceeded!" << std::endl;
+				for (auto p : ctx.GetDurationsMap())
+					std::cerr << "  " << p.first << ": " << p.second.count() << " ms" << std::endl;
 				break;
+			}
 
-			num_iterations *= 10;
+			if (next_max_rss > available_mem * 4 / 5)
+			{
+				std::cerr << "Memory limit exceeded!" << std::endl;
+				for (auto p : ctx.GetDurationsMap())
+					std::cerr << "  " << p.first << ": " << p.second.count() << " ms" << std::endl;
+				break;
+			}
+
+			if (next_min_duration > milliseconds(300))
+			{
+				num_iterations *= multiplier;
+				break;
+			}
+
+			num_iterations *= multiplier;
 		}
+
+		std::cerr << "iterations: " << num_iterations << std::endl;
+		std::cerr << "----------------------------" << std::endl;
 
 		MeasureBenchmarkContext ctx(num_iterations);
 		it->second->Perform(ctx, serializedParams);

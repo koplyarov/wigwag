@@ -29,7 +29,7 @@ namespace benchmarks
 			: BenchmarksClass("signals")
 		{
 			AddBenchmark<>("create", &SignalsBenchmarks::Create);
-			//AddBenchmark("connect_invoke", &SignalsBenchmarks::ConnectInvoke);
+			AddBenchmark<int64_t>("connectInvoke", &SignalsBenchmarks::ConnectInvoke, {"numSlots"});
 			//AddBenchmark("connect_disconnect", &SignalsBenchmarks::ConnectDisconnect);
 		}
 
@@ -60,8 +60,40 @@ namespace benchmarks
 			delete[] v;
 		}
 
-		//static void ConnectInvoke(int64_t num_slots, int64_t num_calls)
-		//{ throw std::runtime_error("connect_invoke"); }
+		static void ConnectInvoke(BenchmarkContext& context, int64_t numSlots)
+		{
+			using namespace wigwag;
+			using signal_type = typename SignalsDesc_::signal_type;
+			using handler_type = typename SignalsDesc_::handler_type;
+			using connection_type = typename SignalsDesc_::connection_type;
+
+			const auto n = context.GetIterationsCount();
+			handler_type handler = SignalsDesc_::make_handler();
+			signal_type s;
+			storage_for<connection_type> *c = new storage_for<connection_type>[(size_t)numSlots];
+
+			{
+				auto op = context.Profile("connecting", numSlots);
+				for (int64_t i = 0; i < numSlots; ++i)
+					new(&c[i].obj) connection_type(s.connect(handler));
+			}
+
+			context.MeasureMemory("connection", numSlots);
+
+			{
+				auto op = context.Profile("invoking", numSlots * n);
+				for (int64_t i = 0; i < n; ++i)
+					s();
+			}
+
+			{
+				auto op = context.Profile("disconnecting", numSlots);
+				for (int64_t i = 0; i < numSlots; ++i)
+					c[i].obj.~connection_type();
+			}
+
+			delete[] c;
+		}
 
 		//static void ConnectDisconnect(int64_t num_slots, int64_t num_iterations)
 		//{ throw std::runtime_error("connect_disconnect"); }

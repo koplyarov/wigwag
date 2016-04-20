@@ -1,5 +1,5 @@
-#ifndef BENCHMARKS_BENCHMARKCONTEXT_HPP
-#define BENCHMARKS_BENCHMARKCONTEXT_HPP
+#ifndef BENCHMARKS_CORE_BENCHMARKAPP_HPP
+#define BENCHMARKS_CORE_BENCHMARKAPP_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,36 +11,21 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <memory>
+#include <benchmarks/core/BenchmarkSuite.hpp>
 
 
 namespace benchmarks
 {
 
-	struct IOperationProfiler
-	{
-		virtual ~IOperationProfiler() { }
-	};
-	using IOperationProfilerPtr = std::shared_ptr<IOperationProfiler>;
-
-
-	class BenchmarkContext
+	class BenchmarkApp
 	{
 	private:
-		const int64_t		_iterationsCount;
+		BenchmarkSuite		_suite;
 
 	public:
-		BenchmarkContext(int64_t iterationsCount) : _iterationsCount(iterationsCount) { }
-		virtual ~BenchmarkContext() { }
+		BenchmarkApp(const BenchmarkSuite& suite);
 
-		BenchmarkContext(const BenchmarkContext&) = delete;
-		BenchmarkContext& operator = (const BenchmarkContext&) = delete;
-
-		int64_t GetIterationsCount() const
-		{ return _iterationsCount; }
-
-		virtual void MeasureMemory(const std::string& name, int64_t count) = 0;
-		virtual IOperationProfilerPtr Profile(const std::string& name, int64_t count) = 0;
+		int Run(int argc, char* argv[]);
 	};
 
 }

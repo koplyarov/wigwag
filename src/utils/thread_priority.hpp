@@ -24,7 +24,7 @@
 namespace wigwag
 {
 
-	void set_max_thread_priority()
+	inline void set_max_thread_priority()
 	{
 #if WIGWAG_PLATFORM_POSIX
 		int policy = SCHED_FIFO;

@@ -21,12 +21,13 @@
 #include <iostream>
 #include <thread>
 
-#include <benchmarks/core/BenchmarkSuite.hpp>
 #include <benchmarks/SignalsBenchmarks.hpp>
 #include <benchmarks/adapters/boost.hpp>
 #include <benchmarks/adapters/qt5.hpp>
 #include <benchmarks/adapters/sigcpp.hpp>
 #include <benchmarks/adapters/wigwag.hpp>
+#include <benchmarks/core/BenchmarkApp.hpp>
+#include <benchmarks/core/BenchmarkSuite.hpp>
 #include <benchmarks/markers.hpp>
 #include <utils/profiler.hpp>
 #include <utils/storage_for.hpp>
@@ -201,14 +202,12 @@ int main(int argc, char* argv[])
 			wigwag_adapters::adapters,
 			wigwag_adapters::ui_adapters,
 			boost_adapters::adapters,
+			boost_adapters::tracking_adapters,
 			sigcpp_adapters::adapters,
 			qt5_adapters::adapters>();
 
-		s.InvokeBenchmark({"signals", "create", "wigwag"}, {});
-
-		return 0;
-
-
+		return BenchmarkApp(s).Run(argc, argv);
+#if 0
 		set_max_thread_priority();
 
 		std::string task, obj;
@@ -391,6 +390,7 @@ int main(int argc, char* argv[])
 		}
 		else
 			std::cerr << "Task not specified!" << std::endl;
+#endif
 	}
 	catch (const cmdline_exception& ex)
 	{

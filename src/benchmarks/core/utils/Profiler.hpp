@@ -1,5 +1,5 @@
-#ifndef BENCHMARKS_BENCHMARKCONTEXT_HPP
-#define BENCHMARKS_BENCHMARKCONTEXT_HPP
+#ifndef BENCHMARKS_CORE_UTILS_PROFILER_HPP
+#define BENCHMARKS_CORE_UTILS_PROFILER_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,37 +11,33 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <memory>
+#include <chrono>
 
 
 namespace benchmarks
 {
 
-	struct IOperationProfiler
+	template < typename ClockT_ >
+	class BasicProfiler
 	{
-		virtual ~IOperationProfiler() { }
-	};
-	using IOperationProfilerPtr = std::shared_ptr<IOperationProfiler>;
+		using TimePoint = std::chrono::time_point<ClockT_>;
 
-
-	class BenchmarkContext
-	{
 	private:
-		const int64_t		_iterationsCount;
+		TimePoint		_start;
 
 	public:
-		BenchmarkContext(int64_t iterationsCount) : _iterationsCount(iterationsCount) { }
-		virtual ~BenchmarkContext() { }
+		BasicProfiler() { _start = ClockT_::now(); }
 
-		BenchmarkContext(const BenchmarkContext&) = delete;
-		BenchmarkContext& operator = (const BenchmarkContext&) = delete;
-
-		int64_t GetIterationsCount() const
-		{ return _iterationsCount; }
-
-		virtual void MeasureMemory(const std::string& name, int64_t count) = 0;
-		virtual IOperationProfilerPtr Profile(const std::string& name, int64_t count) = 0;
+		auto Reset() -> decltype(TimePoint() - TimePoint())
+		{
+			TimePoint end = ClockT_::now();
+			auto delta = end - _start;
+			_start = end;
+			return delta;
+		}
 	};
+
+	using Profiler = BasicProfiler<std::chrono::high_resolution_clock>;
 
 }
 
