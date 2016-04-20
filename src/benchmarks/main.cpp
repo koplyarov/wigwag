@@ -21,7 +21,7 @@
 #include <iostream>
 #include <thread>
 
-#include <benchmarks/BenchmarkSuite.hpp>
+#include <benchmarks/core/BenchmarkSuite.hpp>
 #include <benchmarks/SignalsBenchmarks.hpp>
 #include <benchmarks/adapters/boost.hpp>
 #include <benchmarks/adapters/qt5.hpp>

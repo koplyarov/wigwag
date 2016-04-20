@@ -13,7 +13,7 @@
 
 #include <map>
 
-#include <benchmarks/BenchmarkClass.hpp>
+#include <benchmarks/core/BenchmarkClass.hpp>
 #include <benchmarks/markers.hpp>
 #include <utils/storage_for.hpp>
 

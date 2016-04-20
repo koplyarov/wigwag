@@ -14,9 +14,8 @@
 #include <map>
 #include <stdexcept>
 
-#include <benchmarks/Benchmark.hpp>
-#include <benchmarks/BenchmarkId.hpp>
-#include <benchmarks/markers.hpp>
+#include <benchmarks/core/Benchmark.hpp>
+#include <benchmarks/core/BenchmarkId.hpp>
 
 
 namespace benchmarks

@@ -133,7 +133,7 @@ if (Boost_FOUND)
 	add_executable(wigwag_benchmarks
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/adapters/qt5.hpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/main.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/BenchmarkSuite.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/BenchmarkSuite.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/markers.cpp)
 
 	if (SIGCPP2_FOUND)

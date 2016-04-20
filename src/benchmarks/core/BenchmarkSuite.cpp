@@ -1,4 +1,6 @@
-#include <benchmarks/BenchmarkSuite.hpp>
+#include <benchmarks/core/BenchmarkSuite.hpp>
+
+#include <benchmarks/markers.hpp>
 
 
 namespace benchmarks

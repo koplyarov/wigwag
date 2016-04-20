@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-#include <benchmarks/BenchmarkContext.hpp>
+#include <benchmarks/core/BenchmarkContext.hpp>
 
 
 namespace benchmarks
