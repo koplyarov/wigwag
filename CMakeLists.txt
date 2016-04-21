@@ -137,6 +137,7 @@ if (Boost_FOUND)
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/BenchmarkSuite.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/Barrier.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/Memory.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/ThreadPriority.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/main.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/markers.cpp)
 

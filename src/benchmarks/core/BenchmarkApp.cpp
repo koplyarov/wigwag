@@ -8,11 +8,10 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <boost/regex.hpp>
-
 #include <benchmarks/core/BenchmarkApp.hpp>
+#include <benchmarks/core/utils/ThreadPriority.hpp>
 
-#include <utils/thread_priority.hpp>
+#include <boost/regex.hpp>
 
 
 namespace benchmarks
@@ -59,8 +58,9 @@ namespace benchmarks
 				params[m[1]] = m[2];
 			}
 
-			//set_max_thread_priority();
-			_suite.InvokeBenchmark({m[1], m[2], m[3]}, params);
+			SetMaxThreadPriority();
+			auto num_iterations = _suite.MeasureIterationsCount({m[1], m[2], m[3]}, params);
+			_suite.InvokeBenchmark(num_iterations, {m[1], m[2], m[3]}, params);
 
 			return 0;
 		}

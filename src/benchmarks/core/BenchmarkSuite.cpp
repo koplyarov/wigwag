@@ -135,7 +135,7 @@ namespace benchmarks
 	////////////////////////////////////////////////////////////////////////////////
 
 
-	void BenchmarkSuite::InvokeBenchmark(const BenchmarkId& id, const SerializedParamsMap& serializedParams)
+	int64_t BenchmarkSuite::MeasureIterationsCount(const BenchmarkId& id, const SerializedParamsMap& serializedParams)
 	{
 		const int multiplier = 2;
 
@@ -187,10 +187,20 @@ namespace benchmarks
 			num_iterations *= multiplier;
 		}
 
-		std::cerr << "iterations: " << num_iterations << std::endl;
+		return num_iterations;
+	}
+
+
+	void BenchmarkSuite::InvokeBenchmark(int64_t iterations, const BenchmarkId& id, const SerializedParamsMap& serializedParams)
+	{
+		std::cerr << "iterations: " << iterations << std::endl;
 		std::cerr << "----------------------------" << std::endl;
 
-		MeasureBenchmarkContext ctx(num_iterations);
+		auto it = _benchmarks.find(id);
+		if (it == _benchmarks.end())
+			throw std::runtime_error("Benchmark " + id.ToString() + " not found!");
+
+		MeasureBenchmarkContext ctx(iterations);
 		it->second->Perform(ctx, serializedParams);
 	}
 

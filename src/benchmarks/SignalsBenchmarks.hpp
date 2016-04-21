@@ -14,8 +14,8 @@
 #include <map>
 
 #include <benchmarks/core/BenchmarkClass.hpp>
+#include <benchmarks/core/utils/StorageFor.hpp>
 #include <benchmarks/markers.hpp>
-#include <utils/storage_for.hpp>
 
 
 namespace benchmarks
@@ -36,17 +36,16 @@ namespace benchmarks
 	private:
 		static void Create(BenchmarkContext& context)
 		{
-			using namespace wigwag;
 			using signal_type = typename SignalsDesc_::signal_type;
 
 			const auto n = context.GetIterationsCount();
 
-			storage_for<signal_type> *v = new storage_for<signal_type>[(size_t)n];
+			StorageFor<signal_type> *v = new StorageFor<signal_type>[(size_t)n];
 
 			{
 				auto op = context.Profile("creating", n);
 				for (int64_t i = 0; i < n; ++i)
-					new(&v[i].obj) signal_type();
+					v[i].Construct();
 			}
 
 			context.MeasureMemory("object", n);
@@ -54,7 +53,7 @@ namespace benchmarks
 			{
 				auto op = context.Profile("destroying", n);
 				for (int64_t i = 0; i < n; ++i)
-					v[i].obj.~signal_type();
+					v[i].Destruct();
 			}
 
 			delete[] v;
@@ -62,7 +61,6 @@ namespace benchmarks
 
 		static void ConnectInvoke(BenchmarkContext& context, int64_t numSlots)
 		{
-			using namespace wigwag;
 			using signal_type = typename SignalsDesc_::signal_type;
 			using handler_type = typename SignalsDesc_::handler_type;
 			using connection_type = typename SignalsDesc_::connection_type;
@@ -70,12 +68,12 @@ namespace benchmarks
 			const auto n = context.GetIterationsCount();
 			handler_type handler = SignalsDesc_::make_handler();
 			signal_type s;
-			storage_for<connection_type> *c = new storage_for<connection_type>[(size_t)numSlots];
+			StorageFor<connection_type> *c = new StorageFor<connection_type>[(size_t)numSlots];
 
 			{
 				auto op = context.Profile("connecting", numSlots);
 				for (int64_t i = 0; i < numSlots; ++i)
-					new(&c[i].obj) connection_type(s.connect(handler));
+					c[i].Construct(s.connect(handler));
 			}
 
 			context.MeasureMemory("connection", numSlots);
@@ -89,7 +87,7 @@ namespace benchmarks
 			{
 				auto op = context.Profile("disconnecting", numSlots);
 				for (int64_t i = 0; i < numSlots; ++i)
-					c[i].obj.~connection_type();
+					c[i].Destruct();
 			}
 
 			delete[] c;

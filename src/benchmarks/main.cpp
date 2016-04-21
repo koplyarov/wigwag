@@ -31,7 +31,6 @@
 #include <benchmarks/markers.hpp>
 #include <utils/profiler.hpp>
 #include <utils/storage_for.hpp>
-#include <utils/thread_priority.hpp>
 
 
 using namespace wigwag;

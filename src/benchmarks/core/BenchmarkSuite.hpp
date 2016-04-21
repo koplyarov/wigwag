@@ -63,7 +63,8 @@ namespace benchmarks
 		void RegisterBenchmarks()
 		{ detail::BenchmarksClassRegistrar<BenchmarksClass_, ObjectsDesc_...>::Register(_benchmarks); }
 
-		void InvokeBenchmark(const BenchmarkId& id, const SerializedParamsMap& serializedParams);
+		int64_t MeasureIterationsCount(const BenchmarkId& id, const SerializedParamsMap& serializedParams);
+		void InvokeBenchmark(int64_t iterations, const BenchmarkId& id, const SerializedParamsMap& serializedParams);
 	};
 }
 

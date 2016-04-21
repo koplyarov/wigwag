@@ -1,6 +1,3 @@
-#ifndef UTILS_THREAD_PRIORITY_HPP
-#define UTILS_THREAD_PRIORITY_HPP
-
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted,
@@ -10,23 +7,24 @@
 // IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+#include <benchmarks/core/utils/ThreadPriority.hpp>
 
 #include <iostream>
 
-#if WIGWAG_PLATFORM_POSIX
+#if defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__))
 #	include <pthread.h>
 #	include <string.h>
 #endif
-#if WIGWAG_PLATFORM_WINDOWS
+#if _WIN32
 #	include <windows.h>
 #endif
 
-namespace wigwag
+namespace benchmarks
 {
 
-	inline void set_max_thread_priority()
+	void SetMaxThreadPriority()
 	{
-#if WIGWAG_PLATFORM_POSIX
+#if defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__))
 		int policy = SCHED_FIFO;
 		struct sched_param scheduler_params = {};
 		scheduler_params.sched_priority = sched_get_priority_max(policy);
@@ -34,7 +32,7 @@ namespace wigwag
 		if (res != 0)
 			std::cerr << "!!! Could not set thread priority: " << strerror(res) << std::endl;
 #endif
-#if WIGWAG_PLATFORM_WINDOWS
+#if _WIN32
 		if (!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL))
 		{
 			DWORD err = GetLastError();
@@ -46,5 +44,3 @@ namespace wigwag
 	}
 
 }
-
-#endif
