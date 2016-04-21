@@ -9,6 +9,7 @@
 
 
 #include <benchmarks/core/BenchmarkApp.hpp>
+#include <benchmarks/core/ipc/MessageQueue.hpp>
 #include <benchmarks/core/utils/ThreadPriority.hpp>
 
 #include <boost/regex.hpp>
