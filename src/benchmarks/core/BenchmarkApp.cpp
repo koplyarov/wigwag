@@ -38,7 +38,7 @@ namespace benchmarks
 			using namespace boost::program_options;
 
 			std::string subtask, queue_name = "wigwagMessageQueue", benchmark;
-			int64_t num_iterations = 0;
+			int64_t num_iterations = 0, count = 1;
 			std::vector<std::string> params_vec;
 
 			options_description od;
@@ -47,6 +47,7 @@ namespace benchmarks
 				("subtask", value<std::string>(&subtask), "Internal option")
 				("queue", value<std::string>(&queue_name), "Internal option")
 				("iterations", value<int64_t>(&num_iterations), "Internal option")
+				("count", value<int64_t>(&count), "Measurements count")
 				("benchmark", value<std::string>(&benchmark), "Benchmark id")
 				("params", value<std::vector<std::string>>(&params_vec)->multitoken(), "Benchmark parameters")
 				;
@@ -113,8 +114,9 @@ namespace benchmarks
 					throw std::runtime_error(cmd.str() + " failed!");
 			}
 
+			auto it_msg = mq.ReceiveMessage<IterationsCountMessage>();
+			for (int64_t i = 0; i < count; ++i)
 			{
-				auto it_msg = mq.ReceiveMessage<IterationsCountMessage>();
 				std::stringstream cmd;
 				cmd << argv[0] << " --subtask invokeBenchmark --queue " << queue_name << " --iterations " << it_msg->GetCount() << " " << benchmark;
 				for (auto&& p : params_vec)
