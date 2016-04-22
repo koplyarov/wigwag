@@ -143,7 +143,7 @@ namespace benchmarks
 		if (it == _benchmarks.end())
 			throw std::runtime_error("Benchmark " + id.ToString() + " not found!");
 
-		int64_t available_mem = Memory::GetAvailablePhys();
+		int64_t total_mem = Memory::GetTotalPhys();
 		int64_t num_iterations = 1;
 		while (true)
 		{
@@ -170,9 +170,13 @@ namespace benchmarks
 				break;
 			}
 
-			if (next_max_rss > available_mem * 4 / 5)
+			if (next_max_rss > total_mem * 1 / 2)
 			{
 				std::cerr << "Memory limit exceeded!" << std::endl;
+				std::cerr << "  total mem: " << total_mem << std::endl;
+				std::cerr << "  max rss: " << max_rss << std::endl;
+				std::cerr << "  next max rss: " << next_max_rss << std::endl;
+				std::cerr << "durations:" << std::endl;
 				for (auto p : ctx.GetDurationsMap())
 					std::cerr << "  " << p.first << ": " << p.second.count() << " ms" << std::endl;
 				break;
