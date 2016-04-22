@@ -51,6 +51,8 @@ namespace benchmarks
 
 		void SendMessage(const std::shared_ptr<MessageBase>& message);
 
+		static void Remove(const std::string& name);
+
 	private:
 		std::shared_ptr<MessageBase> ReceiveMessageBase();
 	};

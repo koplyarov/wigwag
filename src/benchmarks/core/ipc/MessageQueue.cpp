@@ -66,4 +66,8 @@ namespace benchmarks
 		_queue.send(str.data(), str.size(), 0);
 	}
 
+
+	void MessageQueue::Remove(const std::string& name)
+	{ message_queue::remove(name.c_str()); }
+
 }
