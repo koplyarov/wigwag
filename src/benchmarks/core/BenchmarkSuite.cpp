@@ -114,15 +114,18 @@ namespace benchmarks
 			}
 		};
 
+	private:
+		int64_t		_baselineRss;
+
 	public:
 		MeasureBenchmarkContext(int64_t iterationsCount)
 			: BenchmarkContext(iterationsCount)
-		{ }
+		{ _baselineRss = Memory::GetRss(); }
 
 		virtual void MeasureMemory(const std::string& name, int64_t count)
 		{
 			BENCHMARKS_BARRIER;
-			auto rss = Memory::GetRss();
+			auto rss = Memory::GetRss() - _baselineRss;
 			BENCHMARKS_BARRIER;
 			std::cout << name << ": " << (rss / count) << " bytes" << std::endl;
 		}
@@ -182,7 +185,7 @@ namespace benchmarks
 				break;
 			}
 
-			if (next_min_duration > milliseconds(300))
+			if (next_min_duration > milliseconds(100))
 			{
 				num_iterations *= multiplier;
 				break;
