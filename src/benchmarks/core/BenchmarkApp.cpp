@@ -14,6 +14,7 @@
 
 #include <boost/program_options.hpp>
 #include <boost/regex.hpp>
+#include <boost/scope_exit.hpp>
 
 
 namespace benchmarks
@@ -99,8 +100,8 @@ namespace benchmarks
 			if (!subtask.empty())
 				throw CmdLineException("Unknown subtask!");
 
-			MessageQueue::Remove(queue_name);
 			MessageQueue mq(queue_name);
+			BOOST_SCOPE_EXIT_ALL(&) { MessageQueue::Remove(queue_name); };
 
 			{
 				std::stringstream cmd;
