@@ -48,7 +48,7 @@ namespace benchmarks
 				("queue", value<std::string>(&queue_name), "Internal option")
 				("iterations", value<int64_t>(&num_iterations), "Internal option")
 				("benchmark", value<std::string>(&benchmark), "Benchmark id")
-				("params", value<std::vector<std::string>>(&params_vec)->multitoken(), "Benchmark id")
+				("params", value<std::vector<std::string>>(&params_vec)->multitoken(), "Benchmark parameters")
 				;
 
 			positional_options_description pd;
