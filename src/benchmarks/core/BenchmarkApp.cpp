@@ -20,6 +20,17 @@
 namespace benchmarks
 {
 
+	class StdoutBenchmarksResultsReporter : public IBenchmarksResultsReporter
+	{
+	public:
+		virtual void ReportOperationDuration(const std::string& name, double ns)
+		{ std::cout << name << ": " << ns << " ns" << std::endl; }
+
+		virtual void ReportMemoryConsumption(const std::string& name, int64_t bytes)
+		{ std::cout << name << ": " << bytes << " bytes" << std::endl; }
+	};
+
+
 	BENCHMARKS_LOGGER(BenchmarkApp);
 
 	BenchmarkApp::BenchmarkApp(const BenchmarkSuite& suite)
@@ -96,7 +107,7 @@ namespace benchmarks
 					throw CmdLineException("Number of iterations is not specified!");
 				MessageQueue mq(queue_name);
 				SetMaxThreadPriority();
-				_suite.InvokeBenchmark(num_iterations, {m[1], m[2], m[3]}, params);
+				_suite.InvokeBenchmark(num_iterations, {m[1], m[2], m[3]}, params, std::make_shared<StdoutBenchmarksResultsReporter>());
 				return 0;
 			}
 

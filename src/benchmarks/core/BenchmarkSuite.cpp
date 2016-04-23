@@ -24,29 +24,6 @@ namespace benchmarks
 
 	using namespace std::chrono;
 
-	struct BenchmarkSuite::IBenchmarksResultsReporter
-	{
-		virtual ~IBenchmarksResultsReporter() { }
-
-		virtual void ReportOperationDuration(const std::string& name, double ns) = 0;
-		virtual void ReportMemoryConsumption(const std::string& name, int64_t bytes) = 0;
-	};
-
-
-	class StdoutBenchmarksResultsReporter : public BenchmarkSuite::IBenchmarksResultsReporter
-	{
-	public:
-		virtual void ReportOperationDuration(const std::string& name, double ns)
-		{ std::cout << name << ": " << ns << " ns" << std::endl; }
-
-		virtual void ReportMemoryConsumption(const std::string& name, int64_t bytes)
-		{ std::cout << name << ": " << bytes << " bytes" << std::endl; }
-	};
-
-
-	////////////////////////////////////////////////////////////////////////////////
-
-
 	class BenchmarkSuite::PreMeasureBenchmarkContext : public BenchmarkContext
 	{
 	public:
@@ -223,7 +200,7 @@ namespace benchmarks
 	}
 
 
-	void BenchmarkSuite::InvokeBenchmark(int64_t iterations, const BenchmarkId& id, const SerializedParamsMap& serializedParams)
+	void BenchmarkSuite::InvokeBenchmark(int64_t iterations, const BenchmarkId& id, const SerializedParamsMap& serializedParams, const IBenchmarksResultsReporterPtr& resultsReporter)
 	{
 		s_logger.Debug() << "iterations: " << iterations;
 
@@ -231,7 +208,7 @@ namespace benchmarks
 		if (it == _benchmarks.end())
 			throw std::runtime_error("Benchmark " + id.ToString() + " not found!");
 
-		MeasureBenchmarkContext ctx(iterations, std::make_shared<StdoutBenchmarksResultsReporter>());
+		MeasureBenchmarkContext ctx(iterations, resultsReporter);
 		it->second->Perform(ctx, serializedParams);
 	}
 

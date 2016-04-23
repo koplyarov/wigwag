@@ -49,13 +49,19 @@ namespace benchmarks
 	}
 
 
+	struct IBenchmarksResultsReporter
+	{
+		virtual ~IBenchmarksResultsReporter() { }
+
+		virtual void ReportOperationDuration(const std::string& name, double ns) = 0;
+		virtual void ReportMemoryConsumption(const std::string& name, int64_t bytes) = 0;
+	};
+	using IBenchmarksResultsReporterPtr = std::shared_ptr<IBenchmarksResultsReporter>;
+
+
 	class BenchmarkSuite
 	{
 		using BenchmarksMap = std::map<BenchmarkId, IBenchmarkPtr>;
-
-	public:
-		struct IBenchmarksResultsReporter;
-		using IBenchmarksResultsReporterPtr = std::shared_ptr<IBenchmarksResultsReporter>;
 
 	private:
 		class PreMeasureBenchmarkContext;
@@ -71,7 +77,7 @@ namespace benchmarks
 		{ detail::BenchmarksClassRegistrar<BenchmarksClass_, ObjectsDesc_...>::Register(_benchmarks); }
 
 		int64_t MeasureIterationsCount(const BenchmarkId& id, const SerializedParamsMap& serializedParams);
-		void InvokeBenchmark(int64_t iterations, const BenchmarkId& id, const SerializedParamsMap& serializedParams);
+		void InvokeBenchmark(int64_t iterations, const BenchmarkId& id, const SerializedParamsMap& serializedParams, const IBenchmarksResultsReporterPtr& resultsReporter);
 	};
 }
 
