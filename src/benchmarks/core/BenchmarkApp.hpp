@@ -12,6 +12,7 @@
 
 
 #include <benchmarks/core/BenchmarkSuite.hpp>
+#include <benchmarks/core/utils/Logger.hpp>
 
 
 namespace benchmarks
@@ -20,12 +21,16 @@ namespace benchmarks
 	class BenchmarkApp
 	{
 	private:
+		static NamedLogger	s_logger;
 		BenchmarkSuite		_suite;
 
 	public:
 		BenchmarkApp(const BenchmarkSuite& suite);
 
 		int Run(int argc, char* argv[]);
+
+	private:
+		static void InvokeSubprocess(const std::string& cmd);
 	};
 
 }

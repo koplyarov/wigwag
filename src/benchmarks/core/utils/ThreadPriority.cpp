@@ -7,9 +7,12 @@
 // IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+
+#include <benchmarks/core/utils/Logger.hpp>
 #include <benchmarks/core/utils/ThreadPriority.hpp>
 
 #include <iostream>
+
 
 #if defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__))
 #	include <pthread.h>
@@ -22,6 +25,8 @@
 namespace benchmarks
 {
 
+	static NamedLogger g_logger("ThreadPriority");
+
 	void SetMaxThreadPriority()
 	{
 #if defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__))
@@ -30,7 +35,7 @@ namespace benchmarks
 		scheduler_params.sched_priority = sched_get_priority_max(policy);
 		int res = pthread_setschedparam(pthread_self(), policy, &scheduler_params);
 		if (res != 0)
-			std::cerr << "!!! Could not set thread priority: " << strerror(res) << std::endl;
+			g_logger.Warning() << "Could not set thread priority: " << strerror(res);
 #endif
 #if _WIN32
 		if (!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL))
@@ -38,7 +43,7 @@ namespace benchmarks
 			DWORD err = GetLastError();
 			char buf[256] = { '\0' };
 			FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), buf, sizeof(buf) - 1, NULL);
-			std::cerr << "!!! Could not set thread priority: " << buf << std::endl;
+			g_logger.Warning() << "Could not set thread priority: " << buf;
 		}
 #endif
 	}

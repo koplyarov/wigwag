@@ -138,6 +138,7 @@ if (Boost_FOUND)
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/BenchmarkSuite.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/ipc/MessageQueue.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/Barrier.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/Logger.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/Memory.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/ThreadPriority.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/main.cpp

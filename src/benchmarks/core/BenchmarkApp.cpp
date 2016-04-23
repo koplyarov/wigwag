@@ -20,6 +20,8 @@
 namespace benchmarks
 {
 
+	BENCHMARKS_LOGGER(BenchmarkApp);
+
 	BenchmarkApp::BenchmarkApp(const BenchmarkSuite& suite)
 		: _suite(suite)
 	{ }
@@ -110,8 +112,7 @@ namespace benchmarks
 				for (auto&& p : params_vec)
 					cmd << " " << p;
 
-				if (system(cmd.str().c_str()) != 0)
-					throw std::runtime_error(cmd.str() + " failed!");
+				InvokeSubprocess(cmd.str());
 			}
 
 			auto it_msg = mq.ReceiveMessage<IterationsCountMessage>();
@@ -122,8 +123,7 @@ namespace benchmarks
 				for (auto&& p : params_vec)
 					cmd << " " << p;
 
-				if (system(cmd.str().c_str()) != 0)
-					throw std::runtime_error(cmd.str() + " failed!");
+				InvokeSubprocess(cmd.str());
 			}
 
 			return 0;
@@ -135,9 +135,17 @@ namespace benchmarks
 		}
 		catch (const std::exception& ex)
 		{
-			std::cerr << "Uncaught exception: " << ex.what() << std::endl;
+			s_logger.Error() << "Uncaught exception: " << ex.what();
 			return 1;
 		}
+	}
+
+
+	void BenchmarkApp::InvokeSubprocess(const std::string& cmd)
+	{
+		s_logger.Debug() << "Invoking " << cmd;
+		if (system(cmd.c_str()) != 0)
+			throw std::runtime_error(cmd + " failed!");
 	}
 
 }

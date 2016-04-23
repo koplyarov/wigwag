@@ -24,6 +24,28 @@ namespace benchmarks
 
 	using namespace std::chrono;
 
+	struct BenchmarkSuite::IBenchmarksResultsReporter
+	{
+		virtual ~IBenchmarksResultsReporter() { }
+
+		virtual void ReportOperationDuration(const std::string& name, double ns) = 0;
+		virtual void ReportMemoryConsumption(const std::string& name, int64_t bytes) = 0;
+	};
+
+
+	class StdoutBenchmarksResultsReporter : public BenchmarkSuite::IBenchmarksResultsReporter
+	{
+	public:
+		virtual void ReportOperationDuration(const std::string& name, double ns)
+		{ std::cout << name << ": " << ns << " ns" << std::endl; }
+
+		virtual void ReportMemoryConsumption(const std::string& name, int64_t bytes)
+		{ std::cout << name << ": " << bytes << " bytes" << std::endl; }
+	};
+
+
+	////////////////////////////////////////////////////////////////////////////////
+
 
 	class BenchmarkSuite::PreMeasureBenchmarkContext : public BenchmarkContext
 	{
@@ -110,16 +132,17 @@ namespace benchmarks
 				auto d = _prof.Reset();
 				BENCHMARKS_BARRIER;
 				auto ns = duration_cast<duration<double, std::nano>>(d).count();
-				std::cout << _name << ": " << (ns / _count) << " ns" << std::endl;
+				_inst->_resultsReporter->ReportOperationDuration(_name, ns / _count);
 			}
 		};
 
 	private:
-		int64_t		_baselineRss;
+		IBenchmarksResultsReporterPtr		_resultsReporter;
+		int64_t								_baselineRss;
 
 	public:
-		MeasureBenchmarkContext(int64_t iterationsCount)
-			: BenchmarkContext(iterationsCount)
+		MeasureBenchmarkContext(int64_t iterationsCount, IBenchmarksResultsReporterPtr resultsReporter)
+			: BenchmarkContext(iterationsCount), _resultsReporter(std::move(resultsReporter))
 		{ _baselineRss = Memory::GetRss(); }
 
 		virtual void MeasureMemory(const std::string& name, int64_t count)
@@ -127,7 +150,7 @@ namespace benchmarks
 			BENCHMARKS_BARRIER;
 			auto rss = Memory::GetRss() - _baselineRss;
 			BENCHMARKS_BARRIER;
-			std::cout << name << ": " << (rss / count) << " bytes" << std::endl;
+			_resultsReporter->ReportMemoryConsumption(name, rss / count);
 		}
 
 		virtual IOperationProfilerPtr Profile(const std::string& name, int64_t count)
@@ -137,6 +160,8 @@ namespace benchmarks
 
 	////////////////////////////////////////////////////////////////////////////////
 
+
+	BENCHMARKS_LOGGER(BenchmarkSuite);
 
 	int64_t BenchmarkSuite::MeasureIterationsCount(const BenchmarkId& id, const SerializedParamsMap& serializedParams)
 	{
@@ -167,21 +192,21 @@ namespace benchmarks
 
 			if (max_duration > seconds(10))
 			{
-				std::cerr << "Max time limit exceeded!" << std::endl;
+				s_logger.Warning() << "Max time limit exceeded!";
 				for (auto p : ctx.GetDurationsMap())
-					std::cerr << "  " << p.first << ": " << p.second.count() << " ms" << std::endl;
+					s_logger.Warning() << "  " << p.first << ": " << p.second.count() << " ms";
 				break;
 			}
 
 			if (next_max_rss > total_mem * 1 / 2)
 			{
-				std::cerr << "Memory limit exceeded!" << std::endl;
-				std::cerr << "  total mem: " << total_mem << std::endl;
-				std::cerr << "  max rss: " << max_rss << std::endl;
-				std::cerr << "  next max rss: " << next_max_rss << std::endl;
-				std::cerr << "durations:" << std::endl;
+				s_logger.Warning() << "Memory limit exceeded!";
+				s_logger.Warning() << "  total mem: " << total_mem;
+				s_logger.Warning() << "  max rss: " << max_rss;
+				s_logger.Warning() << "  next max rss: " << next_max_rss;
+				s_logger.Warning() << "durations:";
 				for (auto p : ctx.GetDurationsMap())
-					std::cerr << "  " << p.first << ": " << p.second.count() << " ms" << std::endl;
+					s_logger.Warning() << "  " << p.first << ": " << p.second.count() << " ms";
 				break;
 			}
 
@@ -200,14 +225,13 @@ namespace benchmarks
 
 	void BenchmarkSuite::InvokeBenchmark(int64_t iterations, const BenchmarkId& id, const SerializedParamsMap& serializedParams)
 	{
-		std::cerr << "iterations: " << iterations << std::endl;
-		std::cerr << "----------------------------" << std::endl;
+		s_logger.Debug() << "iterations: " << iterations;
 
 		auto it = _benchmarks.find(id);
 		if (it == _benchmarks.end())
 			throw std::runtime_error("Benchmark " + id.ToString() + " not found!");
 
-		MeasureBenchmarkContext ctx(iterations);
+		MeasureBenchmarkContext ctx(iterations, std::make_shared<StdoutBenchmarksResultsReporter>());
 		it->second->Perform(ctx, serializedParams);
 	}
 

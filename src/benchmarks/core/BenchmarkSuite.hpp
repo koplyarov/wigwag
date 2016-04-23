@@ -11,11 +11,12 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <map>
-#include <stdexcept>
-
 #include <benchmarks/core/Benchmark.hpp>
 #include <benchmarks/core/BenchmarkId.hpp>
+#include <benchmarks/core/utils/Logger.hpp>
+
+#include <map>
+#include <stdexcept>
 
 
 namespace benchmarks
@@ -52,11 +53,17 @@ namespace benchmarks
 	{
 		using BenchmarksMap = std::map<BenchmarkId, IBenchmarkPtr>;
 
+	public:
+		struct IBenchmarksResultsReporter;
+		using IBenchmarksResultsReporterPtr = std::shared_ptr<IBenchmarksResultsReporter>;
+
+	private:
 		class PreMeasureBenchmarkContext;
 		class MeasureBenchmarkContext;
 
 	private:
-		BenchmarksMap	_benchmarks;
+		static NamedLogger	s_logger;
+		BenchmarksMap		_benchmarks;
 
 	public:
 		template < template <typename> class BenchmarksClass_, typename... ObjectsDesc_ >
