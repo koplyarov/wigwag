@@ -20,15 +20,34 @@
 namespace benchmarks
 {
 
-	class StdoutBenchmarksResultsReporter : public IBenchmarksResultsReporter
+	using OperationTimesMap = std::map<std::string, double>	;
+	using MemoryConsumptionMap = std::map<std::string, int64_t>;
+
+
+	class BenchmarksResultsReporter : public IBenchmarksResultsReporter
 	{
+	private:
+		static NamedLogger		s_logger;
+		OperationTimesMap		_operationTimes;
+		MemoryConsumptionMap	_memoryConsumption;
+
 	public:
 		virtual void ReportOperationDuration(const std::string& name, double ns)
-		{ std::cout << name << ": " << ns << " ns" << std::endl; }
+		{
+			s_logger.Debug() << name << ": " << ns << " ns";
+			_operationTimes[name] = ns;
+		}
 
 		virtual void ReportMemoryConsumption(const std::string& name, int64_t bytes)
-		{ std::cout << name << ": " << bytes << " bytes" << std::endl; }
+		{
+			s_logger.Debug() << name << ": " << bytes << " bytes";
+			_memoryConsumption[name] = bytes;
+		}
+
+		const OperationTimesMap& GetOperationTimes() const { return _operationTimes; }
+		const MemoryConsumptionMap& GetMemoryConsumption() const { return _memoryConsumption; }
 	};
+	BENCHMARKS_LOGGER(BenchmarksResultsReporter);
 
 
 	BENCHMARKS_LOGGER(BenchmarkApp);
@@ -51,18 +70,19 @@ namespace benchmarks
 			using namespace boost::program_options;
 
 			std::string subtask, queue_name = "wigwagMessageQueue", benchmark;
-			int64_t num_iterations = 0, count = 1;
+			int64_t num_iterations = 0, count = 1, verbosity = 1;
 			std::vector<std::string> params_vec;
 
 			options_description od;
 			od.add_options()
 				("help", "Show help")
+				("verbosity,v", value<int64_t>(&verbosity), "Verbosity in range [0..3], default: 1")
+				("count", value<int64_t>(&count), "Measurements count, default: 1")
+				("benchmark", value<std::string>(&benchmark), "Benchmark id")
+				("params", value<std::vector<std::string>>(&params_vec)->multitoken(), "Benchmark parameters")
 				("subtask", value<std::string>(&subtask), "Internal option")
 				("queue", value<std::string>(&queue_name), "Internal option")
 				("iterations", value<int64_t>(&num_iterations), "Internal option")
-				("count", value<int64_t>(&count), "Measurements count")
-				("benchmark", value<std::string>(&benchmark), "Benchmark id")
-				("params", value<std::vector<std::string>>(&params_vec)->multitoken(), "Benchmark parameters")
 				;
 
 			positional_options_description pd;
@@ -78,6 +98,15 @@ namespace benchmarks
 			{
 				std::cerr << boost::lexical_cast<std::string>(od) << std::endl;
 				return 0;
+			}
+
+			switch (verbosity)
+			{
+			case 0: Logger::SetLogLevel(LogLevel::Error); break;
+			case 1: Logger::SetLogLevel(LogLevel::Warning); break;
+			case 2: Logger::SetLogLevel(LogLevel::Info); break;
+			case 3: Logger::SetLogLevel(LogLevel::Debug); break;
+			default: s_logger.Warning() << "Unexpected verbosity value: " << verbosity; break;
 			}
 
 			boost::regex benchmark_re(R"(([^.]+)\.([^.]+)\.([^.]+))");
@@ -107,7 +136,9 @@ namespace benchmarks
 					throw CmdLineException("Number of iterations is not specified!");
 				MessageQueue mq(queue_name);
 				SetMaxThreadPriority();
-				_suite.InvokeBenchmark(num_iterations, {m[1], m[2], m[3]}, params, std::make_shared<StdoutBenchmarksResultsReporter>());
+				auto results_reporter = std::make_shared<BenchmarksResultsReporter>();
+				_suite.InvokeBenchmark(num_iterations, {m[1], m[2], m[3]}, params, results_reporter);
+				mq.SendMessage(std::make_shared<ResultsMessage>(results_reporter->GetOperationTimes(), results_reporter->GetMemoryConsumption()));
 				return 0;
 			}
 
@@ -119,7 +150,7 @@ namespace benchmarks
 
 			{
 				std::stringstream cmd;
-				cmd << argv[0] << " --subtask measureIterationsCount --queue " << queue_name << " " << benchmark;
+				cmd << argv[0] << " --subtask measureIterationsCount --queue " << queue_name << " --verbosity " << verbosity << " " << benchmark;
 				for (auto&& p : params_vec)
 					cmd << " " << p;
 
@@ -127,15 +158,41 @@ namespace benchmarks
 			}
 
 			auto it_msg = mq.ReceiveMessage<IterationsCountMessage>();
+			OperationTimesMap operation_times;
+			MemoryConsumptionMap memory_consumption;
 			for (int64_t i = 0; i < count; ++i)
 			{
 				std::stringstream cmd;
-				cmd << argv[0] << " --subtask invokeBenchmark --queue " << queue_name << " --iterations " << it_msg->GetCount() << " " << benchmark;
+				cmd << argv[0] << " --subtask invokeBenchmark --queue " << queue_name << " --verbosity " << verbosity << " --iterations " << it_msg->GetCount() << " " << benchmark;
 				for (auto&& p : params_vec)
 					cmd << " " << p;
 
 				InvokeSubprocess(cmd.str());
+				auto r_msg = mq.ReceiveMessage<ResultsMessage>();
+
+				for (auto p : r_msg->GetOperationTimes())
+				{
+					auto it = operation_times.find(p.first);
+					if (it == operation_times.end())
+						operation_times.insert({p.first, p.second});
+					else
+						it->second = std::min(it->second, p.second);
+				}
+
+				for (auto p : r_msg->GetMemoryConsumption())
+				{
+					auto it = memory_consumption.find(p.first);
+					if (it == memory_consumption.end())
+						memory_consumption.insert({p.first, p.second});
+					else
+						it->second = std::min(it->second, p.second);
+				}
 			}
+
+			for (auto p : operation_times)
+				s_logger.Info() << p.first << ": " << p.second << " ns";
+			for (auto p : memory_consumption)
+				s_logger.Info() << p.first << ": " << p.second << " bytes";
 
 			return 0;
 		}
