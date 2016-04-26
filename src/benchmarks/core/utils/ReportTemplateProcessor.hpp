@@ -21,37 +21,61 @@ namespace benchmarks
 {
 	class ReportTemplateProcessor
 	{
-	private:
-		struct MakeBenchmarkId
+	public:
+		class MeasurementId
 		{
-			template < typename T1_, typename T2_, typename T3_ >
-			BenchmarkId operator () (T1_&& p1, T2_&& p2, T3_&& p3) const
-			{ return BenchmarkId(std::string(p1.begin(), p1.end()), std::string(p2.begin(), p2.end()), std::string(p3.begin(), p3.end())); }
+		private:
+			BenchmarkId		_benchmarkId;
+			std::string		_measurementLocalId;
+
+		public:
+			MeasurementId() { }
+			MeasurementId(BenchmarkId benchmarkId, std::string measurementLocalId) : _benchmarkId(benchmarkId), _measurementLocalId(measurementLocalId) { }
+
+			BenchmarkId GetBenchmarkId() const { return _benchmarkId; }
+			std::string GetMeasurementLocalId() const { return _measurementLocalId; }
+
+			std::string ToString() const { return _benchmarkId.ToString() + "[" + _measurementLocalId + "]"; }
 		};
 
-		template < typename Printer_, typename MacroProcessor_, typename Iterator_ >
+	private:
+		template < typename Iterator_, typename Printer_, typename MacroProcessor_ >
 		struct ReportGrammar : boost::spirit::qi::grammar<Iterator_>
 		{
-			boost::spirit::qi::rule<Iterator_>	text, raw_text_block, macro;
+			Printer_											_printer;
+			MacroProcessor_										_macroProcessor;
+			boost::spirit::qi::rule<Iterator_>					_text, _rawTextBlock, _macro;
+			boost::spirit::qi::rule<Iterator_, MeasurementId()>	_measurementId;
+			boost::spirit::qi::rule<Iterator_, BenchmarkId()>	_benchmarkId;
+			boost::spirit::qi::rule<Iterator_, std::string()>	_measurementLocalId;
+			boost::spirit::qi::rule<Iterator_, std::string()>	_identifier;
 
-			ReportGrammar()
-				: ReportGrammar::base_type(text)
+			ReportGrammar(const Printer_& printer, const MacroProcessor_& macroProcessor)
+				: ReportGrammar::base_type(_text), _printer(printer), _macroProcessor(macroProcessor)
 			{
-				namespace qi = boost::spirit::qi;
-				namespace phx = boost::phoenix;
+				using namespace boost::spirit::qi;
+				using namespace boost::phoenix;
 
-				text				= raw_text_block >> -( macro >> text );
-				raw_text_block		= *( !qi::lit('$') >> qi::char_[Printer_()] );
-				macro				= qi::lit("${") >> (+qi::alnum >> '.' >> +qi::alnum >> '.' >> +qi::alnum)[phx::bind(MacroProcessor_(), phx::bind(MakeBenchmarkId(), qi::_1, qi::_2, qi::_3))] >> qi::lit("}");
+				_text					= _rawTextBlock >> -( _macro >> _text );
+				_rawTextBlock			= *( !lit('$') >> char_[_printer] );
+
+				_macro					= lit("${") >> (_measurementId >> -(lit('-') >> _measurementId))[ bind(_macroProcessor, _1, _2) ] >> lit('}');
+
+				_measurementId			= (_benchmarkId >> lit("[") >> _measurementLocalId >> lit(']'))[ _val = construct<MeasurementId>(_1, _2) ];
+				_benchmarkId			= (_identifier >> '.' >> _identifier >> '.' >> _identifier)[ _val = construct<BenchmarkId>(_1, _2, _3) ];
+				_measurementLocalId		= _identifier[ _val = _1 ];
+
+				_identifier			= as_string[(alpha | char_('_')) >> *(alnum | char_('_'))];
 			}
 		};
 
 	public:
-		template < typename Printer_, typename MacroProcessor_, typename Iterator_ >
-		static bool Process(Iterator_ b, Iterator_ e)
+		template < typename Iterator_, typename Printer_, typename MacroProcessor_ >
+		static void Process(Iterator_ b, Iterator_ e, const Printer_& printer, const MacroProcessor_& macroProcessor)
 		{
-			ReportGrammar<Printer_, MacroProcessor_, Iterator_> g;
-			return boost::spirit::qi::parse(b, e, g) && b == e;
+			ReportGrammar<Iterator_, Printer_, MacroProcessor_> g(printer, macroProcessor);
+			if (!boost::spirit::qi::parse(b, e, g) || b != e)
+				throw std::runtime_error("Could not parse report template!");
 		}
 	};
 

@@ -26,6 +26,9 @@ namespace benchmarks
 		std::string		_objectName;
 
 	public:
+		BenchmarkId()
+		{ }
+
 		BenchmarkId(std::string className, std::string benchmarkName, std::string objectName)
 			: _className(std::move(className)), _benchmarkName(std::move(benchmarkName)), _objectName(std::move(objectName))
 		{ }
