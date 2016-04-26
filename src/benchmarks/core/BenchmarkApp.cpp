@@ -9,12 +9,17 @@
 
 
 #include <benchmarks/core/BenchmarkApp.hpp>
+
 #include <benchmarks/core/ipc/MessageQueue.hpp>
+#include <benchmarks/core/utils/ReportTemplateProcessor.hpp>
 #include <benchmarks/core/utils/ThreadPriority.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/regex.hpp>
 #include <boost/scope_exit.hpp>
+#include <boost/spirit/include/support_multi_pass.hpp>
+
+#include <fstream>
 
 
 namespace benchmarks
@@ -63,13 +68,14 @@ namespace benchmarks
 		{ CmdLineException(const std::string& msg) : std::runtime_error(msg) { } };
 	}
 
+
 	int BenchmarkApp::Run(int argc, char* argv[])
 	{
 		try
 		{
 			using namespace boost::program_options;
 
-			std::string subtask, queue_name = "wigwagMessageQueue", benchmark;
+			std::string subtask, queue_name = "wigwagMessageQueue", benchmark, template_file, output_file;
 			int64_t num_iterations = 0, count = 1, verbosity = 1;
 			std::vector<std::string> params_vec;
 
@@ -77,9 +83,11 @@ namespace benchmarks
 			od.add_options()
 				("help", "Show help")
 				("verbosity,v", value<int64_t>(&verbosity), "Verbosity in range [0..3], default: 1")
-				("count", value<int64_t>(&count), "Measurements count, default: 1")
-				("benchmark", value<std::string>(&benchmark), "Benchmark id")
+				("count,c", value<int64_t>(&count), "Measurements count, default: 1")
+				("benchmark,b", value<std::string>(&benchmark), "Benchmark id")
 				("params", value<std::vector<std::string>>(&params_vec)->multitoken(), "Benchmark parameters")
+				("template,t", value<std::string>(&template_file), "Template file")
+				("output,o", value<std::string>(&output_file), "Output file")
 				("subtask", value<std::string>(&subtask), "Internal option")
 				("queue", value<std::string>(&queue_name), "Internal option")
 				("iterations", value<int64_t>(&num_iterations), "Internal option")
@@ -94,7 +102,7 @@ namespace benchmarks
 			store(parsed, vm);
 			notify(vm);
 
-			if (benchmark.empty() || vm.count("help"))
+			if ((benchmark.empty() && (template_file.empty() || output_file.empty())) || vm.count("help"))
 			{
 				std::cerr << boost::lexical_cast<std::string>(od) << std::endl;
 				return 0;
@@ -109,41 +117,87 @@ namespace benchmarks
 			default: s_logger.Warning() << "Unexpected verbosity value: " << verbosity; break;
 			}
 
-			boost::regex benchmark_re(R"(([^.]+)\.([^.]+)\.([^.]+))");
-			boost::smatch m;
-			if (!boost::regex_match(benchmark, m, benchmark_re))
-				throw CmdLineException("Could not parse benchmark id!");
-
-			boost::regex param_re(R"(([^.]+):([^.]+))");
-			std::map<std::string, SerializedParam> params;
-			for (auto&& param_str : params_vec)
+			if (!benchmark.empty())
 			{
+				boost::regex benchmark_re(R"(([^.]+)\.([^.]+)\.([^.]+))");
 				boost::smatch m;
-				if (!boost::regex_match(param_str, m, param_re))
-					throw CmdLineException("Could not parse parameter!");
-				params[m[1]] = m[2];
-			}
+				if (!boost::regex_match(benchmark, m, benchmark_re))
+					throw CmdLineException("Could not parse benchmark id!");
 
-			if (subtask == "measureIterationsCount")
+				boost::regex param_re(R"(([^.]+):([^.]+))");
+				std::map<std::string, SerializedParam> params;
+				for (auto&& param_str : params_vec)
+				{
+					boost::smatch m;
+					if (!boost::regex_match(param_str, m, param_re))
+						throw CmdLineException("Could not parse parameter!");
+					params[m[1]] = m[2];
+				}
+
+				if (subtask == "measureIterationsCount")
+				{
+					MessageQueue mq(queue_name);
+					mq.SendMessage(std::make_shared<IterationsCountMessage>(_suite.MeasureIterationsCount({m[1], m[2], m[3]}, params)));
+					return 0;
+				}
+				else if (subtask == "invokeBenchmark")
+				{
+					if (vm.count("iterations") == 0)
+						throw CmdLineException("Number of iterations is not specified!");
+					MessageQueue mq(queue_name);
+					SetMaxThreadPriority();
+					auto results_reporter = std::make_shared<BenchmarksResultsReporter>();
+					_suite.InvokeBenchmark(num_iterations, {m[1], m[2], m[3]}, params, results_reporter);
+					mq.SendMessage(std::make_shared<ResultsMessage>(results_reporter->GetOperationTimes(), results_reporter->GetMemoryConsumption()));
+					return 0;
+				}
+				else if (!subtask.empty())
+					throw CmdLineException("Unknown subtask!");
+			}
+			else
 			{
-				MessageQueue mq(queue_name);
-				mq.SendMessage(std::make_shared<IterationsCountMessage>(_suite.MeasureIterationsCount({m[1], m[2], m[3]}, params)));
+				using namespace boost::spirit;
+				using MeasurementId = ReportTemplateProcessor::MeasurementId;
+
+				{
+					std::ifstream input(template_file, std::ios_base::binary);
+					if (!input.is_open())
+						throw std::runtime_error("Could not open " + template_file);
+
+					ReportTemplateProcessor::Process(
+							make_default_multi_pass(std::istreambuf_iterator<char>(input)),
+							make_default_multi_pass(std::istreambuf_iterator<char>()),
+							[&](char c) { },
+							[&](const MeasurementId& id, boost::optional<MeasurementId> baselineId)
+							{
+								std::cerr << id.ToString() << std::endl;
+								if (baselineId)
+									std::cerr << baselineId->ToString() << std::endl;
+							}
+						);
+				}
+
+				std::ifstream input(template_file, std::ios_base::binary);
+				if (!input.is_open())
+					throw std::runtime_error("Could not open " + template_file);
+
+				std::ofstream output(output_file, std::ios_base::binary);
+				if (!output.is_open())
+					throw std::runtime_error("Could not open " + output_file);
+
+				ReportTemplateProcessor::Process(
+						make_default_multi_pass(std::istreambuf_iterator<char>(input)),
+						make_default_multi_pass(std::istreambuf_iterator<char>()),
+						[&](char c) { output << c; },
+						[&](const MeasurementId& id, boost::optional<MeasurementId> baselineId)
+						{
+							output << "<<<" << id.ToString() << ">>>";
+							if (baselineId)
+								output << "@" << baselineId->ToString() << "@";
+						}
+					);
 				return 0;
 			}
-			else if (subtask == "invokeBenchmark")
-			{
-				if (vm.count("iterations") == 0)
-					throw CmdLineException("Number of iterations is not specified!");
-				MessageQueue mq(queue_name);
-				SetMaxThreadPriority();
-				auto results_reporter = std::make_shared<BenchmarksResultsReporter>();
-				_suite.InvokeBenchmark(num_iterations, {m[1], m[2], m[3]}, params, results_reporter);
-				mq.SendMessage(std::make_shared<ResultsMessage>(results_reporter->GetOperationTimes(), results_reporter->GetMemoryConsumption()));
-				return 0;
-			}
-
-			if (!subtask.empty())
-				throw CmdLineException("Unknown subtask!");
 
 			MessageQueue mq(queue_name);
 			BOOST_SCOPE_EXIT_ALL(&) { MessageQueue::Remove(queue_name); };
