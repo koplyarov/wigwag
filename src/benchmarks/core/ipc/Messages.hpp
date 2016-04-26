@@ -11,6 +11,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <benchmarks/core/detail/BenchmarkResult.hpp>
+
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/map.hpp>
@@ -53,29 +55,24 @@ namespace benchmarks
 	};
 
 
-	class ResultsMessage : public MessageBase
+	class BenchmarkResultMessage : public MessageBase
 	{
-		using OperationTimesMap = std::map<std::string, double>	;
-		using MemoryConsumptionMap = std::map<std::string, int64_t>;
-
 	private:
-		OperationTimesMap		_operationTimes;
-		MemoryConsumptionMap	_memoryConsumption;
+		BenchmarkResult		_result;
 
 	public:
-		ResultsMessage()
+		BenchmarkResultMessage()
 		{ }
 
-		ResultsMessage(OperationTimesMap operationTimes, MemoryConsumptionMap memoryConsumption)
-			: _operationTimes(std::move(operationTimes)), _memoryConsumption(std::move(memoryConsumption))
+		BenchmarkResultMessage(BenchmarkResult result)
+			: _result(std::move(result))
 		{ }
 
-		const OperationTimesMap& GetOperationTimes() const { return _operationTimes; }
-		const MemoryConsumptionMap& GetMemoryConsumption() const { return _memoryConsumption; }
+		const BenchmarkResult& GetResult() const { return _result; }
 
 		template<class Archive>
 		void serialize(Archive &ar, const unsigned int version)
-		{ ar &BOOST_SERIALIZATION_BASE_OBJECT_NVP(benchmarks::MessageBase) & BOOST_SERIALIZATION_NVP(_operationTimes) & BOOST_SERIALIZATION_NVP(_memoryConsumption); }
+		{ ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(benchmarks::MessageBase) & BOOST_SERIALIZATION_NVP(_result); }
 	};
 
 
@@ -102,7 +99,7 @@ namespace benchmarks
 
 BOOST_CLASS_EXPORT_KEY(benchmarks::MessageBase);
 BOOST_CLASS_EXPORT_KEY(benchmarks::IterationsCountMessage);
-BOOST_CLASS_EXPORT_KEY(benchmarks::ResultsMessage);
+BOOST_CLASS_EXPORT_KEY(benchmarks::BenchmarkResultMessage);
 BOOST_CLASS_EXPORT_KEY(benchmarks::ExceptionMessage);
 
 #endif

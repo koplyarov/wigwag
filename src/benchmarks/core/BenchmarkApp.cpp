@@ -148,7 +148,7 @@ namespace benchmarks
 					SetMaxThreadPriority();
 					auto results_reporter = std::make_shared<BenchmarksResultsReporter>();
 					_suite.InvokeBenchmark(num_iterations, {m[1], m[2], m[3]}, params, results_reporter);
-					mq.SendMessage(std::make_shared<ResultsMessage>(results_reporter->GetOperationTimes(), results_reporter->GetMemoryConsumption()));
+					mq.SendMessage(std::make_shared<BenchmarkResultMessage>(BenchmarkResult(results_reporter->GetOperationTimes(), results_reporter->GetMemoryConsumption())));
 					return 0;
 				}
 				else if (!subtask.empty())
@@ -157,7 +157,8 @@ namespace benchmarks
 			else
 			{
 				using namespace boost::spirit;
-				using MeasurementId = ReportTemplateProcessor::MeasurementId;
+
+				std::set<BenchmarkId> requested_benchmarks;
 
 				{
 					std::ifstream input(template_file, std::ios_base::binary);
@@ -170,12 +171,15 @@ namespace benchmarks
 							[&](char c) { },
 							[&](const MeasurementId& id, boost::optional<MeasurementId> baselineId)
 							{
-								std::cerr << id.ToString() << std::endl;
+								requested_benchmarks.insert(id.GetBenchmarkId());
 								if (baselineId)
-									std::cerr << baselineId->ToString() << std::endl;
+									requested_benchmarks.insert(baselineId->GetBenchmarkId());
 							}
 						);
 				}
+
+				for (auto&& e : requested_benchmarks)
+					std::cerr << e.ToString() << std::endl;
 
 				std::ifstream input(template_file, std::ios_base::binary);
 				if (!input.is_open())
@@ -212,8 +216,7 @@ namespace benchmarks
 			}
 
 			auto it_msg = mq.ReceiveMessage<IterationsCountMessage>();
-			OperationTimesMap operation_times;
-			MemoryConsumptionMap memory_consumption;
+			BenchmarkResult r;
 			for (int64_t i = 0; i < count; ++i)
 			{
 				std::stringstream cmd;
@@ -222,30 +225,13 @@ namespace benchmarks
 					cmd << " " << p;
 
 				InvokeSubprocess(cmd.str());
-				auto r_msg = mq.ReceiveMessage<ResultsMessage>();
-
-				for (auto p : r_msg->GetOperationTimes())
-				{
-					auto it = operation_times.find(p.first);
-					if (it == operation_times.end())
-						operation_times.insert({p.first, p.second});
-					else
-						it->second = std::min(it->second, p.second);
-				}
-
-				for (auto p : r_msg->GetMemoryConsumption())
-				{
-					auto it = memory_consumption.find(p.first);
-					if (it == memory_consumption.end())
-						memory_consumption.insert({p.first, p.second});
-					else
-						it->second = std::min(it->second, p.second);
-				}
+				auto r_msg = mq.ReceiveMessage<BenchmarkResultMessage>();
+				r.Update(r_msg->GetResult());
 			}
 
-			for (auto p : operation_times)
+			for (auto p : r.GetOperationTimes())
 				s_logger.Info() << p.first << ": " << p.second << " ns";
-			for (auto p : memory_consumption)
+			for (auto p : r.GetMemoryConsumption())
 				s_logger.Info() << p.first << ": " << p.second << " bytes";
 
 			return 0;

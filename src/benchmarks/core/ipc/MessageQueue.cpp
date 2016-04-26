@@ -19,7 +19,7 @@
 
 BOOST_CLASS_EXPORT_IMPLEMENT(benchmarks::MessageBase);
 BOOST_CLASS_EXPORT_IMPLEMENT(benchmarks::IterationsCountMessage);
-BOOST_CLASS_EXPORT_IMPLEMENT(benchmarks::ResultsMessage);
+BOOST_CLASS_EXPORT_IMPLEMENT(benchmarks::BenchmarkResultMessage);
 BOOST_CLASS_EXPORT_IMPLEMENT(benchmarks::ExceptionMessage);
 namespace benchmarks
 {

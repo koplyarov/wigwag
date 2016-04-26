@@ -11,7 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <benchmarks/core/BenchmarkId.hpp>
+#include <benchmarks/core/detail/MeasurementId.hpp>
 
 #include <boost/phoenix/phoenix.hpp>
 #include <boost/spirit/include/qi.hpp>
@@ -21,23 +21,6 @@ namespace benchmarks
 {
 	class ReportTemplateProcessor
 	{
-	public:
-		class MeasurementId
-		{
-		private:
-			BenchmarkId		_benchmarkId;
-			std::string		_measurementLocalId;
-
-		public:
-			MeasurementId() { }
-			MeasurementId(BenchmarkId benchmarkId, std::string measurementLocalId) : _benchmarkId(benchmarkId), _measurementLocalId(measurementLocalId) { }
-
-			BenchmarkId GetBenchmarkId() const { return _benchmarkId; }
-			std::string GetMeasurementLocalId() const { return _measurementLocalId; }
-
-			std::string ToString() const { return _benchmarkId.ToString() + "[" + _measurementLocalId + "]"; }
-		};
-
 	private:
 		template < typename Iterator_, typename Printer_, typename MacroProcessor_ >
 		struct ReportGrammar : boost::spirit::qi::grammar<Iterator_>
