@@ -58,7 +58,7 @@ namespace benchmarks
 	BENCHMARKS_LOGGER(BenchmarkApp);
 
 	BenchmarkApp::BenchmarkApp(const BenchmarkSuite& suite)
-		: _suite(suite)
+		: _suite(suite), _queueName("wigwagMessageQueue"), _verbosity(1), _repeatCount(1)
 	{ }
 
 
@@ -75,21 +75,23 @@ namespace benchmarks
 		{
 			using namespace boost::program_options;
 
-			std::string subtask, queue_name = "wigwagMessageQueue", benchmark, template_file, output_file;
-			int64_t num_iterations = 0, count = 1, verbosity = 1;
+			_executableName = argv[0];
+
+			std::string subtask, benchmark, template_file, output_file;
+			int64_t num_iterations = 0;
 			std::vector<std::string> params_vec;
 
 			options_description od;
 			od.add_options()
 				("help", "Show help")
-				("verbosity,v", value<int64_t>(&verbosity), "Verbosity in range [0..3], default: 1")
-				("count,c", value<int64_t>(&count), "Measurements count, default: 1")
+				("verbosity,v", value<int64_t>(&_verbosity), "Verbosity in range [0..3], default: 1")
+				("count,c", value<int64_t>(&_repeatCount), "Measurements count, default: 1")
 				("benchmark,b", value<std::string>(&benchmark), "Benchmark id")
 				("params", value<std::vector<std::string>>(&params_vec)->multitoken(), "Benchmark parameters")
 				("template,t", value<std::string>(&template_file), "Template file")
 				("output,o", value<std::string>(&output_file), "Output file")
 				("subtask", value<std::string>(&subtask), "Internal option")
-				("queue", value<std::string>(&queue_name), "Internal option")
+				("queue", value<std::string>(&_queueName), "Internal option")
 				("iterations", value<int64_t>(&num_iterations), "Internal option")
 				;
 
@@ -108,13 +110,13 @@ namespace benchmarks
 				return 0;
 			}
 
-			switch (verbosity)
+			switch (_verbosity)
 			{
 			case 0: Logger::SetLogLevel(LogLevel::Error); break;
 			case 1: Logger::SetLogLevel(LogLevel::Warning); break;
 			case 2: Logger::SetLogLevel(LogLevel::Info); break;
 			case 3: Logger::SetLogLevel(LogLevel::Debug); break;
-			default: s_logger.Warning() << "Unexpected verbosity value: " << verbosity; break;
+			default: s_logger.Warning() << "Unexpected verbosity value: " << _verbosity; break;
 			}
 
 			if (!benchmark.empty())
@@ -123,6 +125,7 @@ namespace benchmarks
 				boost::smatch m;
 				if (!boost::regex_match(benchmark, m, benchmark_re))
 					throw CmdLineException("Could not parse benchmark id!");
+				BenchmarkId benchmark_id{m[1], m[2], m[3]};
 
 				boost::regex param_re(R"(([^.]+):([^.]+))");
 				std::map<std::string, SerializedParam> params;
@@ -136,29 +139,35 @@ namespace benchmarks
 
 				if (subtask == "measureIterationsCount")
 				{
-					MessageQueue mq(queue_name);
-					mq.SendMessage(std::make_shared<IterationsCountMessage>(_suite.MeasureIterationsCount({m[1], m[2], m[3]}, params)));
+					MessageQueue mq(_queueName);
+					mq.SendMessage(std::make_shared<IterationsCountMessage>(_suite.MeasureIterationsCount(benchmark_id, params)));
 					return 0;
 				}
 				else if (subtask == "invokeBenchmark")
 				{
 					if (vm.count("iterations") == 0)
 						throw CmdLineException("Number of iterations is not specified!");
-					MessageQueue mq(queue_name);
+					MessageQueue mq(_queueName);
 					SetMaxThreadPriority();
 					auto results_reporter = std::make_shared<BenchmarksResultsReporter>();
-					_suite.InvokeBenchmark(num_iterations, {m[1], m[2], m[3]}, params, results_reporter);
+					_suite.InvokeBenchmark(num_iterations, benchmark_id, params, results_reporter);
 					mq.SendMessage(std::make_shared<BenchmarkResultMessage>(BenchmarkResult(results_reporter->GetOperationTimes(), results_reporter->GetMemoryConsumption())));
 					return 0;
 				}
 				else if (!subtask.empty())
 					throw CmdLineException("Unknown subtask!");
+
+				auto r = RunBenchmark(benchmark_id, params_vec);
+				for (auto p : r.GetOperationTimes())
+					s_logger.Info() << p.first << ": " << p.second << " ns";
+				for (auto p : r.GetMemoryConsumption())
+					s_logger.Info() << p.first << ": " << p.second << " bytes";
 			}
 			else
 			{
 				using namespace boost::spirit;
 
-				std::set<BenchmarkId> requested_benchmarks;
+				std::map<BenchmarkId, BenchmarkResult> requested_benchmarks;
 
 				{
 					std::ifstream input(template_file, std::ios_base::binary);
@@ -171,15 +180,15 @@ namespace benchmarks
 							[&](char c) { },
 							[&](const MeasurementId& id, boost::optional<MeasurementId> baselineId)
 							{
-								requested_benchmarks.insert(id.GetBenchmarkId());
+								requested_benchmarks.insert({id.GetBenchmarkId(), {}});
 								if (baselineId)
-									requested_benchmarks.insert(baselineId->GetBenchmarkId());
+									requested_benchmarks.insert({baselineId->GetBenchmarkId(), {}});
 							}
 						);
 				}
 
-				for (auto&& e : requested_benchmarks)
-					std::cerr << e.ToString() << std::endl;
+				for (auto&& p : requested_benchmarks)
+					p.second = RunBenchmark(p.first, {});
 
 				std::ifstream input(template_file, std::ios_base::binary);
 				if (!input.is_open())
@@ -189,50 +198,33 @@ namespace benchmarks
 				if (!output.is_open())
 					throw std::runtime_error("Could not open " + output_file);
 
+				auto get_measurement = [&](const MeasurementId& id) -> double
+					{
+						auto&& r = requested_benchmarks.at(id.GetBenchmarkId());
+
+						auto it1 = r.GetOperationTimes().find(id.GetMeasurementLocalId());
+						if (it1 != r.GetOperationTimes().end())
+							return it1->second;
+
+						auto it2 = r.GetMemoryConsumption().find(id.GetMeasurementLocalId());
+						if (it2 == r.GetMemoryConsumption().end())
+							throw std::runtime_error("Could not find a mesaurement with id " + id.ToString());
+						return it2->second;
+					};
+
 				ReportTemplateProcessor::Process(
 						make_default_multi_pass(std::istreambuf_iterator<char>(input)),
 						make_default_multi_pass(std::istreambuf_iterator<char>()),
 						[&](char c) { output << c; },
 						[&](const MeasurementId& id, boost::optional<MeasurementId> baselineId)
 						{
-							output << "<<<" << id.ToString() << ">>>";
+							auto val = get_measurement(id);
 							if (baselineId)
-								output << "@" << baselineId->ToString() << "@";
+								val -= get_measurement(*baselineId);
+							output << val;
 						}
 					);
-				return 0;
 			}
-
-			MessageQueue mq(queue_name);
-			BOOST_SCOPE_EXIT_ALL(&) { MessageQueue::Remove(queue_name); };
-
-			{
-				std::stringstream cmd;
-				cmd << argv[0] << " --subtask measureIterationsCount --queue " << queue_name << " --verbosity " << verbosity << " " << benchmark;
-				for (auto&& p : params_vec)
-					cmd << " " << p;
-
-				InvokeSubprocess(cmd.str());
-			}
-
-			auto it_msg = mq.ReceiveMessage<IterationsCountMessage>();
-			BenchmarkResult r;
-			for (int64_t i = 0; i < count; ++i)
-			{
-				std::stringstream cmd;
-				cmd << argv[0] << " --subtask invokeBenchmark --queue " << queue_name << " --verbosity " << verbosity << " --iterations " << it_msg->GetCount() << " " << benchmark;
-				for (auto&& p : params_vec)
-					cmd << " " << p;
-
-				InvokeSubprocess(cmd.str());
-				auto r_msg = mq.ReceiveMessage<BenchmarkResultMessage>();
-				r.Update(r_msg->GetResult());
-			}
-
-			for (auto p : r.GetOperationTimes())
-				s_logger.Info() << p.first << ": " << p.second << " ns";
-			for (auto p : r.GetMemoryConsumption())
-				s_logger.Info() << p.first << ": " << p.second << " bytes";
 
 			return 0;
 		}
@@ -246,6 +238,40 @@ namespace benchmarks
 			s_logger.Error() << "Uncaught exception: " << ex.what();
 			return 1;
 		}
+	}
+
+
+	BenchmarkResult BenchmarkApp::RunBenchmark(const BenchmarkId& id, const std::vector<std::string>& paramsVec) const
+	{
+		std::string benchmark = id.ToString();
+
+		MessageQueue mq(_queueName);
+		BOOST_SCOPE_EXIT_ALL(&) { MessageQueue::Remove(_queueName); };
+
+		{
+			std::stringstream cmd;
+			cmd << _executableName << " --subtask measureIterationsCount --queue " << _queueName << " --verbosity " << _verbosity << " " << benchmark;
+			for (auto&& p : paramsVec)
+				cmd << " " << p;
+
+			InvokeSubprocess(cmd.str());
+		}
+
+		auto it_msg = mq.ReceiveMessage<IterationsCountMessage>();
+		BenchmarkResult r;
+		for (int64_t i = 0; i < _repeatCount; ++i)
+		{
+			std::stringstream cmd;
+			cmd << _executableName << " --subtask invokeBenchmark --queue " << _queueName << " --verbosity " << _verbosity << " --iterations " << it_msg->GetCount() << " " << benchmark;
+			for (auto&& p : paramsVec)
+				cmd << " " << p;
+
+			InvokeSubprocess(cmd.str());
+			auto r_msg = mq.ReceiveMessage<BenchmarkResultMessage>();
+			r.Update(r_msg->GetResult());
+		}
+
+		return r;
 	}
 
 

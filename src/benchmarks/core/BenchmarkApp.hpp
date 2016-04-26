@@ -12,6 +12,7 @@
 
 
 #include <benchmarks/core/BenchmarkSuite.hpp>
+#include <benchmarks/core/detail/BenchmarkResult.hpp>
 #include <benchmarks/core/utils/Logger.hpp>
 
 
@@ -23,6 +24,10 @@ namespace benchmarks
 	private:
 		static NamedLogger	s_logger;
 		BenchmarkSuite		_suite;
+		std::string			_executableName;
+		std::string			_queueName;
+		int64_t				_verbosity;
+		int64_t				_repeatCount;
 
 	public:
 		BenchmarkApp(const BenchmarkSuite& suite);
@@ -30,6 +35,7 @@ namespace benchmarks
 		int Run(int argc, char* argv[]);
 
 	private:
+		BenchmarkResult RunBenchmark(const BenchmarkId& id, const std::vector<std::string>& paramsVec) const;
 		static void InvokeSubprocess(const std::string& cmd);
 	};
 
