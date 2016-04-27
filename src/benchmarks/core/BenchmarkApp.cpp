@@ -77,7 +77,7 @@ namespace benchmarks
 
 			_executableName = argv[0];
 
-			std::string subtask, benchmark, template_file, output_file;
+			std::string subtask, benchmark, template_filename, output_filename;
 			int64_t num_iterations = 0;
 			std::vector<std::string> params_vec;
 
@@ -88,8 +88,8 @@ namespace benchmarks
 				("count,c", value<int64_t>(&_repeatCount), "Measurements count, default: 1")
 				("benchmark,b", value<std::string>(&benchmark), "Benchmark id")
 				("params", value<std::vector<std::string>>(&params_vec)->multitoken(), "Benchmark parameters")
-				("template,t", value<std::string>(&template_file), "Template file")
-				("output,o", value<std::string>(&output_file), "Output file")
+				("template,t", value<std::string>(&template_filename), "Template file")
+				("output,o", value<std::string>(&output_filename), "Output file")
 				("subtask", value<std::string>(&subtask), "Internal option")
 				("queue", value<std::string>(&_queueName), "Internal option")
 				("iterations", value<int64_t>(&num_iterations), "Internal option")
@@ -104,7 +104,7 @@ namespace benchmarks
 			store(parsed, vm);
 			notify(vm);
 
-			if ((benchmark.empty() && (template_file.empty() || output_file.empty())) || vm.count("help"))
+			if ((benchmark.empty() && (template_filename.empty() || output_filename.empty())) || vm.count("help"))
 			{
 				std::cerr << boost::lexical_cast<std::string>(od) << std::endl;
 				return 0;
@@ -171,12 +171,12 @@ namespace benchmarks
 				std::map<ParameterizedBenchmarkId, BenchmarkResult> requested_benchmarks;
 
 				{
-					std::ifstream input(template_file, std::ios_base::binary);
-					if (!input.is_open())
-						throw std::runtime_error("Could not open " + template_file);
+					std::ifstream input_stream(template_filename, std::ios_base::binary);
+					if (!input_stream.is_open())
+						throw std::runtime_error("Could not open " + template_filename);
 
 					ReportTemplateProcessor::Process(
-							make_default_multi_pass(std::istreambuf_iterator<char>(input)),
+							make_default_multi_pass(std::istreambuf_iterator<char>(input_stream)),
 							make_default_multi_pass(std::istreambuf_iterator<char>()),
 							[&](char c) { },
 							[&](const MeasurementId& id, boost::optional<MeasurementId> baselineId)
@@ -195,13 +195,19 @@ namespace benchmarks
 					p.second = RunBenchmark(p.first);
 				}
 
-				std::ifstream input(template_file, std::ios_base::binary);
-				if (!input.is_open())
-					throw std::runtime_error("Could not open " + template_file);
+				std::ifstream input_stream(template_filename, std::ios_base::binary);
+				if (!input_stream.is_open())
+					throw std::runtime_error("Could not open " + template_filename);
 
-				std::ofstream output(output_file, std::ios_base::binary);
-				if (!output.is_open())
-					throw std::runtime_error("Could not open " + output_file);
+				std::unique_ptr<std::ofstream> output_file;
+				std::ostream* output_stream = &std::cout;
+				if (output_filename != "-")
+				{
+					output_file.reset(new std::ofstream (output_filename, std::ios_base::binary));
+					if (!output_file->is_open())
+						throw std::runtime_error("Could not open " + output_filename);
+					output_stream = output_file.get();
+				}
 
 				auto get_measurement = [&](const MeasurementId& id) -> double
 					{
@@ -218,15 +224,15 @@ namespace benchmarks
 					};
 
 				ReportTemplateProcessor::Process(
-						make_default_multi_pass(std::istreambuf_iterator<char>(input)),
+						make_default_multi_pass(std::istreambuf_iterator<char>(input_stream)),
 						make_default_multi_pass(std::istreambuf_iterator<char>()),
-						[&](char c) { output << c; },
+						[&](char c) { *output_stream << c; },
 						[&](const MeasurementId& id, boost::optional<MeasurementId> baselineId)
 						{
 							auto val = get_measurement(id);
 							if (baselineId)
 								val -= get_measurement(*baselineId);
-							output << val;
+							*output_stream << val;
 						}
 					);
 			}
