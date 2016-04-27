@@ -149,6 +149,7 @@ namespace benchmarks
 			throw std::runtime_error("Benchmark " + id.GetId().ToString() + " not found!");
 
 		int64_t total_mem = Memory::GetTotalPhys();
+		int64_t baseline_rss = Memory::GetRss();
 		int64_t num_iterations = 1;
 		while (true)
 		{
@@ -158,8 +159,8 @@ namespace benchmarks
 			using DurationsMapPair = PreMeasureBenchmarkContext::DurationsMap::value_type;
 			auto& dm = ctx.GetDurationsMap();
 			auto minmax_element = std::minmax_element(dm.begin(), dm.end(), [](const DurationsMapPair& l, const DurationsMapPair& r) { return l.second < r.second; } );
-			auto min_duration = minmax_element.first->second;
-			auto max_duration = minmax_element.second->second;
+			auto min_duration = minmax_element.first == dm.end() ? nanoseconds() : minmax_element.first->second;
+			auto max_duration = minmax_element.second == dm.end() ? nanoseconds() : minmax_element.second->second;
 
 			auto max_rss = ctx.GetMaxRss();
 
@@ -187,7 +188,8 @@ namespace benchmarks
 				break;
 			}
 
-			if (next_min_duration > milliseconds(100))
+			if ((dm.empty() || next_min_duration > milliseconds(100)) &&
+				(max_rss == 0 || next_max_rss > baseline_rss * 10))
 			{
 				num_iterations *= multiplier;
 				break;
