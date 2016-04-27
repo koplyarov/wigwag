@@ -33,7 +33,9 @@ namespace benchmarks
 			: BenchmarksClass("signals")
 		{
 			AddBenchmark<>("create", &SignalsBenchmarks::Create);
+			AddBenchmark<>("handlerSize", &SignalsBenchmarks::HandlerSize);
 			AddBenchmark<int64_t>("invoke", &SignalsBenchmarks::Invoke, {"numSlots"});
+			AddBenchmark<int64_t>("connect", &SignalsBenchmarks::Connect, {"numSlots"});
 		}
 
 	private:
@@ -49,7 +51,7 @@ namespace benchmarks
 					v[i].Construct();
 			}
 
-			context.MeasureMemory("object", n);
+			context.MeasureMemory("signal", n);
 
 			{
 				auto op = context.Profile("destroying", n);
@@ -58,6 +60,20 @@ namespace benchmarks
 			}
 
 			delete[] v;
+		}
+
+		static void HandlerSize(BenchmarkContext& context)
+		{
+			HandlerType handler = SignalsDesc_::make_handler();
+			SignalType s;
+			StorageFor<ConnectionType> *c = new StorageFor<ConnectionType>[(size_t)context.GetIterationsCount()];
+			for (int64_t i = 0; i < context.GetIterationsCount(); ++i)
+				c[i].Construct(s.connect(handler));
+
+			context.MeasureMemory("handler", context.GetIterationsCount());
+
+			for (int64_t i = 0; i < context.GetIterationsCount(); ++i)
+				c[i].Destruct();
 		}
 
 		static void Invoke(BenchmarkContext& context, int64_t numSlots)
@@ -79,6 +95,30 @@ namespace benchmarks
 
 			for (int64_t i = 0; i < numSlots; ++i)
 				c[i].Destruct();
+
+			delete[] c;
+		}
+
+		static void Connect(BenchmarkContext& context, int64_t numSlots)
+		{
+			const auto n = context.GetIterationsCount();
+
+			HandlerType handler = SignalsDesc_::make_handler();
+			SignalType *s = new SignalType[(size_t)n];
+			StorageFor<ConnectionType> *c = new StorageFor<ConnectionType>[(size_t)(numSlots * n)];
+
+			{
+				auto op = context.Profile("connecting", numSlots * n);
+				for (int64_t j = 0; j < n; ++j)
+					for (int64_t i = 0; i < numSlots; ++i)
+						c[i + j * numSlots].Construct(s[j].connect(handler));
+			}
+
+			{
+				auto op = context.Profile("disconnecting", numSlots * n);
+				for (int64_t i = 0; i < numSlots * n; ++i)
+					c[i].Destruct();
+			}
 
 			delete[] c;
 		}
