@@ -24,23 +24,24 @@ namespace benchmarks
 	template < typename SignalsDesc_ >
 	class SignalsBenchmarks : public BenchmarksClass
 	{
+		using SignalType = typename SignalsDesc_::signal_type;
+		using HandlerType = typename SignalsDesc_::handler_type;
+		using ConnectionType = typename SignalsDesc_::connection_type;
+
 	public:
 		SignalsBenchmarks()
 			: BenchmarksClass("signals")
 		{
 			AddBenchmark<>("create", &SignalsBenchmarks::Create);
-			AddBenchmark<int64_t>("connectInvoke", &SignalsBenchmarks::ConnectInvoke, {"numSlots"});
-			//AddBenchmark("connect_disconnect", &SignalsBenchmarks::ConnectDisconnect);
+			AddBenchmark<int64_t>("invoke", &SignalsBenchmarks::Invoke, {"numSlots"});
 		}
 
 	private:
 		static void Create(BenchmarkContext& context)
 		{
-			using signal_type = typename SignalsDesc_::signal_type;
-
 			const auto n = context.GetIterationsCount();
 
-			StorageFor<signal_type> *v = new StorageFor<signal_type>[(size_t)n];
+			StorageFor<SignalType> *v = new StorageFor<SignalType>[(size_t)n];
 
 			{
 				auto op = context.Profile("creating", n);
@@ -59,24 +60,16 @@ namespace benchmarks
 			delete[] v;
 		}
 
-		static void ConnectInvoke(BenchmarkContext& context, int64_t numSlots)
+		static void Invoke(BenchmarkContext& context, int64_t numSlots)
 		{
-			using signal_type = typename SignalsDesc_::signal_type;
-			using handler_type = typename SignalsDesc_::handler_type;
-			using connection_type = typename SignalsDesc_::connection_type;
-
 			const auto n = context.GetIterationsCount();
-			handler_type handler = SignalsDesc_::make_handler();
-			signal_type s;
-			StorageFor<connection_type> *c = new StorageFor<connection_type>[(size_t)numSlots];
 
-			{
-				auto op = context.Profile("connecting", numSlots);
-				for (int64_t i = 0; i < numSlots; ++i)
-					c[i].Construct(s.connect(handler));
-			}
+			HandlerType handler = SignalsDesc_::make_handler();
+			SignalType s;
+			StorageFor<ConnectionType> *c = new StorageFor<ConnectionType>[(size_t)numSlots];
 
-			context.MeasureMemory("connection", numSlots);
+			for (int64_t i = 0; i < numSlots; ++i)
+				c[i].Construct(s.connect(handler));
 
 			{
 				auto op = context.Profile("invoking", numSlots * n);
@@ -84,17 +77,11 @@ namespace benchmarks
 					s();
 			}
 
-			{
-				auto op = context.Profile("disconnecting", numSlots);
-				for (int64_t i = 0; i < numSlots; ++i)
-					c[i].Destruct();
-			}
+			for (int64_t i = 0; i < numSlots; ++i)
+				c[i].Destruct();
 
 			delete[] c;
 		}
-
-		//static void ConnectDisconnect(int64_t num_slots, int64_t num_iterations)
-		//{ throw std::runtime_error("connect_disconnect"); }
 	};
 
 }
