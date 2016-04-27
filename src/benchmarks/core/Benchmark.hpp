@@ -25,6 +25,7 @@ namespace benchmarks
 
 	using SerializedParam = std::string;
 	using SerializedParamsMap = std::map<std::string, SerializedParam>;
+	using SerializedParamsPair = std::pair<std::string, SerializedParam>;
 
 	namespace detail
 	{

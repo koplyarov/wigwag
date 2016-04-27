@@ -1,5 +1,5 @@
-#ifndef BENCHMARKS_CORE_UTILS_REPORTTEMPLATEPROCESSOR_HPP
-#define BENCHMARKS_CORE_UTILS_REPORTTEMPLATEPROCESSOR_HPP
+#ifndef BENCHMARKS_CORE_DETAIL_REPORTTEMPLATEPROCESSOR_HPP
+#define BENCHMARKS_CORE_DETAIL_REPORTTEMPLATEPROCESSOR_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -12,6 +12,7 @@
 
 
 #include <benchmarks/core/detail/MeasurementId.hpp>
+#include <benchmarks/core/detail/ParameterPair.hpp>
 
 #include <boost/phoenix/phoenix.hpp>
 #include <boost/spirit/include/qi.hpp>
@@ -19,19 +20,22 @@
 
 namespace benchmarks
 {
+
 	class ReportTemplateProcessor
 	{
 	private:
 		template < typename Iterator_, typename Printer_, typename MacroProcessor_ >
 		struct ReportGrammar : boost::spirit::qi::grammar<Iterator_>
 		{
-			Printer_											_printer;
-			MacroProcessor_										_macroProcessor;
-			boost::spirit::qi::rule<Iterator_>					_text, _rawTextBlock, _macro;
-			boost::spirit::qi::rule<Iterator_, MeasurementId()>	_measurementId;
-			boost::spirit::qi::rule<Iterator_, BenchmarkId()>	_benchmarkId;
-			boost::spirit::qi::rule<Iterator_, std::string()>	_measurementLocalId;
-			boost::spirit::qi::rule<Iterator_, std::string()>	_identifier;
+			Printer_														_printer;
+			MacroProcessor_													_macroProcessor;
+			boost::spirit::qi::rule<Iterator_>								_text, _rawTextBlock, _macro;
+			boost::spirit::qi::rule<Iterator_, MeasurementId()>				_measurementId;
+			boost::spirit::qi::rule<Iterator_, BenchmarkId()>				_benchmarkId;
+			boost::spirit::qi::rule<Iterator_, std::string()>				_measurementLocalId;
+			boost::spirit::qi::rule<Iterator_, std::string()>				_identifier;
+			boost::spirit::qi::rule<Iterator_, SerializedParamsMap()>		_paramList;
+			boost::spirit::qi::rule<Iterator_, SerializedParamsPair()>		_param;
 
 			ReportGrammar(const Printer_& printer, const MacroProcessor_& macroProcessor)
 				: ReportGrammar::base_type(_text), _printer(printer), _macroProcessor(macroProcessor)
@@ -40,15 +44,18 @@ namespace benchmarks
 				using namespace boost::phoenix;
 
 				_text					= _rawTextBlock >> -( _macro >> _text );
-				_rawTextBlock			= *( !lit('$') >> char_[_printer] );
+				_rawTextBlock			= *(char_[_printer] - '$');
 
-				_macro					= lit("${") >> (_measurementId >> -(lit('-') >> _measurementId))[ bind(_macroProcessor, _1, _2) ] >> lit('}');
+				_macro					= "${" >> (_measurementId >> -('-' >> _measurementId))[ bind(_macroProcessor, _1, _2) ] >> '}';
 
-				_measurementId			= (_benchmarkId >> lit("[") >> _measurementLocalId >> lit(']'))[ _val = construct<MeasurementId>(_1, _2) ];
+				_measurementId			= (_benchmarkId >> -_paramList >> '[' >> _measurementLocalId >> ']')[ _val = construct<MeasurementId>(construct<ParameterizedBenchmarkId>(_1, *_2), _3) ];
 				_benchmarkId			= (_identifier >> '.' >> _identifier >> '.' >> _identifier)[ _val = construct<BenchmarkId>(_1, _2, _3) ];
 				_measurementLocalId		= _identifier[ _val = _1 ];
 
-				_identifier			= as_string[(alpha | char_('_')) >> *(alnum | char_('_'))];
+				_paramList				= '(' >> as<SerializedParamsMap>()[(_param % ',')][ _val = _1 ] >> ')';
+				_param					= (_identifier >> ':' >> as_string[+(char_ - lit(',') - lit(')'))])[ _val = construct<SerializedParamsPair>(_1, _2) ];
+
+				_identifier				= as_string[(alpha | char_('_')) >> *(alnum | char_('_'))];
 			}
 		};
 

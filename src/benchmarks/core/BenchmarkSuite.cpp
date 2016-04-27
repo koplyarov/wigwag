@@ -140,20 +140,20 @@ namespace benchmarks
 
 	BENCHMARKS_LOGGER(BenchmarkSuite);
 
-	int64_t BenchmarkSuite::MeasureIterationsCount(const BenchmarkId& id, const SerializedParamsMap& serializedParams)
+	int64_t BenchmarkSuite::MeasureIterationsCount(const ParameterizedBenchmarkId& id)
 	{
 		const int multiplier = 2;
 
-		auto it = _benchmarks.find(id);
+		auto it = _benchmarks.find(id.GetId());
 		if (it == _benchmarks.end())
-			throw std::runtime_error("Benchmark " + id.ToString() + " not found!");
+			throw std::runtime_error("Benchmark " + id.GetId().ToString() + " not found!");
 
 		int64_t total_mem = Memory::GetTotalPhys();
 		int64_t num_iterations = 1;
 		while (true)
 		{
 			PreMeasureBenchmarkContext ctx(num_iterations);
-			it->second->Perform(ctx, serializedParams);
+			it->second->Perform(ctx, id.GetParams());
 
 			using DurationsMapPair = PreMeasureBenchmarkContext::DurationsMap::value_type;
 			auto& dm = ctx.GetDurationsMap();
@@ -200,16 +200,16 @@ namespace benchmarks
 	}
 
 
-	void BenchmarkSuite::InvokeBenchmark(int64_t iterations, const BenchmarkId& id, const SerializedParamsMap& serializedParams, const IBenchmarksResultsReporterPtr& resultsReporter)
+	void BenchmarkSuite::InvokeBenchmark(int64_t iterations, const ParameterizedBenchmarkId& id, const IBenchmarksResultsReporterPtr& resultsReporter)
 	{
 		s_logger.Debug() << "iterations: " << iterations;
 
-		auto it = _benchmarks.find(id);
+		auto it = _benchmarks.find(id.GetId());
 		if (it == _benchmarks.end())
-			throw std::runtime_error("Benchmark " + id.ToString() + " not found!");
+			throw std::runtime_error("Benchmark " + id.GetId().ToString() + " not found!");
 
 		MeasureBenchmarkContext ctx(iterations, resultsReporter);
-		it->second->Perform(ctx, serializedParams);
+		it->second->Perform(ctx, id.GetParams());
 	}
 
 }

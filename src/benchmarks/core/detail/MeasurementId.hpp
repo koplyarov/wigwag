@@ -11,7 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <benchmarks/core/BenchmarkId.hpp>
+#include <benchmarks/core/detail/ParameterizedBenchmarkId.hpp>
 
 
 namespace benchmarks
@@ -20,17 +20,21 @@ namespace benchmarks
 	class MeasurementId
 	{
 	private:
-		BenchmarkId		_benchmarkId;
-		std::string		_measurementLocalId;
+		ParameterizedBenchmarkId	_benchmarkId;
+		std::string					_measurementLocalId;
 
 	public:
 		MeasurementId() { }
-		MeasurementId(BenchmarkId benchmarkId, std::string measurementLocalId) : _benchmarkId(benchmarkId), _measurementLocalId(measurementLocalId) { }
 
-		BenchmarkId GetBenchmarkId() const { return _benchmarkId; }
+		MeasurementId(ParameterizedBenchmarkId benchmarkId, std::string measurementLocalId)
+			: _benchmarkId(benchmarkId), _measurementLocalId(measurementLocalId)
+		{ }
+
+		ParameterizedBenchmarkId GetBenchmarkId() const { return _benchmarkId; }
 		std::string GetMeasurementLocalId() const { return _measurementLocalId; }
 
-		std::string ToString() const { return _benchmarkId.ToString() + "[" + _measurementLocalId + "]"; }
+		std::string ToString() const
+		{ return _benchmarkId.ToString() + "[" + _measurementLocalId + "]"; }
 
 		bool operator < (const MeasurementId& other) const
 		{ return std::tie(_benchmarkId, _measurementLocalId) < std::tie(other._benchmarkId, other._measurementLocalId); }

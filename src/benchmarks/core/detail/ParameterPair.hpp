@@ -1,5 +1,5 @@
-#ifndef BENCHMARKS_CORE_BENCHMARKAPP_HPP
-#define BENCHMARKS_CORE_BENCHMARKAPP_HPP
+#ifndef BENCHMARKS_CORE_DETAIL_PARAMETERPAIR_HPP
+#define BENCHMARKS_CORE_DETAIL_PARAMETERPAIR_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,32 +11,24 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <benchmarks/core/BenchmarkSuite.hpp>
-#include <benchmarks/core/detail/BenchmarkResult.hpp>
-#include <benchmarks/core/utils/Logger.hpp>
+#include <string>
 
 
 namespace benchmarks
 {
 
-	class BenchmarkApp
+	class ParameterPair
 	{
 	private:
-		static NamedLogger	s_logger;
-		BenchmarkSuite		_suite;
-		std::string			_executableName;
-		std::string			_queueName;
-		int64_t				_verbosity;
-		int64_t				_repeatCount;
+		std::string		_name;
+		std::string		_value;
 
 	public:
-		BenchmarkApp(const BenchmarkSuite& suite);
+		ParameterPair() { }
+		ParameterPair(std::string name, std::string value) : _name(std::move(name)), _value(std::move(value)) { }
 
-		int Run(int argc, char* argv[]);
-
-	private:
-		BenchmarkResult RunBenchmark(const ParameterizedBenchmarkId& id) const;
-		static void InvokeSubprocess(const std::string& cmd);
+		std::string GetName() const { return _name; }
+		std::string GetValue() const { return _value; }
 	};
 
 }

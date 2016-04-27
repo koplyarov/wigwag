@@ -12,7 +12,7 @@
 
 
 #include <benchmarks/core/Benchmark.hpp>
-#include <benchmarks/core/BenchmarkId.hpp>
+#include <benchmarks/core/detail/ParameterizedBenchmarkId.hpp>
 #include <benchmarks/core/utils/Logger.hpp>
 
 #include <map>
@@ -76,8 +76,8 @@ namespace benchmarks
 		void RegisterBenchmarks()
 		{ detail::BenchmarksClassRegistrar<BenchmarksClass_, ObjectsDesc_...>::Register(_benchmarks); }
 
-		int64_t MeasureIterationsCount(const BenchmarkId& id, const SerializedParamsMap& serializedParams);
-		void InvokeBenchmark(int64_t iterations, const BenchmarkId& id, const SerializedParamsMap& serializedParams, const IBenchmarksResultsReporterPtr& resultsReporter);
+		int64_t MeasureIterationsCount(const ParameterizedBenchmarkId& id);
+		void InvokeBenchmark(int64_t iterations, const ParameterizedBenchmarkId& id, const IBenchmarksResultsReporterPtr& resultsReporter);
 	};
 }
 

@@ -10,8 +10,8 @@
 
 #include <benchmarks/core/BenchmarkApp.hpp>
 
+#include <benchmarks/core/detail/ReportTemplateProcessor.hpp>
 #include <benchmarks/core/ipc/MessageQueue.hpp>
-#include <benchmarks/core/utils/ReportTemplateProcessor.hpp>
 #include <benchmarks/core/utils/ThreadPriority.hpp>
 
 #include <boost/program_options.hpp>
@@ -125,7 +125,6 @@ namespace benchmarks
 				boost::smatch m;
 				if (!boost::regex_match(benchmark, m, benchmark_re))
 					throw CmdLineException("Could not parse benchmark id!");
-				BenchmarkId benchmark_id{m[1], m[2], m[3]};
 
 				boost::regex param_re(R"(([^.]+):([^.]+))");
 				std::map<std::string, SerializedParam> params;
@@ -137,10 +136,12 @@ namespace benchmarks
 					params[m[1]] = m[2];
 				}
 
+				ParameterizedBenchmarkId benchmark_id({m[1], m[2], m[3]}, params);
+
 				if (subtask == "measureIterationsCount")
 				{
 					MessageQueue mq(_queueName);
-					mq.SendMessage(std::make_shared<IterationsCountMessage>(_suite.MeasureIterationsCount(benchmark_id, params)));
+					mq.SendMessage(std::make_shared<IterationsCountMessage>(_suite.MeasureIterationsCount(benchmark_id)));
 					return 0;
 				}
 				else if (subtask == "invokeBenchmark")
@@ -150,14 +151,14 @@ namespace benchmarks
 					MessageQueue mq(_queueName);
 					SetMaxThreadPriority();
 					auto results_reporter = std::make_shared<BenchmarksResultsReporter>();
-					_suite.InvokeBenchmark(num_iterations, benchmark_id, params, results_reporter);
+					_suite.InvokeBenchmark(num_iterations, benchmark_id, results_reporter);
 					mq.SendMessage(std::make_shared<BenchmarkResultMessage>(BenchmarkResult(results_reporter->GetOperationTimes(), results_reporter->GetMemoryConsumption())));
 					return 0;
 				}
 				else if (!subtask.empty())
 					throw CmdLineException("Unknown subtask!");
 
-				auto r = RunBenchmark(benchmark_id, params_vec);
+				auto r = RunBenchmark(benchmark_id);
 				for (auto p : r.GetOperationTimes())
 					s_logger.Info() << p.first << ": " << p.second << " ns";
 				for (auto p : r.GetMemoryConsumption())
@@ -167,7 +168,7 @@ namespace benchmarks
 			{
 				using namespace boost::spirit;
 
-				std::map<BenchmarkId, BenchmarkResult> requested_benchmarks;
+				std::map<ParameterizedBenchmarkId, BenchmarkResult> requested_benchmarks;
 
 				{
 					std::ifstream input(template_file, std::ios_base::binary);
@@ -187,8 +188,12 @@ namespace benchmarks
 						);
 				}
 
+				size_t n = 0, total = requested_benchmarks.size();
 				for (auto&& p : requested_benchmarks)
-					p.second = RunBenchmark(p.first, {});
+				{
+					s_logger.Info() << "Benchmark " << ++n << "/" << total << ": " << p.first;
+					p.second = RunBenchmark(p.first);
+				}
 
 				std::ifstream input(template_file, std::ios_base::binary);
 				if (!input.is_open())
@@ -241,9 +246,9 @@ namespace benchmarks
 	}
 
 
-	BenchmarkResult BenchmarkApp::RunBenchmark(const BenchmarkId& id, const std::vector<std::string>& paramsVec) const
+	BenchmarkResult BenchmarkApp::RunBenchmark(const ParameterizedBenchmarkId& id) const
 	{
-		std::string benchmark = id.ToString();
+		std::string benchmark = id.GetId().ToString();
 
 		MessageQueue mq(_queueName);
 		BOOST_SCOPE_EXIT_ALL(&) { MessageQueue::Remove(_queueName); };
@@ -251,8 +256,8 @@ namespace benchmarks
 		{
 			std::stringstream cmd;
 			cmd << _executableName << " --subtask measureIterationsCount --queue " << _queueName << " --verbosity " << _verbosity << " " << benchmark;
-			for (auto&& p : paramsVec)
-				cmd << " " << p;
+			for (auto&& p : id.GetParams())
+				cmd << " " << p.first << ":" << p.second;
 
 			InvokeSubprocess(cmd.str());
 		}
@@ -263,8 +268,8 @@ namespace benchmarks
 		{
 			std::stringstream cmd;
 			cmd << _executableName << " --subtask invokeBenchmark --queue " << _queueName << " --verbosity " << _verbosity << " --iterations " << it_msg->GetCount() << " " << benchmark;
-			for (auto&& p : paramsVec)
-				cmd << " " << p;
+			for (auto&& p : id.GetParams())
+				cmd << " " << p.first << ":" << p.second;
 
 			InvokeSubprocess(cmd.str());
 			auto r_msg = mq.ReceiveMessage<BenchmarkResultMessage>();

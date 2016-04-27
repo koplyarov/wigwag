@@ -1,5 +1,5 @@
-#ifndef BENCHMARKS_BENCHMARKID_HPP
-#define BENCHMARKS_BENCHMARKID_HPP
+#ifndef BENCHMARKS_DETAIL_BENCHMARKID_HPP
+#define BENCHMARKS_DETAIL_BENCHMARKID_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //

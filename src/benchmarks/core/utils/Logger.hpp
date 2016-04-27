@@ -47,6 +47,17 @@ namespace benchmarks
 	};
 
 
+	namespace detail
+	{
+		template < typename T_, typename Enabler_ = std::string >
+		struct ObjectLogger
+		{ static void Log(std::stringstream& s, T_&& val) { s << val; } };
+
+		template < typename T_ >
+		struct ObjectLogger<T_, decltype(std::declval<T_>().ToString())>
+		{ static void Log(std::stringstream& s, T_&& val) { s << val.ToString(); } };
+	}
+
 	class NamedLogger
 	{
 	public:
@@ -68,7 +79,7 @@ namespace benchmarks
 			LoggerWriter& operator << (T_&& val)
 			{
 				if (_loggerLogLevel <= _logLevel)
-					_stream << val;
+					detail::ObjectLogger<T_>::Log(_stream, std::forward<T_>(val));
 				return *this;
 			}
 		};
