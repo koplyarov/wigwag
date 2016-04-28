@@ -1,8 +1,11 @@
-#ifndef SRC_BENCHMARKS_ADAPTERS_BOOST_HPP
-#define SRC_BENCHMARKS_ADAPTERS_BOOST_HPP
+#ifndef SRC_BENCHMARKS_DESCRIPTORS_SIGNALS_BOOST_HPP
+#define SRC_BENCHMARKS_DESCRIPTORS_SIGNALS_BOOST_HPP
 
 
-namespace boost_adapters
+#include <boost/signals2/signal.hpp>
+
+
+namespace boost_descriptors
 {
 
 	template < typename Signature_, typename TrackablePtr_ >
@@ -43,7 +46,7 @@ namespace boost_adapters
 	{ return tracking_slot_wrapper<Signature_, TrackablePtr_>(f, t); }
 
 
-	struct tracking_adapters
+	struct tracking
 	{
 		using signal_type = boost::signals2::signal<void()>;
 		using handler_type = tracking_slot_wrapper<void(), boost::shared_ptr<std::string>>;
@@ -53,7 +56,7 @@ namespace boost_adapters
 		static std::string GetName() { return "boost_tracking"; }
 	};
 
-	struct adapters
+	struct regular
 	{
 		using signal_type = boost::signals2::signal<void()>;
 		using handler_type = std::function<void()>;

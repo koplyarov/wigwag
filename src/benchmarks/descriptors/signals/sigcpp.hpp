@@ -1,12 +1,12 @@
-#ifndef SRC_BENCHMARKS_ADAPTERS_SIGCPP_HPP
-#define SRC_BENCHMARKS_ADAPTERS_SIGCPP_HPP
+#ifndef SRC_BENCHMARKS_DESCRIPTORS_SIGNALS_SIGCPP_HPP
+#define SRC_BENCHMARKS_DESCRIPTORS_SIGNALS_SIGCPP_HPP
 
 #if WIGWAG_BENCHMARKS_SIGCPP2
 
 #include <sigc++/sigc++.h>
 
 
-namespace sigcpp_adapters
+namespace sigcpp_descriptors
 {
 
 	class scoped_connection
@@ -23,7 +23,7 @@ namespace sigcpp_adapters
 	};
 
 
-	struct adapters
+	struct regular
 	{
 		using signal_type = sigc::signal<void>;
 		using handler_type = std::function<void()>;

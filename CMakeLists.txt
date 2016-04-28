@@ -133,7 +133,6 @@ if (Boost_FOUND)
 	endif()
 
 	add_executable(wigwag_benchmarks
-		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/adapters/qt5.hpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/BenchmarkApp.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/BenchmarkSuite.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/detail/BenchmarkResult.cpp
@@ -142,6 +141,7 @@ if (Boost_FOUND)
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/Logger.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/Memory.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/ThreadPriority.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/descriptors/signals/qt5.hpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/main.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/markers.cpp)
 

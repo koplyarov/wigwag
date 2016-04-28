@@ -1,5 +1,5 @@
-#ifndef SRC_BENCHMARKS_ADAPTERS_QT5_HPP
-#define SRC_BENCHMARKS_ADAPTERS_QT5_HPP
+#ifndef SRC_BENCHMARKS_DESCRIPTORS_SIGNALS_QT5_HPP
+#define SRC_BENCHMARKS_DESCRIPTORS_SIGNALS_QT5_HPP
 
 #if WIGWAG_BENCHMARKS_QT5
 
@@ -7,7 +7,7 @@
 #include <QObject>
 
 
-namespace qt5_adapters
+namespace qt5_descriptors
 {
 
 	class SlotOwner : public QObject
@@ -73,7 +73,7 @@ namespace qt5_adapters
 	};
 
 
-	struct adapters
+	struct regular
 	{
 		using signal_type = SignalOwner;
 		using handler_type = SlotWrapper;

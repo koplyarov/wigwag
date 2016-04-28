@@ -11,10 +11,7 @@
 #include <wigwag/life_token.hpp>
 #include <wigwag/signal.hpp>
 
-#include <boost/core/typeinfo.hpp>
 #include <boost/make_shared.hpp>
-#include <boost/program_options.hpp>
-#include <boost/signals2.hpp>
 #include <boost/thread.hpp>
 
 #include <chrono>
@@ -22,14 +19,13 @@
 #include <thread>
 
 #include <benchmarks/SignalsBenchmarks.hpp>
-#include <benchmarks/adapters/boost.hpp>
-#include <benchmarks/adapters/qt5.hpp>
-#include <benchmarks/adapters/sigcpp.hpp>
-#include <benchmarks/adapters/wigwag.hpp>
 #include <benchmarks/core/BenchmarkApp.hpp>
 #include <benchmarks/core/BenchmarkSuite.hpp>
+#include <benchmarks/descriptors/signals/boost.hpp>
+#include <benchmarks/descriptors/signals/qt5.hpp>
+#include <benchmarks/descriptors/signals/sigcpp.hpp>
+#include <benchmarks/descriptors/signals/wigwag.hpp>
 #include <benchmarks/markers.hpp>
-#include <utils/profiler.hpp>
 #include <utils/storage_for.hpp>
 
 
@@ -120,77 +116,6 @@ void create_function(int64_t n, const Functor_& f)
 }
 
 
-template < typename SignalsDesc_ >
-void connect_invoke(int64_t num_slots, int64_t num_calls)
-{
-	using signal_type = typename SignalsDesc_::signal_type;
-	using handler_type = typename SignalsDesc_::handler_type;
-	using connection_type = typename SignalsDesc_::connection_type;
-
-	handler_type handler = SignalsDesc_::make_handler();
-	signal_type s;
-	storage_for<connection_type> *c = new storage_for<connection_type>[(size_t)num_slots];
-
-	{
-		operation_profiler op("connecting", num_slots);
-		for (int64_t i = 0; i < num_slots; ++i)
-			new(&c[i].obj) connection_type(s.connect(handler));
-	}
-
-	measure_memory("connection", num_slots);
-
-	{
-		operation_profiler op("invoking", num_slots * num_calls);
-		for (int64_t i = 0; i < num_calls; ++i)
-			s();
-	}
-
-	{
-		operation_profiler op("disconnecting", num_slots);
-		for (int64_t i = 0; i < num_slots; ++i)
-			c[i].obj.~connection_type();
-	}
-
-	delete[] c;
-}
-
-
-template < typename SignalsDesc_ >
-void connect_disconnect(int64_t num_slots, int64_t num_iterations)
-{
-	using signal_type = typename SignalsDesc_::signal_type;
-	using handler_type = typename SignalsDesc_::handler_type;
-	using connection_type = typename SignalsDesc_::connection_type;
-
-	handler_type handler = SignalsDesc_::make_handler();
-	signal_type *s = new signal_type[(size_t)num_iterations];
-	storage_for<connection_type> *c = new storage_for<connection_type>[(size_t)(num_slots * num_iterations)];
-
-	{
-		operation_profiler op("connecting", num_slots * num_iterations);
-		for (int64_t j = 0; j < num_iterations; ++j)
-			for (int64_t i = 0; i < num_slots; ++i)
-				new(&c[i + j * num_slots].obj) connection_type(s[j].connect(handler));
-	}
-
-	{
-		operation_profiler op("disconnecting", num_slots * num_iterations);
-		for (int64_t i = 0; i < num_slots * num_iterations; ++i)
-			c[i].obj.~connection_type();
-	}
-
-	delete[] c;
-}
-
-
-template < typename Signature_ >
-using ui_signal = signal<Signature_, exception_handling::none, threading::none, state_populating::none, life_assurance::none>;
-
-
-struct cmdline_exception : public std::runtime_error
-{ cmdline_exception(const std::string& msg) : std::runtime_error(msg) { } };
-
-
 int main(int argc, char* argv[])
 {
 	try
@@ -198,17 +123,20 @@ int main(int argc, char* argv[])
 		using namespace benchmarks;
 		BenchmarkSuite s;
 		s.RegisterBenchmarks<SignalsBenchmarks,
-			wigwag_adapters::adapters,
-			wigwag_adapters::ui_adapters,
-			boost_adapters::adapters,
-			boost_adapters::tracking_adapters,
-			sigcpp_adapters::adapters,
-			qt5_adapters::adapters>();
+			wigwag_descriptors::regular,
+			wigwag_descriptors::ui,
+			boost_descriptors::regular,
+			boost_descriptors::tracking,
+#if WIGWAG_BENCHMARKS_SIGCPP2
+			sigcpp_descriptors::regular,
+#endif
+#if WIGWAG_BENCHMARKS_QT5
+			qt5_descriptors::regular
+#endif
+			>();
 
 		return BenchmarkApp(s).Run(argc, argv);
 #if 0
-		set_max_thread_priority();
-
 		std::string task, obj;
 		int64_t count = 0, secondary_count = 0;
 
@@ -255,28 +183,6 @@ int main(int argc, char* argv[])
 			else if (obj == "life_token")
 				create<life_token>(count);
 
-			else if (obj == "signal")
-				create<signal<void()>>(count);
-			else if (obj == "ui_signal")
-				create<ui_signal<void()>>(count);
-
-			else if (obj == "boost_signal2")
-				create<boost::signals2::signal<void()>>(count);
-
-			else if (obj == "sigc_signal")
-#if WIGWAG_BENCHMARKS_SIGCPP2
-				create<sigc::signal<void>>(count);
-#else
-				throw cmdline_exception("wigwag_benchmarks were built without sigc++ support");
-#endif
-
-			else if (obj == "qt5_signal")
-#if WIGWAG_BENCHMARKS_QT5
-				create<qt5_adapters::SignalOwner>(count);
-#else
-				throw cmdline_exception("wigwag_benchmarks were built without Qt5 support");
-#endif
-
 			else
 				throw cmdline_exception("obj " + obj + " not supported");
 		}
@@ -306,95 +212,9 @@ int main(int argc, char* argv[])
 			else
 				throw cmdline_exception("obj " + obj + " not supported");
 		}
-		else if (task == "connect_invoke")
-		{
-			if (vm.count("secondary-count") == 0)
-				throw cmdline_exception("secondary-count option is required");
-
-			if (obj == "signal")
-				connect_invoke<wigwag_adapters::adapters>(count, secondary_count);
-			else if (obj == "ui_signal")
-				connect_invoke<wigwag_adapters::ui_adapters>(count, secondary_count);
-
-			else if (obj == "boost_signal2")
-				connect_invoke<boost_adapters::adapters>(count, secondary_count);
-
-			else if (obj == "sigc_signal")
-#if WIGWAG_BENCHMARKS_SIGCPP2
-				connect_invoke<sigcpp_adapters::adapters>(count, secondary_count);
-#else
-				throw cmdline_exception("wigwag_benchmarks were built without sigc++ support");
-#endif
-
-			else if (obj == "qt5_signal")
-#if WIGWAG_BENCHMARKS_QT5
-				connect_invoke<qt5_adapters::adapters>(count, secondary_count);
-#else
-				throw cmdline_exception("wigwag_benchmarks were built without Qt5 support");
-#endif
-
-			else
-				throw cmdline_exception("obj " + obj + " not supported");
-		}
-		else if (task == "connect_invoke_tracking")
-		{
-			if (vm.count("secondary-count") == 0)
-				throw cmdline_exception("secondary-count option is required");
-
-			else if (obj == "boost_signal2")
-				connect_invoke<boost_adapters::tracking_adapters>(count, secondary_count);
-
-			else
-				throw cmdline_exception("obj " + obj + " not supported");
-		}
-		else if (task == "connect_disconnect")
-		{
-			if (vm.count("secondary-count") == 0)
-				throw cmdline_exception("secondary-count option is required");
-
-			if (obj == "signal")
-				connect_disconnect<wigwag_adapters::adapters>(count, secondary_count);
-			else if (obj == "ui_signal")
-				connect_disconnect<wigwag_adapters::ui_adapters>(count, secondary_count);
-
-			else if (obj == "boost_signal2")
-				connect_disconnect<boost_adapters::adapters>(count, secondary_count);
-
-			else if (obj == "sigc_signal")
-#if WIGWAG_BENCHMARKS_SIGCPP2
-				connect_disconnect<sigcpp_adapters::adapters>(count, secondary_count);
-#else
-				throw cmdline_exception("wigwag_benchmarks were built without sigc++ support");
-#endif
-
-			else if (obj == "qt5_signal")
-#if WIGWAG_BENCHMARKS_QT5
-				connect_disconnect<qt5_adapters::adapters>(count, secondary_count);
-#else
-				throw cmdline_exception("wigwag_benchmarks were built without Qt5 support");
-#endif
-
-			else
-				throw cmdline_exception("obj " + obj + " not supported");
-		}
-		else if (task == "connect_disconnect_tracking")
-		{
-			if (vm.count("secondary-count") == 0)
-				throw cmdline_exception("secondary-count option is required");
-
-			if (obj == "boost_signal2")
-				connect_disconnect<boost_adapters::tracking_adapters>(count, secondary_count);
-			else
-				throw cmdline_exception("obj " + obj + " not supported");
-		}
 		else
 			std::cerr << "Task not specified!" << std::endl;
 #endif
-	}
-	catch (const cmdline_exception& ex)
-	{
-		std::cerr << ex.what() << std::endl;
-		return 1;
 	}
 	catch (const std::exception& ex)
 	{
