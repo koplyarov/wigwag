@@ -24,9 +24,9 @@
 #include <iostream>
 #include <thread>
 
-#include <utils/mutexed.hpp>
-#include <utils/profiler.hpp>
-#include <utils/thread.hpp>
+#include <test/utils/mutexed.hpp>
+#include <test/utils/profiler.hpp>
+#include <test/utils/thread.hpp>
 
 
 using namespace wigwag;

@@ -13,7 +13,7 @@
 
 #include <thread>
 
-#include <utils/thread.hpp>
+#include <test/utils/thread.hpp>
 
 
 namespace wigwag
