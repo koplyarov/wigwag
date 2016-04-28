@@ -24,9 +24,9 @@ namespace benchmarks
 	template < typename SignalsDesc_ >
 	class SignalsBenchmarks : public BenchmarksClass
 	{
-		using SignalType = typename SignalsDesc_::signal_type;
-		using HandlerType = typename SignalsDesc_::handler_type;
-		using ConnectionType = typename SignalsDesc_::connection_type;
+		using SignalType = typename SignalsDesc_::SignalType;
+		using HandlerType = typename SignalsDesc_::HandlerType;
+		using ConnectionType = typename SignalsDesc_::ConnectionType;
 
 	public:
 		SignalsBenchmarks()
@@ -64,7 +64,7 @@ namespace benchmarks
 
 		static void HandlerSize(BenchmarkContext& context)
 		{
-			HandlerType handler = SignalsDesc_::make_handler();
+			HandlerType handler = SignalsDesc_::MakeHandler();
 			SignalType s;
 			StorageFor<ConnectionType> *c = new StorageFor<ConnectionType>[(size_t)context.GetIterationsCount()];
 			for (int64_t i = 0; i < context.GetIterationsCount(); ++i)
@@ -80,7 +80,7 @@ namespace benchmarks
 		{
 			const auto n = context.GetIterationsCount();
 
-			HandlerType handler = SignalsDesc_::make_handler();
+			HandlerType handler = SignalsDesc_::MakeHandler();
 			SignalType s;
 			StorageFor<ConnectionType> *c = new StorageFor<ConnectionType>[(size_t)numSlots];
 
@@ -103,7 +103,7 @@ namespace benchmarks
 		{
 			const auto n = context.GetIterationsCount();
 
-			HandlerType handler = SignalsDesc_::make_handler();
+			HandlerType handler = SignalsDesc_::MakeHandler();
 			SignalType *s = new SignalType[(size_t)n];
 			StorageFor<ConnectionType> *c = new StorageFor<ConnectionType>[(size_t)(numSlots * n)];
 

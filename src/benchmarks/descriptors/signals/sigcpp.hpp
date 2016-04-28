@@ -11,27 +11,27 @@ namespace signals {
 namespace sigcpp
 {
 
-	class scoped_connection
+	class ScopedConnection
 	{
 	private:
 		sigc::connection		_connection;
 
 	public:
-		scoped_connection(sigc::connection c) : _connection(std::move(c)) { }
-		~scoped_connection() { _connection.disconnect(); }
+		ScopedConnection(sigc::connection c) : _connection(std::move(c)) { }
+		~ScopedConnection() { _connection.disconnect(); }
 
-		scoped_connection(const scoped_connection&) = delete;
-		scoped_connection& operator = (const scoped_connection&) = delete;
+		ScopedConnection(const ScopedConnection&) = delete;
+		ScopedConnection& operator = (const ScopedConnection&) = delete;
 	};
 
 
 	struct regular
 	{
-		using signal_type = sigc::signal<void>;
-		using handler_type = std::function<void()>;
-		using connection_type = scoped_connection;
+		using SignalType = sigc::signal<void>;
+		using HandlerType = std::function<void()>;
+		using ConnectionType = ScopedConnection;
 
-		static handler_type make_handler() { return []{}; }
+		static HandlerType MakeHandler() { return []{}; }
 		static std::string GetName() { return "sigcpp"; }
 	};
 

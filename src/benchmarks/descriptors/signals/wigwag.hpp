@@ -18,22 +18,22 @@ namespace wigwag
 
 	struct regular
 	{
-		using signal_type = signal<void()>;
-		using handler_type = std::function<void()>;
-		using connection_type = token;
+		using SignalType = signal<void()>;
+		using HandlerType = std::function<void()>;
+		using ConnectionType = token;
 
-		static handler_type make_handler() { return []{}; }
+		static HandlerType MakeHandler() { return []{}; }
 		static std::string GetName() { return "wigwag"; }
 	};
 
 
 	struct ui
 	{
-		using signal_type = ui_signal<void()>;
-		using handler_type = std::function<void()>;
-		using connection_type = token;
+		using SignalType = ui_signal<void()>;
+		using HandlerType = std::function<void()>;
+		using ConnectionType = token;
 
-		static handler_type make_handler() { return []{}; }
+		static HandlerType MakeHandler() { return []{}; }
 		static std::string GetName() { return "wigwag_ui"; }
 	};
 

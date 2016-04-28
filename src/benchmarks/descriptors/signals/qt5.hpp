@@ -77,11 +77,11 @@ namespace qt5
 
 	struct regular
 	{
-		using signal_type = SignalOwner;
-		using handler_type = SlotWrapper;
-		using connection_type = SignalConnectionWrapper;
+		using SignalType = SignalOwner;
+		using HandlerType = SlotWrapper;
+		using ConnectionType = SignalConnectionWrapper;
 
-		static handler_type make_handler() { return SlotWrapper(SlotOwner(), SLOT(testSlot())); }
+		static HandlerType MakeHandler() { return SlotWrapper(SlotOwner(), SLOT(testSlot())); }
 		static std::string GetName() { return "qt5"; }
 	};
 
