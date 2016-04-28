@@ -219,7 +219,7 @@ namespace benchmarks
 
 						auto it2 = r.GetMemoryConsumption().find(id.GetMeasurementLocalId());
 						if (it2 == r.GetMemoryConsumption().end())
-							throw std::runtime_error("Could not find a mesaurement with id " + id.ToString());
+							throw std::runtime_error("Could not find a measurement with id " + id.ToString());
 						return it2->second;
 					};
 

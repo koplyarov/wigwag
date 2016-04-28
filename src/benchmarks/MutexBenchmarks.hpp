@@ -37,11 +37,11 @@ namespace benchmarks
 
 			StorageArray<MutexType> m(n);
 
-			context.Profile("creating", n, [&]{ m.Construct(); });
+			context.Profile("create", n, [&]{ m.Construct(); });
 			context.MeasureMemory("mutex", n);
-			context.Profile("locking", n, [&]{ m.ForEach([](MutexType& m){ m.lock(); }); });
-			context.Profile("unlocking", n, [&]{ m.ForEach([](MutexType& m){ m.unlock(); }); });
-			context.Profile("destroying", n, [&]{ m.Destruct(); });
+			context.Profile("lock", n, [&]{ m.ForEach([](MutexType& m){ m.lock(); }); });
+			context.Profile("unlock", n, [&]{ m.ForEach([](MutexType& m){ m.unlock(); }); });
+			context.Profile("destroy", n, [&]{ m.Destruct(); });
 		}
 	};
 

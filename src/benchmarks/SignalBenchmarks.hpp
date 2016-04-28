@@ -42,9 +42,9 @@ namespace benchmarks
 
 			StorageArray<SignalType> s(n);
 
-			context.Profile("creating", n, [&]{ s.Construct(); });
+			context.Profile("create", n, [&]{ s.Construct(); });
 			context.MeasureMemory("signal", n);
-			context.Profile("destroying", n, [&]{ s.Destruct(); });
+			context.Profile("destroy", n, [&]{ s.Destruct(); });
 		}
 
 		static void HandlerSize(BenchmarkContext& context)
@@ -69,7 +69,7 @@ namespace benchmarks
 			c.Construct([&]{ return s.connect(handler); });
 
 			{
-				auto op = context.Profile("invoking", numSlots * n);
+				auto op = context.Profile("invoke", numSlots * n);
 				for (int64_t i = 0; i < n; ++i)
 					s();
 			}
@@ -86,13 +86,13 @@ namespace benchmarks
 			StorageArray<ConnectionType> c(numSlots * n);
 
 			{
-				auto op = context.Profile("connecting", numSlots * n);
+				auto op = context.Profile("connect", numSlots * n);
 				for (int64_t j = 0; j < n; ++j)
 					for (int64_t i = 0; i < numSlots; ++i)
 						c[i + j * numSlots].Construct(s[j].connect(handler));
 			}
 
-			context.Profile("disconnecting", numSlots * n, [&]{ c.Destruct(); });
+			context.Profile("disconnect", numSlots * n, [&]{ c.Destruct(); });
 		}
 	};
 

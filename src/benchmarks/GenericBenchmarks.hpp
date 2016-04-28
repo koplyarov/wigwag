@@ -37,9 +37,9 @@ namespace benchmarks
 
 			StorageArray<Type> m(n);
 
-			context.Profile("creating", n, [&]{ m.Construct(); });
+			context.Profile("create", n, [&]{ m.Construct(); });
 			context.MeasureMemory("object", n);
-			context.Profile("destroying", n, [&]{ m.Destruct(); });
+			context.Profile("destroy", n, [&]{ m.Destruct(); });
 		}
 	};
 

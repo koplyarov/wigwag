@@ -37,10 +37,10 @@ namespace benchmarks
 
 			StorageArray<FunctionType> f(n);
 
-			context.Profile("creating", n, [&]{ f.Construct([]{ return []{}; }); });
+			context.Profile("create", n, [&]{ f.Construct([]{ return []{}; }); });
 			context.MeasureMemory("function", n);
-			context.Profile("invoking", n, [&]{ f.ForEach([](const FunctionType& f){ f(); }); });
-			context.Profile("destroying", n, [&]{ f.Destruct(); });
+			context.Profile("invoke", n, [&]{ f.ForEach([](const FunctionType& f){ f(); }); });
+			context.Profile("destroy", n, [&]{ f.Destruct(); });
 		}
 	};
 
