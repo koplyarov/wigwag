@@ -13,7 +13,7 @@ namespace wigwag
 	using namespace ::wigwag;
 
 	template < typename Signature_ >
-	using ui_signal = wigwag::signal<Signature_, exception_handling::none, threading::none, state_populating::none, life_assurance::none>;
+	using ui_signal = wigwag::signal<Signature_, exception_handling::none, threading::none, state_populating::none, life_assurance::none, creation::lazy, ref_counter::single_threaded>;
 
 
 	struct Regular

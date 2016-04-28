@@ -190,7 +190,7 @@ namespace benchmarks
 			}
 
 			if ((dm.empty() || next_min_duration > milliseconds(100)) &&
-				(max_rss == 0 || next_max_rss > baseline_rss * 10))
+				(max_rss == 0 || next_max_rss > baseline_rss * 30))
 			{
 				num_iterations *= multiplier;
 				break;

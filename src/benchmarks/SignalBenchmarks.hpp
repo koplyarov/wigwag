@@ -29,6 +29,7 @@ namespace benchmarks
 		SignalBenchmarks()
 			: BenchmarksClass("signal")
 		{
+			AddBenchmark<>("createEmpty", &SignalBenchmarks::CreateEmpty);
 			AddBenchmark<>("create", &SignalBenchmarks::Create);
 			AddBenchmark<>("handlerSize", &SignalBenchmarks::HandlerSize);
 			AddBenchmark<int64_t>("invoke", &SignalBenchmarks::Invoke, {"numSlots"});
@@ -36,13 +37,25 @@ namespace benchmarks
 		}
 
 	private:
-		static void Create(BenchmarkContext& context)
+		static void CreateEmpty(BenchmarkContext& context)
 		{
 			const auto n = context.GetIterationsCount();
 
 			StorageArray<SignalType> s(n);
 
 			context.Profile("create", n, [&]{ s.Construct(); });
+			context.MeasureMemory("signal", n);
+			context.Profile("destroy", n, [&]{ s.Destruct(); });
+		}
+
+		static void Create(BenchmarkContext& context)
+		{
+			const auto n = context.GetIterationsCount();
+
+			StorageArray<SignalType> s(n);
+
+			s.Construct();
+			s.ForEach([](SignalType& s){ s.connect(SignalsDesc_::MakeHandler()); s(); });
 			context.MeasureMemory("signal", n);
 			context.Profile("destroy", n, [&]{ s.Destruct(); });
 		}

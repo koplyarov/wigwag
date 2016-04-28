@@ -1,21 +1,21 @@
 # Memory consumption
-|                 | bytes per signal | bytes per handler |
+|                 | bytes per empty signal | bytes per signal | bytes per handler |
 | --------------- | ---------------: | ----------------: |
-| ui_signal       | ${signal.create.wigwag_ui[signal]} | ${signal.handlerSize.wigwag_ui[handler]} |
-| signal          | ${signal.create.wigwag[signal]} | ${signal.handlerSize.wigwag[handler]} |
-| sigc++          | ${signal.create.sigcpp[signal]} | ${signal.handlerSize.sigcpp[handler]} |
-| boost           | ${signal.create.boost[signal]} | ${signal.handlerSize.boost[handler]} |
-| boost, tracking | ${signal.create.boost_tracking[signal]} | ${signal.handlerSize.boost_tracking[handler]} |
-| qt5             | ${signal.create.qt5[signal]} | ${signal.handlerSize.qt5[handler]} |
+| ui_signal       | ${signal.createEmpty.wigwag_ui[signal]} | ${signal.create.wigwag_ui[signal]} | ${signal.handlerSize.wigwag_ui[handler]} |
+| signal          | ${signal.createEmpty.wigwag[signal]} | ${signal.create.wigwag[signal]} | ${signal.handlerSize.wigwag[handler]} |
+| sigc++          | ${signal.createEmpty.sigcpp[signal]} | ${signal.create.sigcpp[signal]} | ${signal.handlerSize.sigcpp[handler]} |
+| boost           | ${signal.createEmpty.boost[signal]} | ${signal.create.boost[signal]} | ${signal.handlerSize.boost[handler]} |
+| boost, tracking | ${signal.createEmpty.boost_tracking[signal]} | ${signal.create.boost_tracking[signal]} | ${signal.handlerSize.boost_tracking[handler]} |
+| qt5             | ${signal.createEmpty.qt5[signal]} | ${signal.create.qt5[signal]} | ${signal.handlerSize.qt5[handler]} |
 
 # Signals performance
-|                 | creating signal, ns | destroying signal, ns |
-| --------------- | ------------------: | --------------------: |
-| ui_signal       | ${signal.create.wigwag_ui[create]} | ${signal.create.wigwag_ui[destroy]} |
-| signal          | ${signal.create.wigwag[create]} | ${signal.create.wigwag[destroy]} |
-| sigc++          | ${signal.create.sigcpp[create]} | ${signal.create.sigcpp[destroy]} |
-| boost           | ${signal.create.boost[create]} | ${signal.create.boost[destroy]} |
-| qt5             | ${signal.create.qt5[create]} | ${signal.create.qt5[destroy]} |
+|                 | creating empty signal, ns | destroying empty signal, ns | destroying signal, ns |
+| --------------- | ------------------------: | --------------------: | --------------------------: |
+| ui_signal       | ${signal.createEmpty.wigwag_ui[create]} | ${signal.createEmpty.wigwag_ui[destroy]} | ${signal.create.wigwag_ui[destroy]} |
+| signal          | ${signal.createEmpty.wigwag[create]} | ${signal.createEmpty.wigwag[destroy]} | ${signal.create.wigwag[destroy]} |
+| sigc++          | ${signal.createEmpty.sigcpp[create]} | ${signal.createEmpty.sigcpp[destroy]} | ${signal.create.sigcpp[destroy]} |
+| boost           | ${signal.createEmpty.boost[create]} | ${signal.createEmpty.boost[destroy]} | ${signal.create.boost[destroy]} |
+| qt5             | ${signal.createEmpty.qt5[create]} | ${signal.createEmpty.qt5[destroy]} | ${signal.create.qt5[destroy]} |
 
 # Signal handlers performance
 ## Invoking handlers, ns per handler
