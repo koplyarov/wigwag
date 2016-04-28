@@ -11,6 +11,18 @@
 #include <wigwag/life_token.hpp>
 #include <wigwag/signal.hpp>
 
+#include <benchmarks/FunctionsBenchmarks.hpp>
+#include <benchmarks/SignalsBenchmarks.hpp>
+#include <benchmarks/core/BenchmarkApp.hpp>
+#include <benchmarks/core/BenchmarkSuite.hpp>
+#include <benchmarks/descriptors/functions/boost.hpp>
+#include <benchmarks/descriptors/functions/std.hpp>
+#include <benchmarks/descriptors/signals/boost.hpp>
+#include <benchmarks/descriptors/signals/qt5.hpp>
+#include <benchmarks/descriptors/signals/sigcpp.hpp>
+#include <benchmarks/descriptors/signals/wigwag.hpp>
+#include <benchmarks/markers.hpp>
+
 #include <boost/make_shared.hpp>
 #include <boost/thread.hpp>
 
@@ -18,14 +30,6 @@
 #include <iostream>
 #include <thread>
 
-#include <benchmarks/SignalsBenchmarks.hpp>
-#include <benchmarks/core/BenchmarkApp.hpp>
-#include <benchmarks/core/BenchmarkSuite.hpp>
-#include <benchmarks/descriptors/signals/boost.hpp>
-#include <benchmarks/descriptors/signals/qt5.hpp>
-#include <benchmarks/descriptors/signals/sigcpp.hpp>
-#include <benchmarks/descriptors/signals/wigwag.hpp>
-#include <benchmarks/markers.hpp>
 #include <utils/storage_for.hpp>
 
 
@@ -136,6 +140,10 @@ int main(int argc, char* argv[])
 			signals::qt5::regular
 #endif
 			>();
+
+		s.RegisterBenchmarks<FunctionsBenchmarks,
+			functions::std::regular,
+			functions::boost::regular>();
 
 		return BenchmarkApp(s).Run(argc, argv);
 #if 0

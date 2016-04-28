@@ -2,7 +2,9 @@
 #define SRC_BENCHMARKS_DESCRIPTORS_SIGNALS_BOOST_HPP
 
 
-#include <boost/signals2/signal.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/signals2.hpp>
 
 
 namespace descriptors {

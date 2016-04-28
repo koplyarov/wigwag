@@ -15,7 +15,6 @@
 
 #include <benchmarks/core/BenchmarkClass.hpp>
 #include <benchmarks/core/utils/Storage.hpp>
-#include <benchmarks/markers.hpp>
 
 
 namespace benchmarks

@@ -66,14 +66,6 @@ namespace benchmarks
 				_arr[i].Construct();
 		}
 
-
-		Storage<T_>& operator [] (int64_t i)
-		{ return _arr[i]; }
-
-		const Storage<T_>& operator [] (int64_t i) const
-		{ return _arr[i]; }
-
-
 		template < typename FunctorType_ >
 		void Construct(const FunctorType_& f)
 		{
@@ -81,12 +73,26 @@ namespace benchmarks
 				_arr[i].Construct(f());
 		}
 
-
 		void Destruct()
 		{
 			for (int64_t i = 0; i < _size; ++i)
 				_arr[i].Destruct();
 		}
+
+
+		template < typename FunctorType_ >
+		void ForEach(const FunctorType_& f)
+		{
+			for (int64_t i = 0; i < _size; ++i)
+				f(_arr[i].Ref());
+		}
+
+
+		Storage<T_>& operator [] (int64_t i)
+		{ return _arr[i]; }
+
+		const Storage<T_>& operator [] (int64_t i) const
+		{ return _arr[i]; }
 	};
 
 }
