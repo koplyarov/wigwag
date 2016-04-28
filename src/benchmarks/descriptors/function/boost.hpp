@@ -8,7 +8,7 @@
 
 
 namespace descriptors {
-namespace functions {
+namespace function {
 namespace boost
 {
 

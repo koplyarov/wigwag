@@ -19,15 +19,15 @@ namespace benchmarks
 {
 
 	template < typename FunctionDesc_ >
-	class FunctionsBenchmarks : public BenchmarksClass
+	class FunctionBenchmarks : public BenchmarksClass
 	{
 		using FunctionType = typename FunctionDesc_::FunctionType;
 
 	public:
-		FunctionsBenchmarks()
-			: BenchmarksClass("functions")
+		FunctionBenchmarks()
+			: BenchmarksClass("function")
 		{
-			AddBenchmark<>("basic", &FunctionsBenchmarks::Basic);
+			AddBenchmark<>("basic", &FunctionBenchmarks::Basic);
 		}
 
 	private:

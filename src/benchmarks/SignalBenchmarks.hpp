@@ -19,20 +19,20 @@ namespace benchmarks
 {
 
 	template < typename SignalsDesc_ >
-	class SignalsBenchmarks : public BenchmarksClass
+	class SignalBenchmarks : public BenchmarksClass
 	{
 		using SignalType = typename SignalsDesc_::SignalType;
 		using HandlerType = typename SignalsDesc_::HandlerType;
 		using ConnectionType = typename SignalsDesc_::ConnectionType;
 
 	public:
-		SignalsBenchmarks()
-			: BenchmarksClass("signals")
+		SignalBenchmarks()
+			: BenchmarksClass("signal")
 		{
-			AddBenchmark<>("create", &SignalsBenchmarks::Create);
-			AddBenchmark<>("handlerSize", &SignalsBenchmarks::HandlerSize);
-			AddBenchmark<int64_t>("invoke", &SignalsBenchmarks::Invoke, {"numSlots"});
-			AddBenchmark<int64_t>("connect", &SignalsBenchmarks::Connect, {"numSlots"});
+			AddBenchmark<>("create", &SignalBenchmarks::Create);
+			AddBenchmark<>("handlerSize", &SignalBenchmarks::HandlerSize);
+			AddBenchmark<int64_t>("invoke", &SignalBenchmarks::Invoke, {"numSlots"});
+			AddBenchmark<int64_t>("connect", &SignalBenchmarks::Connect, {"numSlots"});
 		}
 
 	private:

@@ -6,19 +6,19 @@
 
 
 namespace descriptors {
-namespace signals {
+namespace signal {
 namespace wigwag
 {
 
 	using namespace ::wigwag;
 
 	template < typename Signature_ >
-	using ui_signal = signal<Signature_, exception_handling::none, threading::none, state_populating::none, life_assurance::none>;
+	using ui_signal = wigwag::signal<Signature_, exception_handling::none, threading::none, state_populating::none, life_assurance::none>;
 
 
 	struct Regular
 	{
-		using SignalType = signal<void()>;
+		using SignalType = wigwag::signal<void()>;
 		using HandlerType = std::function<void()>;
 		using ConnectionType = token;
 

@@ -141,7 +141,7 @@ if (Boost_FOUND)
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/Logger.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/Memory.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/ThreadPriority.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/descriptors/signals/qt5.hpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/descriptors/signal/qt5.hpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/main.cpp)
 
 	if (SIGCPP2_FOUND)

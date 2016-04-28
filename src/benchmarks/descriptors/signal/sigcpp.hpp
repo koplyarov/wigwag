@@ -7,7 +7,7 @@
 
 
 namespace descriptors {
-namespace signals {
+namespace signal {
 namespace sigcpp
 {
 

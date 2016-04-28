@@ -8,7 +8,7 @@
 
 
 namespace descriptors {
-namespace signals {
+namespace signal {
 namespace qt5
 {
 
