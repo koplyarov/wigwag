@@ -1,5 +1,5 @@
-#ifndef BENCHMARKS_MARKERS_HPP
-#define BENCHMARKS_MARKERS_HPP
+#ifndef BENCHMARKS_GENERICBENCHMARKS_HPP
+#define BENCHMARKS_GENERICBENCHMARKS_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,37 +11,39 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <boost/core/typeinfo.hpp>
-
-#include <chrono>
-#include <iostream>
-#include <thread>
-
-#include <utils/profiler.hpp>
+#include <benchmarks/core/BenchmarkClass.hpp>
+#include <benchmarks/core/utils/Storage.hpp>
 
 
-namespace wigwag
+namespace benchmarks
 {
 
-	class operation_profiler
+	template < typename Desc_ >
+	class GenericBenchmarks : public BenchmarksClass
 	{
-	private:
-		std::string		_name;
-		int64_t			_count;
-		profiler		_prof;
+		using Type = typename Desc_::Type;
 
 	public:
-		operation_profiler(const std::string& name, int64_t count);
-		~operation_profiler();
+		GenericBenchmarks()
+			: BenchmarksClass("generic")
+		{
+			AddBenchmark<>("create", &GenericBenchmarks::Create);
+		}
+
+	private:
+		static void Create(BenchmarkContext& context)
+		{
+			const auto n = context.GetIterationsCount();
+
+			StorageArray<Type> m(n);
+
+			context.Profile("creating", n, [&]{ m.Construct(); });
+			context.MeasureMemory("object", n);
+			context.Profile("destroying", n, [&]{ m.Destruct(); });
+		}
 	};
 
-
-	void measure_memory(const std::string& name, int64_t count);
-
-	template < typename T_ >
-	inline void measure_memory(int64_t count)
-	{ measure_memory(boost::core::demangled_name(BOOST_CORE_TYPEID(T_)), count); }
-
 }
+
 
 #endif

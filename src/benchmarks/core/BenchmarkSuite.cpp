@@ -161,8 +161,9 @@ namespace benchmarks
 			auto minmax_element = std::minmax_element(dm.begin(), dm.end(), [](const DurationsMapPair& l, const DurationsMapPair& r) { return l.second < r.second; } );
 			auto min_duration = minmax_element.first == dm.end() ? nanoseconds() : minmax_element.first->second;
 			auto max_duration = minmax_element.second == dm.end() ? nanoseconds() : minmax_element.second->second;
-
 			auto max_rss = ctx.GetMaxRss();
+
+			s_logger.Debug() << "num_iterations: " << num_iterations << ", min_duration: " << min_duration.count() << " ns, max_duration: " << max_duration.count() << " ns, max_rss: " << max_rss;
 
 			auto next_min_duration = min_duration * multiplier;
 			auto next_max_duration = max_duration * multiplier;

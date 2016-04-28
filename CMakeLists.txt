@@ -142,8 +142,7 @@ if (Boost_FOUND)
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/Memory.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/ThreadPriority.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/descriptors/signals/qt5.hpp
-		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/main.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/markers.cpp)
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/main.cpp)
 
 	if (SIGCPP2_FOUND)
 		target_link_libraries(wigwag_benchmarks ${SIGCPP2_LIBRARIES})

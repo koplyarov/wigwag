@@ -1,5 +1,5 @@
-#ifndef BENCHMARKS_FUNCTIONSBENCHMARKS_HPP
-#define BENCHMARKS_FUNCTIONSBENCHMARKS_HPP
+#ifndef BENCHMARKS_MUTEXBENCHMARKS_HPP
+#define BENCHMARKS_MUTEXBENCHMARKS_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -18,16 +18,16 @@
 namespace benchmarks
 {
 
-	template < typename FunctionDesc_ >
-	class FunctionsBenchmarks : public BenchmarksClass
+	template < typename MutexDesc_ >
+	class MutexBenchmarks : public BenchmarksClass
 	{
-		using FunctionType = typename FunctionDesc_::FunctionType;
+		using MutexType = typename MutexDesc_::MutexType;
 
 	public:
-		FunctionsBenchmarks()
-			: BenchmarksClass("functions")
+		MutexBenchmarks()
+			: BenchmarksClass("mutex")
 		{
-			AddBenchmark<>("basic", &FunctionsBenchmarks::Basic);
+			AddBenchmark<>("basic", &MutexBenchmarks::Basic);
 		}
 
 	private:
@@ -35,12 +35,13 @@ namespace benchmarks
 		{
 			const auto n = context.GetIterationsCount();
 
-			StorageArray<FunctionType> f(n);
+			StorageArray<MutexType> m(n);
 
-			context.Profile("creating", n, [&]{ f.Construct([]{ return []{}; }); });
-			context.MeasureMemory("function", n);
-			context.Profile("invoking", n, [&]{ f.ForEach([](const FunctionType& f){ f(); }); });
-			context.Profile("destroying", n, [&]{ f.Destruct(); });
+			context.Profile("creating", n, [&]{ m.Construct(); });
+			context.MeasureMemory("mutex", n);
+			context.Profile("locking", n, [&]{ m.ForEach([](MutexType& m){ m.lock(); }); });
+			context.Profile("unlocking", n, [&]{ m.ForEach([](MutexType& m){ m.unlock(); }); });
+			context.Profile("destroying", n, [&]{ m.Destruct(); });
 		}
 	};
 
