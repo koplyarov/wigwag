@@ -6,7 +6,9 @@
 #include <sigc++/sigc++.h>
 
 
-namespace sigcpp_descriptors
+namespace descriptors {
+namespace signals {
+namespace sigcpp
 {
 
 	class scoped_connection
@@ -33,7 +35,7 @@ namespace sigcpp_descriptors
 		static std::string GetName() { return "sigcpp"; }
 	};
 
-}
+}}}
 
 #endif
 

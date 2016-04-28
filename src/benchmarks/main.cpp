@@ -121,17 +121,19 @@ int main(int argc, char* argv[])
 	try
 	{
 		using namespace benchmarks;
+		using namespace descriptors;
+
 		BenchmarkSuite s;
 		s.RegisterBenchmarks<SignalsBenchmarks,
-			wigwag_descriptors::regular,
-			wigwag_descriptors::ui,
-			boost_descriptors::regular,
-			boost_descriptors::tracking,
+			signals::wigwag::regular,
+			signals::wigwag::ui,
+			signals::boost::regular,
+			signals::boost::tracking,
 #if WIGWAG_BENCHMARKS_SIGCPP2
-			sigcpp_descriptors::regular,
+			signals::sigcpp::regular,
 #endif
 #if WIGWAG_BENCHMARKS_QT5
-			qt5_descriptors::regular
+			signals::qt5::regular
 #endif
 			>();
 

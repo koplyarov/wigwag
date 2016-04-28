@@ -7,7 +7,9 @@
 #include <QObject>
 
 
-namespace qt5_descriptors
+namespace descriptors {
+namespace signals {
+namespace qt5
 {
 
 	class SlotOwner : public QObject
@@ -83,7 +85,7 @@ namespace qt5_descriptors
 		static std::string GetName() { return "qt5"; }
 	};
 
-}
+}}}
 
 #endif
 
