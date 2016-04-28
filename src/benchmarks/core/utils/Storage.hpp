@@ -1,5 +1,5 @@
-#ifndef BENCHMARKS_CORE_UTILS_STORAGEFOR_HPP
-#define BENCHMARKS_CORE_UTILS_STORAGEFOR_HPP
+#ifndef BENCHMARKS_CORE_UTILS_STORAGE_HPP
+#define BENCHMARKS_CORE_UTILS_STORAGE_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -15,14 +15,14 @@ namespace benchmarks
 {
 
 	template < typename T_ >
-	union StorageFor
+	union Storage
 	{
 	private:
 		T_		_obj;
 
 	public:
-		StorageFor() { }
-		~StorageFor() { }
+		Storage() { }
+		~Storage() { }
 
 		template < typename... Args_ >
 		void Construct(Args_&&... args)
@@ -41,6 +41,52 @@ namespace benchmarks
 
 		T_* operator -> () { return Ptr(); }
 		const T_* operator -> () const { return Ptr(); }
+	};
+
+
+	template < typename T_ >
+	class StorageArray
+	{
+	private:
+		Storage<T_>*		_arr;
+		int64_t			_size;
+
+	public:
+		StorageArray(int64_t size)
+			: _size(size)
+		{ _arr = new Storage<T_>[size]; }
+
+		~StorageArray()
+		{ delete[] _arr; }
+
+
+		void Construct()
+		{
+			for (int64_t i = 0; i < _size; ++i)
+				_arr[i].Construct();
+		}
+
+
+		Storage<T_>& operator [] (int64_t i)
+		{ return _arr[i]; }
+
+		const Storage<T_>& operator [] (int64_t i) const
+		{ return _arr[i]; }
+
+
+		template < typename FunctorType_ >
+		void Construct(const FunctorType_& f)
+		{
+			for (int64_t i = 0; i < _size; ++i)
+				_arr[i].Construct(f());
+		}
+
+
+		void Destruct()
+		{
+			for (int64_t i = 0; i < _size; ++i)
+				_arr[i].Destruct();
+		}
 	};
 
 }

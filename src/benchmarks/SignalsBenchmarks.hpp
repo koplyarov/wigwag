@@ -14,7 +14,7 @@
 #include <map>
 
 #include <benchmarks/core/BenchmarkClass.hpp>
-#include <benchmarks/core/utils/StorageFor.hpp>
+#include <benchmarks/core/utils/Storage.hpp>
 #include <benchmarks/markers.hpp>
 
 
@@ -43,37 +43,22 @@ namespace benchmarks
 		{
 			const auto n = context.GetIterationsCount();
 
-			StorageFor<SignalType> *v = new StorageFor<SignalType>[(size_t)n];
+			StorageArray<SignalType> s(n);
 
-			{
-				auto op = context.Profile("creating", n);
-				for (int64_t i = 0; i < n; ++i)
-					v[i].Construct();
-			}
-
+			context.Profile("creating", n, [&]{ s.Construct(); });
 			context.MeasureMemory("signal", n);
-
-			{
-				auto op = context.Profile("destroying", n);
-				for (int64_t i = 0; i < n; ++i)
-					v[i].Destruct();
-			}
-
-			delete[] v;
+			context.Profile("destroying", n, [&]{ s.Destruct(); });
 		}
 
 		static void HandlerSize(BenchmarkContext& context)
 		{
 			HandlerType handler = SignalsDesc_::MakeHandler();
 			SignalType s;
-			StorageFor<ConnectionType> *c = new StorageFor<ConnectionType>[(size_t)context.GetIterationsCount()];
-			for (int64_t i = 0; i < context.GetIterationsCount(); ++i)
-				c[i].Construct(s.connect(handler));
+			StorageArray<ConnectionType> c(context.GetIterationsCount());
 
+			c.Construct([&]{ return s.connect(handler); });
 			context.MeasureMemory("handler", context.GetIterationsCount());
-
-			for (int64_t i = 0; i < context.GetIterationsCount(); ++i)
-				c[i].Destruct();
+			c.Destruct();
 		}
 
 		static void Invoke(BenchmarkContext& context, int64_t numSlots)
@@ -82,10 +67,9 @@ namespace benchmarks
 
 			HandlerType handler = SignalsDesc_::MakeHandler();
 			SignalType s;
-			StorageFor<ConnectionType> *c = new StorageFor<ConnectionType>[(size_t)numSlots];
+			StorageArray<ConnectionType> c(numSlots);
 
-			for (int64_t i = 0; i < numSlots; ++i)
-				c[i].Construct(s.connect(handler));
+			c.Construct([&]{ return s.connect(handler); });
 
 			{
 				auto op = context.Profile("invoking", numSlots * n);
@@ -93,10 +77,7 @@ namespace benchmarks
 					s();
 			}
 
-			for (int64_t i = 0; i < numSlots; ++i)
-				c[i].Destruct();
-
-			delete[] c;
+			c.Destruct();
 		}
 
 		static void Connect(BenchmarkContext& context, int64_t numSlots)
@@ -104,8 +85,8 @@ namespace benchmarks
 			const auto n = context.GetIterationsCount();
 
 			HandlerType handler = SignalsDesc_::MakeHandler();
-			SignalType *s = new SignalType[(size_t)n];
-			StorageFor<ConnectionType> *c = new StorageFor<ConnectionType>[(size_t)(numSlots * n)];
+			std::vector<SignalType> s(n);
+			StorageArray<ConnectionType> c(numSlots * n);
 
 			{
 				auto op = context.Profile("connecting", numSlots * n);
@@ -114,13 +95,7 @@ namespace benchmarks
 						c[i + j * numSlots].Construct(s[j].connect(handler));
 			}
 
-			{
-				auto op = context.Profile("disconnecting", numSlots * n);
-				for (int64_t i = 0; i < numSlots * n; ++i)
-					c[i].Destruct();
-			}
-
-			delete[] c;
+			context.Profile("disconnecting", numSlots * n, [&]{ c.Destruct(); });
 		}
 	};
 

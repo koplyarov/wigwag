@@ -41,6 +41,13 @@ namespace benchmarks
 
 		virtual void MeasureMemory(const std::string& name, int64_t count) = 0;
 		virtual IOperationProfilerPtr Profile(const std::string& name, int64_t count) = 0;
+
+		template < typename FunctorType_ >
+		void Profile(const std::string& name, int64_t count, const FunctorType_& func)
+		{
+			IOperationProfilerPtr op(Profile(name, count));
+			func();
+		}
 	};
 
 }
