@@ -75,7 +75,7 @@ namespace qt5
 	};
 
 
-	struct regular
+	struct Regular
 	{
 		using SignalType = SignalOwner;
 		using HandlerType = SlotWrapper;

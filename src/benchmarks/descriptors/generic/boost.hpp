@@ -12,7 +12,7 @@ namespace generic {
 namespace boost
 {
 
-	struct condition_variable
+	struct ConditionVariable
 	{
 		using Type = ::boost::condition_variable;
 		static std::string GetName() { return "boost_condition_variable"; }

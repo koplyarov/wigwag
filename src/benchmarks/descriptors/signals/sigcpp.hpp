@@ -25,7 +25,7 @@ namespace sigcpp
 	};
 
 
-	struct regular
+	struct Regular
 	{
 		using SignalType = sigc::signal<void>;
 		using HandlerType = std::function<void()>;

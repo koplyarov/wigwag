@@ -11,7 +11,7 @@ namespace generic {
 namespace std
 {
 
-	struct condition_variable
+	struct ConditionVariable
 	{
 		using Type = ::std::condition_variable;
 		static ::std::string GetName() { return "std_condition_variable"; }

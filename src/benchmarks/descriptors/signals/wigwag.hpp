@@ -16,7 +16,7 @@ namespace wigwag
 	using ui_signal = signal<Signature_, exception_handling::none, threading::none, state_populating::none, life_assurance::none>;
 
 
-	struct regular
+	struct Regular
 	{
 		using SignalType = signal<void()>;
 		using HandlerType = std::function<void()>;
@@ -27,7 +27,7 @@ namespace wigwag
 	};
 
 
-	struct ui
+	struct Ui
 	{
 		using SignalType = ui_signal<void()>;
 		using HandlerType = std::function<void()>;

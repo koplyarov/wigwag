@@ -47,7 +47,7 @@ namespace boost
 	};
 
 
-	struct tracking
+	struct Tracking
 	{
 		using SignalType = signals2::signal<void()>;
 		using HandlerType = TrackingSlotWrapper<void(), shared_ptr<std::string>>;
@@ -57,7 +57,7 @@ namespace boost
 		static std::string GetName() { return "boost_tracking"; }
 	};
 
-	struct regular
+	struct Regular
 	{
 		using SignalType = signals2::signal<void()>;
 		using HandlerType = std::function<void()>;

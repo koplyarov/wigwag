@@ -38,34 +38,32 @@ int main(int argc, char* argv[])
 
 		BenchmarkSuite s;
 		s.RegisterBenchmarks<SignalsBenchmarks,
-			signals::wigwag::regular,
-			signals::wigwag::ui,
-			signals::boost::regular,
-			signals::boost::tracking,
+			signals::wigwag::Regular,
+			signals::wigwag::Ui,
+			signals::boost::Regular,
+			signals::boost::Tracking,
 #if WIGWAG_BENCHMARKS_SIGCPP2
-			signals::sigcpp::regular,
+			signals::sigcpp::Regular,
 #endif
 #if WIGWAG_BENCHMARKS_QT5
-			signals::qt5::regular
+			signals::qt5::Regular
 #endif
 			>();
 
 		s.RegisterBenchmarks<FunctionsBenchmarks,
-			functions::std::regular,
-			functions::boost::regular>();
+			functions::std::Regular,
+			functions::boost::Regular>();
 
 		s.RegisterBenchmarks<MutexBenchmarks,
-			mutex::std::mutex,
-			mutex::std::recursive_mutex,
-			mutex::boost::mutex,
-			mutex::boost::recursive_mutex
-			>();
+			mutex::std::Mutex,
+			mutex::std::RecursiveMutex,
+			mutex::boost::Mutex,
+			mutex::boost::RecursiveMutex >();
 
 		s.RegisterBenchmarks<GenericBenchmarks,
-			generic::std::condition_variable,
-			generic::boost::condition_variable,
-			generic::wigwag::life_token
-			>();
+			generic::std::ConditionVariable,
+			generic::boost::ConditionVariable,
+			generic::wigwag::LifeToken>();
 
 		return BenchmarkApp(s).Run(argc, argv);
 	}

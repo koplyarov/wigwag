@@ -12,7 +12,7 @@ namespace functions {
 namespace boost
 {
 
-	struct regular
+	struct Regular
 	{
 		using FunctionType = ::boost::function<void()>;
 

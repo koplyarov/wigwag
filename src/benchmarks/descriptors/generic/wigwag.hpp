@@ -12,7 +12,7 @@ namespace generic {
 namespace wigwag
 {
 
-	struct life_token
+	struct LifeToken
 	{
 		using Type = ::wigwag::life_token;
 		static ::std::string GetName() { return "life_token"; }

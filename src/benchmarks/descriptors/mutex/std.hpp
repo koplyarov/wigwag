@@ -12,13 +12,13 @@ namespace mutex {
 namespace std
 {
 
-	struct mutex
+	struct Mutex
 	{
 		using MutexType = ::std::mutex;
 		static ::std::string GetName() { return "std"; }
 	};
 
-	struct recursive_mutex
+	struct RecursiveMutex
 	{
 		using MutexType = ::std::recursive_mutex;
 		static ::std::string GetName() { return "std_recursive"; }

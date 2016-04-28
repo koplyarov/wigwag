@@ -14,13 +14,13 @@ namespace mutex {
 namespace boost
 {
 
-	struct mutex
+	struct Mutex
 	{
 		using MutexType = ::boost::mutex;
 		static std::string GetName() { return "boost"; }
 	};
 
-	struct recursive_mutex
+	struct RecursiveMutex
 	{
 		using MutexType = ::boost::recursive_mutex;
 		static std::string GetName() { return "boost_recursive"; }

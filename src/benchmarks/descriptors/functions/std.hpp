@@ -11,7 +11,7 @@ namespace functions {
 namespace std
 {
 
-	struct regular
+	struct Regular
 	{
 		using FunctionType = ::std::function<void()>;
 
