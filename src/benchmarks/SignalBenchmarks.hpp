@@ -68,7 +68,7 @@ namespace benchmarks
 
 			c.Construct([&]{ return s.connect(handler); });
 			context.MeasureMemory("handler", context.GetIterationsCount());
-			c.Destruct();
+			context.Profile("disconnect", context.GetIterationsCount(), [&]{ c.Destruct(); });
 		}
 
 		static void Invoke(BenchmarkContext& context, int64_t numSlots)
