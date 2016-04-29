@@ -20,7 +20,6 @@ if (MSVC)
 else()
 	add_definitions(-Wall)
 	add_definitions(-std=c++11)
-	add_definitions(-fno-omit-frame-pointer)
 endif()
 
 if (WIGWAG_COVERAGE)
