@@ -9,6 +9,8 @@
 
 #include <benchmarks/core/detail/BenchmarkResult.hpp>
 
+#include <algorithm>
+
 
 namespace benchmarks
 {
