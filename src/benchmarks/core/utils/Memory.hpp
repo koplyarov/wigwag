@@ -1,5 +1,5 @@
-#ifndef UTILS_STORAGE_FOR_HPP
-#define UTILS_STORAGE_FOR_HPP
+#ifndef BENCHMARKS_CORE_UTILS_MEMORY_HPP
+#define BENCHMARKS_CORE_UTILS_MEMORY_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,16 +11,18 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-namespace wigwag
+#include <stdint.h>
+
+
+namespace benchmarks
 {
 
-	template < typename T_ >
-	union storage_for
+	class Memory
 	{
-		T_ obj;
-
-		storage_for() { }
-		~storage_for() { }
+	public:
+		static int64_t GetRss();
+		static int64_t GetTotalPhys();
+		static int64_t GetAvailablePhys();
 	};
 
 }

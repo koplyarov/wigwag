@@ -89,6 +89,8 @@ find_package(Boost COMPONENTS
 	exception
 	thread
 	date_time
+	regex
+	serialization
 )
 
 if (Boost_FOUND)
@@ -131,8 +133,16 @@ if (Boost_FOUND)
 	endif()
 
 	add_executable(wigwag_benchmarks
-		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/benchmarks.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/markers.cpp)
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/BenchmarkApp.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/BenchmarkSuite.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/detail/BenchmarkResult.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/ipc/MessageQueue.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/Barrier.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/Logger.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/Memory.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/ThreadPriority.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/descriptors/signal/qt5.hpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/main.cpp)
 
 	if (SIGCPP2_FOUND)
 		target_link_libraries(wigwag_benchmarks ${SIGCPP2_LIBRARIES})
@@ -145,4 +155,10 @@ if (Boost_FOUND)
 		${Boost_LIBRARIES}
 		${CMAKE_THREAD_LIBS_INIT}
 	)
+
+	if (MSVC)
+		target_link_libraries(wigwag_benchmarks ole32 oleaut32)
+	else()
+		target_link_libraries(wigwag_benchmarks rt)
+	endif()
 endif()

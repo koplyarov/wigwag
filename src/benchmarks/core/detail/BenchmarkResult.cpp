@@ -1,6 +1,3 @@
-#ifndef UTILS_MUTEXED_HPP
-#define UTILS_MUTEXED_HPP
-
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
 // Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted,
@@ -10,40 +7,32 @@
 // IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-
-#include <thread>
-
-#include <utils/thread.hpp>
+#include <benchmarks/core/detail/BenchmarkResult.hpp>
 
 
-namespace wigwag
+namespace benchmarks
 {
 
-	template < typename T_ >
-	class mutexed
+	namespace
 	{
-	private:
-		mutable std::mutex		_m;
-		T_						_val;
-
-	public:
-		mutexed(T_ val = T_())
-			: _val(val)
-		{ }
-
-		T_ get() const
+		template < typename MapType_ >
+		void MergeMaps(MapType_& dst, const MapType_& src)
 		{
-			auto l = lock(_m);
-			return _val;
+			for (auto p : src)
+			{
+				auto it = dst.find(p.first);
+				if (it == dst.end())
+					dst.insert({p.first, p.second});
+				else
+					it->second = std::min(it->second, p.second);
+			}
 		}
+	}
 
-		void set(T_ val)
-		{
-			auto l = lock(_m);
-			_val = val;
-		}
-	};
+	void BenchmarkResult::Update(const BenchmarkResult& other)
+	{
+		MergeMaps(_operationTimes, other._operationTimes);
+		MergeMaps(_memoryConsumption, other._memoryConsumption);
+	}
 
 }
-
-#endif
