@@ -15,6 +15,7 @@
 | signal          | ${signal.createEmpty.wigwag[create]} | ${signal.createEmpty.wigwag[destroy]} | ${signal.create.wigwag[destroy]} |
 | sigc++          | ${signal.createEmpty.sigcpp[create]} | ${signal.createEmpty.sigcpp[destroy]} | ${signal.create.sigcpp[destroy]} |
 | boost           | ${signal.createEmpty.boost[create]} | ${signal.createEmpty.boost[destroy]} | ${signal.create.boost[destroy]} |
+| boost, tracking | ${signal.createEmpty.boost_tracking[create]} | ${signal.createEmpty.boost_tracking[destroy]} | ${signal.create.boost_tracking[destroy]} |
 | qt5             | ${signal.createEmpty.qt5[create]} | ${signal.createEmpty.qt5[destroy]} | ${signal.create.qt5[destroy]} |
 
 # Signal handlers performance
