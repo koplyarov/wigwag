@@ -55,7 +55,7 @@ namespace benchmarks
 			StorageArray<SignalType> s(n);
 
 			s.Construct();
-			s.ForEach([](SignalType& s){ s.connect(SignalsDesc_::MakeHandler()); s(); });
+			s.ForEach([](SignalType& s){ ConnectionType(s.connect(SignalsDesc_::MakeHandler())); s(); });
 			context.MeasureMemory("signal", n);
 			context.Profile("destroy", n, [&]{ s.Destruct(); });
 		}
