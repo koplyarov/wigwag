@@ -20,6 +20,7 @@
 #include <boost/spirit/include/support_multi_pass.hpp>
 
 #include <fstream>
+#include <iomanip>
 
 
 namespace benchmarks
@@ -232,6 +233,13 @@ namespace benchmarks
 							auto val = get_measurement(id);
 							if (baselineId)
 								val -= get_measurement(*baselineId);
+
+							std::ios::fmtflags f(output_stream->flags());
+							BOOST_SCOPE_EXIT_ALL(&) { output_stream->flags(f); };
+							if (val < 100)
+								*output_stream << std::setprecision(2);
+							else
+								*output_stream << std::fixed << std::setprecision(0);
 							*output_stream << val;
 						}
 					);
