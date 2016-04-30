@@ -1,6 +1,6 @@
 # Memory consumption
 |                 | bytes per empty signal | bytes per signal | bytes per handler |
-| --------------- | ---------------: | ----------------: |
+| --------------- | ---------------------: | ---------------: | ----------------: |
 | ui_signal       | ${signal.createEmpty.wigwag_ui[signal]} | ${signal.create.wigwag_ui[signal]} | ${signal.handlerSize.wigwag_ui[handler]} |
 | signal          | ${signal.createEmpty.wigwag[signal]} | ${signal.create.wigwag[signal]} | ${signal.handlerSize.wigwag[handler]} |
 | sigc++          | ${signal.createEmpty.sigcpp[signal]} | ${signal.create.sigcpp[signal]} | ${signal.handlerSize.sigcpp[handler]} |
