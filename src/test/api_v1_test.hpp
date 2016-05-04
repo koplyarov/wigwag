@@ -659,18 +659,34 @@ public:
 
 	static void test__creation__ahead_of_time()
 	{
-		signal<void(), creation::ahead_of_time> s;
-		s();
-		token t = s.connect([]{});
-		s();
+		{
+			signal<void(), creation::ahead_of_time> s;
+			s();
+			token t = s.connect([]{});
+			s();
+		}
+		{
+			listenable<test_listener, creation::ahead_of_time> l;
+			l.invoke([](const test_listener& f) { f.f(); });
+			token t = l.connect(test_listener([] {}, [](int) {}));
+			l.invoke([](const test_listener& f) { f.f(); });
+		}
 	}
 
 	static void test__creation__lazy()
 	{
-		signal<void(), creation::lazy> s;
-		s();
-		token t = s.connect([]{});
-		s();
+		{
+			signal<void(), creation::lazy> s;
+			s();
+			token t = s.connect([]{});
+			s();
+		}
+		{
+			listenable<test_listener, creation::lazy> l;
+			l.invoke([](const test_listener& f) { f.f(); });
+			token t = l.connect(test_listener([] {}, [](int) {}));
+			l.invoke([](const test_listener& f) { f.f(); });
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
