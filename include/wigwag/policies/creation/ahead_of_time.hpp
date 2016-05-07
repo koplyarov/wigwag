@@ -22,13 +22,23 @@ namespace creation
 
 	struct ahead_of_time
 	{
-		template < typename T_, typename... Args_ >
-		T_* create_ahead_of_time(Args_&&... args) const
-		{ return new T_(std::forward<Args_>(args)...); }
+		template < typename OwningPtr_, typename DefaultType_ >
+		class storage
+		{
+		private:
+			OwningPtr_		_ptr;
 
-		template < typename T_, typename... Args_ >
-		T_* create_just_in_time(Args_&&... args) const
-		{ return new T_(std::forward<Args_>(args)...); }
+		public:
+			template < typename T_, typename... Args_ >
+			void create(Args_&&... args)
+			{ _ptr.reset(new T_(std::forward<Args_>(args)...)); }
+
+			OwningPtr_ get_ptr() const
+			{ return _ptr; }
+
+			bool constructed() const
+			{ return (bool)_ptr; }
+		};
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>

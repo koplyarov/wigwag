@@ -11,6 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/creation_storage_adapter.hpp>
 #include <wigwag/detail/listenable_impl.hpp>
 #include <wigwag/detail/policy_picker.hpp>
 #include <wigwag/policies.hpp>
@@ -58,19 +59,19 @@ namespace wigwag
 		using impl_type = detail::listenable_impl<ListenerType_, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy, ref_counter_policy>;
 		using impl_type_ptr = detail::intrusive_ptr<impl_type>;
 
+		using storage = typename creation_policy::template storage<impl_type_ptr, impl_type>;
+
 	private:
-		mutable impl_type_ptr		_impl;
+		detail::creation_storage_adapter<storage>		_impl;
 
 	public:
 		template < bool has_default_ctor = std::is_constructible<impl_type>::value, typename = typename std::enable_if<has_default_ctor>::type>
 		listenable()
-			: _impl(creation_policy::template create_ahead_of_time<impl_type>())
-		{ }
+		{ _impl.template create<impl_type>(); }
 
 		template < typename... Args_ >
 		listenable(Args_&&... args)
-			: _impl(creation_policy::template create_just_in_time<impl_type>(std::forward<Args_>(args)...))
-		{ }
+		{ _impl.template create<impl_type>(std::forward<Args_>(args)...); }
 
 		~listenable()
 		{
@@ -87,16 +88,10 @@ namespace wigwag
 		listenable& operator = (const listenable&) = delete;
 
 		auto lock_primitive() const -> decltype(_impl->get_lock_primitive().get_primitive())
-		{
-			ensure_impl_created();
-			return _impl->get_lock_primitive().get_primitive();
-		}
+		{ return _impl->get_lock_primitive().get_primitive(); }
 
 		token connect(const ListenerType_& handler, handler_attributes attributes = handler_attributes::none) const
-		{
-			ensure_impl_created();
-			return _impl->connect(handler, attributes);
-		}
+		{ return _impl->connect(handler, attributes); }
 
 		template < typename InvokeListenerFunc_ >
 		void invoke(const InvokeListenerFunc_& invoke_listener_func)
@@ -104,18 +99,6 @@ namespace wigwag
 			if (_impl)
 				_impl->invoke(invoke_listener_func);
 		}
-
-	private:
-		template < bool has_default_ctor = std::is_constructible<impl_type>::value>
-		void ensure_impl_created(typename std::enable_if<has_default_ctor, detail::enabler>::type = detail::enabler()) const
-		{
-			if (!_impl)
-				_impl.reset(creation_policy::template create_just_in_time<impl_type>());
-		}
-
-		template < bool has_default_ctor = std::is_constructible<impl_type>::value>
-		void ensure_impl_created(typename std::enable_if<!has_default_ctor, detail::enabler>::type = detail::enabler()) const
-		{ WIGWAG_ASSERT(_impl, "Internal wigwag error, _impl must have been initialized before!"); }
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>

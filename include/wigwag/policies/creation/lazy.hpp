@@ -22,13 +22,42 @@ namespace creation
 
 	struct lazy
 	{
-		template < typename T_, typename... Args_ >
-		T_* create_ahead_of_time(Args_&&...) const
-		{ return nullptr; }
+		template < typename OwningPtr_, typename DefaultType_ >
+		class storage
+		{
+		private:
+			mutable OwningPtr_		_ptr;
 
-		template < typename T_, typename... Args_ >
-		T_* create_just_in_time(Args_&&... args) const
-		{ return new T_(std::forward<Args_>(args)...); }
+		public:
+			template < typename T_, bool enable = std::is_same<T_, DefaultType_>::value && std::is_constructible<T_>::value, typename = typename std::enable_if<enable>::type >
+			void create()
+			{ }
+
+			template < typename T_, typename... Args_ >
+			void create(Args_&&... args)
+			{ _ptr.reset(new T_(std::forward<Args_>(args)...)); }
+
+			OwningPtr_ get_ptr() const
+			{
+				ensure_created();
+				return _ptr;
+			}
+
+			bool constructed() const
+			{ return (bool)_ptr; }
+
+		private:
+			template < bool has_default_ctor = std::is_constructible<DefaultType_>::value>
+			void ensure_created(typename std::enable_if<has_default_ctor, detail::enabler>::type = detail::enabler()) const
+			{
+				if (!_ptr)
+					_ptr.reset(new DefaultType_());
+			}
+
+			template < bool has_default_ctor = std::is_constructible<DefaultType_>::value>
+			void ensure_created(typename std::enable_if<!has_default_ctor, detail::enabler>::type = detail::enabler()) const
+			{ WIGWAG_ASSERT(_ptr, "Internal wigwag error, _ptr must have been initialized before!"); }
+		};
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>

@@ -11,6 +11,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/creation_storage_adapter.hpp>
 #include <wigwag/detail/policy_picker.hpp>
 #include <wigwag/detail/signal_impl.hpp>
 #include <wigwag/policies.hpp>
@@ -46,8 +47,7 @@ namespace wigwag
 			typename... ArgTypes_,
 			typename... Policies_
 		>
-	class signal<RetType_(ArgTypes_...), Policies_...> :
-		private detail::policy_picker<creation::policy_concept, detail::signal_policies_config, Policies_...>::type
+	class signal<RetType_(ArgTypes_...), Policies_...>
 	{
 		using signature = RetType_(ArgTypes_...);
 		template < template <typename> class PolicyConcept_ >
@@ -68,26 +68,28 @@ namespace wigwag
 		using impl_type_with_attr = detail::signal_with_attributes_impl<signature, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy, ref_counter_policy>;
 		using impl_type_ptr = detail::intrusive_ptr<impl_type>;
 
+		using storage = typename creation_policy::template storage<impl_type_ptr, impl_type>;
+
 	private:
-		mutable impl_type_ptr		_impl;
+		detail::creation_storage_adapter<storage>		_impl;
 
 	public:
 		template < typename... Args_ >
 		signal(signal_attributes attributes, Args_&&... args)
-			: _impl((attributes == signal_attributes::none) ?
-				creation_policy::template create_just_in_time<impl_type>(std::forward<Args_>(args)...) :
-				creation_policy::template create_just_in_time<impl_type_with_attr>(attributes, std::forward<Args_>(args)...))
-		{ }
+		{
+			if (attributes == signal_attributes::none)
+				_impl.template create<impl_type>(std::forward<Args_>(args)...);
+			else
+				_impl.template create<impl_type_with_attr>(attributes, std::forward<Args_>(args)...);
+		}
 
 		template < typename... Args_ >
 		signal(Args_&&... args)
-			: _impl(creation_policy::template create_just_in_time<impl_type>(std::forward<Args_>(args)...))
-		{ }
+		{ _impl.template create<impl_type>(std::forward<Args_>(args)...); }
 
 		template < bool has_default_ctor = std::is_constructible<impl_type>::value, typename = typename std::enable_if<has_default_ctor>::type>
 		signal()
-			: _impl(creation_policy::template create_ahead_of_time<impl_type>())
-		{ }
+		{ _impl.template create<impl_type>(); }
 
 		~signal()
 		{
@@ -104,30 +106,18 @@ namespace wigwag
 		signal& operator = (const signal&) = delete;
 
 		auto lock_primitive() const -> decltype(_impl->get_lock_primitive().get_primitive())
-		{
-			ensure_impl_created();
-			return _impl->get_lock_primitive().get_primitive();
-		}
+		{ return _impl->get_lock_primitive().get_primitive(); }
 
 		signal_connector<signature> connector() const
-		{
-			ensure_impl_created();
-			return signal_connector<signature>(_impl);
-		}
+		{ return signal_connector<signature>(_impl.get_ptr()); }
 
 		template < typename HandlerFunc_ >
 		token connect(const HandlerFunc_& handler, handler_attributes attributes = handler_attributes::none) const
-		{
-			ensure_impl_created();
-			return _impl->connect(handler, attributes);
-		}
+		{ return _impl->connect(handler, attributes); }
 
 		template < typename HandlerFunc_ >
 		token connect(const std::shared_ptr<task_executor>& worker, const HandlerFunc_& handler, handler_attributes attributes = handler_attributes::none) const
-		{
-			ensure_impl_created();
-			return _impl->connect(worker, handler, attributes);
-		}
+		{ return _impl->connect(worker, handler, attributes); }
 
 		void operator() (ArgTypes_... args) const
 		{
@@ -136,16 +126,16 @@ namespace wigwag
 		}
 
 	private:
-		template < bool has_default_ctor = std::is_constructible<impl_type>::value>
-		void ensure_impl_created(typename std::enable_if<has_default_ctor, detail::enabler>::type = detail::enabler()) const
-		{
-			if (!_impl)
-				_impl.reset(creation_policy::template create_just_in_time<impl_type>());
-		}
+		//template < bool has_default_ctor = std::is_constructible<impl_type>::value>
+		//void ensure_impl_created(typename std::enable_if<has_default_ctor, detail::enabler>::type = detail::enabler()) const
+		//{
+			//if (!_impl)
+				//_impl.reset(creation_policy::template create_just_in_time<impl_type>());
+		//}
 
-		template < bool has_default_ctor = std::is_constructible<impl_type>::value>
-		void ensure_impl_created(typename std::enable_if<!has_default_ctor, detail::enabler>::type = detail::enabler()) const
-		{ WIGWAG_ASSERT(_impl, "Internal wigwag error, _impl must have been initialized before!"); }
+		//template < bool has_default_ctor = std::is_constructible<impl_type>::value>
+		//void ensure_impl_created(typename std::enable_if<!has_default_ctor, detail::enabler>::type = detail::enabler()) const
+		//{ WIGWAG_ASSERT(_impl, "Internal wigwag error, _impl must have been initialized before!"); }
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>

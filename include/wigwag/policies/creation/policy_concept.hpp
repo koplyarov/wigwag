@@ -21,19 +21,31 @@ namespace creation
 
 	namespace detail
 	{
-		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_create_ahead_of_time, std::declval<T_>().template create_ahead_of_time<int>(42));
-		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_create_just_in_time, std::declval<T_>().template create_just_in_time<int>(42));
+		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_storage, std::declval<typename T_::template storage<std::shared_ptr<int>, int>>());
+		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_create, std::declval<T_>().template create<int>(42));
+		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_get_ptr, std::declval<const T_>().get_ptr());
+
+		template < typename T_, bool HasStorage_ =  detail::has_storage<T_>::value >
+		struct check_policy_v1_1
+		{ using adapted_policy = void; };
 
 		template < typename T_ >
-		struct check_policy_v1_0
-		{ using adapted_policy = typename std::conditional<has_create_ahead_of_time<T_>::value && has_create_just_in_time<T_>::value, T_, void>::type; };
+		struct check_policy_v1_1<T_, true>
+		{
+			using storage = typename T_::template storage<std::shared_ptr<int>, int>;
+			static constexpr bool matches =
+				detail::has_create<storage>::value &&
+				detail::has_get_ptr<storage>::value;
+
+			using adapted_policy = typename std::conditional<matches, T_, void>::type;
+		};
 	}
 
 
 	template < typename T_ >
 	struct policy_concept
 	{
-		using adapted_policy = typename wigwag::detail::policy_version_detector<detail::check_policy_v1_0<T_>>::adapted_policy;
+		using adapted_policy = typename wigwag::detail::policy_version_detector<detail::check_policy_v1_1<T_>>::adapted_policy;
 	};
 
 }}
