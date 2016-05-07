@@ -39,8 +39,8 @@ namespace detail
 		auto get_ptr() const -> decltype(_s.get_ptr())
 		{ return _s.get_ptr(); }
 
-		auto operator -> () const -> decltype(&*get_ptr())
-		{ return &*get_ptr(); }
+		auto operator -> () const -> decltype(&*_s.get_ptr())
+		{ return &*_s.get_ptr(); }
 	};
 
 }}
