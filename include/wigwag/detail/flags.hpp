@@ -23,12 +23,12 @@ namespace detail
 #define WIGWAG_DECLARE_ENUM_BITWISE_OPERATORS(EnumClass_) \
 	inline EnumClass_ operator | (EnumClass_ l, EnumClass_ r) \
 	{ \
-		using underlying = typename std::underlying_type<EnumClass_>::type; \
+		using underlying = std::underlying_type<EnumClass_>::type; \
 		return static_cast<EnumClass_>(static_cast<underlying>(l) | static_cast<underlying>(r)); \
 	} \
 	inline EnumClass_ operator & (EnumClass_ l, EnumClass_ r) \
 	{ \
-		using underlying = typename std::underlying_type<EnumClass_>::type; \
+		using underlying = std::underlying_type<EnumClass_>::type; \
 		return static_cast<EnumClass_>(static_cast<underlying>(l) & static_cast<underlying>(r)); \
 	}
 
