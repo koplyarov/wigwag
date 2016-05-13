@@ -37,7 +37,7 @@ namespace creation
 			void create(Args_&&... args)
 			{ _ptr.reset(new T_(std::forward<Args_>(args)...)); }
 
-			OwningPtr_ get_ptr() const
+			const OwningPtr_& get_ptr() const
 			{
 				ensure_created();
 				return _ptr;
