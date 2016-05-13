@@ -60,12 +60,12 @@ namespace wigwag
 		~basic_threadless_task_executor()
 		{ }
 
-		virtual void add_task(const std::function<void()>& task)
+		virtual void add_task(std::function<void()> task)
 		{
 			_lp.lock_nonrecursive();
 			auto sg = detail::at_scope_exit([&] { _lp.unlock_nonrecursive(); } );
 
-			_tasks.push(task);
+			_tasks.push(std::move(task));
 		}
 
 		void process_tasks()
@@ -76,7 +76,8 @@ namespace wigwag
 			while (!_tasks.empty())
 			{
 				exception_handling_policy::handle_exceptions([&]() {
-						std::function<void()> task = _tasks.front();
+						std::function<void()> task;
+						std::swap(_tasks.front(), task);
 						_tasks.pop();
 
 						_lp.unlock_nonrecursive();

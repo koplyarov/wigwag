@@ -64,11 +64,11 @@ namespace wigwag
 				_thread.join();
 		}
 
-		virtual void add_task(const std::function<void()>& task)
+		virtual void add_task(std::function<void()> task)
 		{
 			std::lock_guard<std::mutex> l(_mutex);
 			bool need_wakeup = _tasks.empty();
-			_tasks.push(task);
+			_tasks.push(std::move(task));
 			if (need_wakeup)
 				_cv.notify_all();
 		}
@@ -86,7 +86,8 @@ namespace wigwag
 				}
 
 				exception_handling_policy::handle_exceptions([&]() {
-						std::function<void()> task = _tasks.front();
+						std::function<void()> task;
+						std::swap(_tasks.front(), task);
 						_tasks.pop();
 
 						l.unlock();

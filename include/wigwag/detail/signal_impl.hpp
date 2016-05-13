@@ -59,15 +59,15 @@ namespace detail
 		virtual void add_ref() { listenable_base::add_ref(); }
 		virtual void release() { listenable_base::release(); }
 
-		virtual token connect(const handler_type& handler, handler_attributes attributes)
+		virtual token connect(handler_type handler, handler_attributes attributes)
 		{
 			if (contains_flag(this->get_attributes(), signal_attributes::connect_async_only))
 				WIGWAG_THROW("The signal restrains connecting synchronous handlers!");
 
-			return listenable_base::connect(handler, attributes);
+			return listenable_base::connect(std::move(handler), attributes);
 		}
 
-		virtual token connect(const std::shared_ptr<task_executor>& worker, const handler_type& handler, handler_attributes attributes)
+		virtual token connect(const std::shared_ptr<task_executor>& worker, handler_type handler, handler_attributes attributes)
 		{
 			if (contains_flag(this->get_attributes(), signal_attributes::connect_sync_only))
 				WIGWAG_THROW("The signal restrains connecting asynchronous handlers!");
@@ -77,7 +77,7 @@ namespace detail
 
 			return this->create_node(attributes,
 					[&](const life_checker& lc) {
-						async_handler<Signature_, LifeAssurancePolicy_> real_handler(worker, lc, handler);
+						async_handler<Signature_, LifeAssurancePolicy_> real_handler(worker, lc, std::move(handler));
 						if (!contains_flag(attributes, handler_attributes::suppress_populator))
 							this->get_exception_handler().handle_exceptions([&] { this->get_handler_processor().populate_state(real_handler); });
 						return real_handler;

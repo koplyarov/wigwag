@@ -65,7 +65,7 @@ namespace detail
 			{
 				handler_type obj;
 
-				handler_storage(const handler_type& handler) : obj(handler) { }
+				handler_storage(handler_type&& handler) : obj(std::move(handler)) { }
 				~handler_storage() { }
 			};
 
@@ -94,7 +94,7 @@ namespace detail
 			{ _listenable_impl->get_handlers_container().push_back(*this); }
 
 			handler_node(const intrusive_ptr<listenable_impl>& impl, handler_type handler)
-				: _listenable_impl(impl), _handler(handler)
+				: _listenable_impl(impl), _handler(std::move(handler))
 			{ _listenable_impl->get_handlers_container().push_back(*this); }
 
 			virtual ~handler_node()
@@ -215,7 +215,7 @@ namespace detail
 		void add_ref() { ref_counter_base::add_ref(); }
 		void release() { ref_counter_base::release(); }
 
-		token connect(const handler_type& handler, handler_attributes attributes)
+		token connect(handler_type handler, handler_attributes attributes)
 		{
 			get_lock_primitive().lock_nonrecursive();
 			auto sg = detail::at_scope_exit([&] { get_lock_primitive().unlock_nonrecursive(); } );
@@ -223,7 +223,7 @@ namespace detail
 			if (!contains_flag(attributes, handler_attributes::suppress_populator))
 				get_exception_handler().handle_exceptions([&] { get_handler_processor().populate_state(handler); });
 
-			return create_node(attributes, handler);
+			return create_node(attributes, std::move(handler));
 		}
 
 		template < typename InvokeListenerFunc_ >

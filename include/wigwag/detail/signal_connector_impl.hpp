@@ -27,8 +27,8 @@ namespace detail
 	{
 		virtual ~signal_connector_impl() { }
 
-		virtual token connect(const std::function<Signature_>& handler, handler_attributes attributes) = 0;
-		virtual token connect(const std::shared_ptr<task_executor>& worker, const std::function<Signature_>& handler, handler_attributes attributes) = 0;
+		virtual token connect(std::function<Signature_> handler, handler_attributes attributes) = 0;
+		virtual token connect(const std::shared_ptr<task_executor>& worker, std::function<Signature_> handler, handler_attributes attributes) = 0;
 
 		virtual void add_ref() = 0;
 		virtual void release() = 0;

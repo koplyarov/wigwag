@@ -51,6 +51,30 @@ private:
 		virtual void g(int i) const { _g_impl(i); }
 	};
 
+	class copy_ctor_counter
+	{
+	private:
+		std::atomic<int>&		_counter;
+
+	public:
+		copy_ctor_counter(std::atomic<int>& counter)
+			: _counter(counter)
+		{ }
+
+		copy_ctor_counter(const copy_ctor_counter& other)
+			: _counter(other._counter)
+		{ ++_counter; }
+
+		copy_ctor_counter(copy_ctor_counter&& other)
+			: _counter(other._counter)
+		{ }
+
+		copy_ctor_counter& operator = (const copy_ctor_counter&) = delete;
+
+		void operator() () const
+		{ }
+	};
+
 public:
 	static void test_signals()
 	{
@@ -830,7 +854,131 @@ public:
 			auto l = lock(m);
 			TS_ASSERT_EQUALS(n, 3);
 		}
+
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	static void test_task_executor_function_copying()
+	{
+		{
+			std::atomic<int> counter(0);
+			std::shared_ptr<threadless_task_executor> worker = std::make_shared<threadless_task_executor>();
+			worker->add_task(copy_ctor_counter(counter));
+			TS_ASSERT_EQUALS(counter.load(), 0);
+			worker->process_tasks();
+			TS_ASSERT_EQUALS(counter.load(), 0);
+		}
+
+		{
+			std::atomic<int> counter(0);
+			std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
+			worker->add_task([]{ thread::sleep(100); });
+			TS_ASSERT_EQUALS(counter.load(), 0);
+			thread::sleep(200);
+			TS_ASSERT_EQUALS(counter.load(), 0);
+		}
+	}
+
+	static void test_signal_handler_copying()
+	{
+		{
+			signal<void()> s;
+			std::atomic<int> counter(0);
+
+			token t = s.connect(copy_ctor_counter(counter));
+			TS_ASSERT_EQUALS(counter.load(), 0);
+			s();
+			TS_ASSERT_EQUALS(counter.load(), 0);
+			t.reset();
+			TS_ASSERT_EQUALS(counter.load(), 0);
+		}
+
+		{
+			std::shared_ptr<threadless_task_executor> worker = std::make_shared<threadless_task_executor>();
+			signal<void()> s;
+			std::atomic<int> counter(0);
+
+			token t = s.connect(worker, copy_ctor_counter(counter), handler_attributes::suppress_populator);
+			TS_ASSERT_EQUALS(counter.load(), 0);
+			s();
+			TS_ASSERT_EQUALS(counter.load(), 1);
+			worker->process_tasks();
+			TS_ASSERT_EQUALS(counter.load(), 1);
+			t.reset();
+			TS_ASSERT_EQUALS(counter.load(), 1);
+		}
+
+		{
+			std::shared_ptr<threadless_task_executor> worker = std::make_shared<threadless_task_executor>();
+			signal<void()> s;
+			std::atomic<int> counter(0);
+
+			token t = s.connect(worker, copy_ctor_counter(counter));
+			TS_ASSERT_EQUALS(counter.load(), 1);
+			worker->process_tasks();
+			TS_ASSERT_EQUALS(counter.load(), 1);
+			s();
+			TS_ASSERT_EQUALS(counter.load(), 2);
+			worker->process_tasks();
+			TS_ASSERT_EQUALS(counter.load(), 2);
+			t.reset();
+			TS_ASSERT_EQUALS(counter.load(), 2);
+		}
+	}
+
+	static void test_signal_parameters_copying()
+	{
+		{
+			std::atomic<int> counter(0);
+			copy_ctor_counter state(counter);
+			signal<void(const copy_ctor_counter&)> s([&](const std::function<void(const copy_ctor_counter&)>& h){ h(state); });
+
+			token t = s.connect([](const copy_ctor_counter& c) { });
+			TS_ASSERT_EQUALS(counter.load(), 0);
+			s(copy_ctor_counter(counter));
+			TS_ASSERT_EQUALS(counter.load(), 0);
+			t.reset();
+			TS_ASSERT_EQUALS(counter.load(), 0);
+		}
+
+		{
+			std::shared_ptr<threadless_task_executor> worker = std::make_shared<threadless_task_executor>();
+			std::atomic<int> counter(0);
+			copy_ctor_counter state(counter);
+			signal<void(const copy_ctor_counter&)> s([&](const std::function<void(const copy_ctor_counter&)>& h){ h(state); });
+
+			token t = s.connect(worker, [](const copy_ctor_counter& c) { }, handler_attributes::suppress_populator);
+			TS_ASSERT_EQUALS(counter.load(), 0);
+			worker->process_tasks();
+			TS_ASSERT_EQUALS(counter.load(), 0);
+			s(copy_ctor_counter(counter));
+			TS_ASSERT_EQUALS(counter.load(), 1);
+			worker->process_tasks();
+			TS_ASSERT_EQUALS(counter.load(), 1);
+			t.reset();
+			TS_ASSERT_EQUALS(counter.load(), 1);
+		}
+
+		{
+			std::shared_ptr<threadless_task_executor> worker = std::make_shared<threadless_task_executor>();
+			std::atomic<int> counter(0);
+			copy_ctor_counter state(counter);
+			signal<void(const copy_ctor_counter&)> s([&](const std::function<void(const copy_ctor_counter&)>& h){ h(state); });
+
+			token t = s.connect(worker, [](const copy_ctor_counter& c) { });
+			TS_ASSERT_EQUALS(counter.load(), 1);
+			worker->process_tasks();
+			TS_ASSERT_EQUALS(counter.load(), 1);
+			s(copy_ctor_counter(counter));
+			TS_ASSERT_EQUALS(counter.load(), 2);
+			worker->process_tasks();
+			TS_ASSERT_EQUALS(counter.load(), 2);
+			t.reset();
+			TS_ASSERT_EQUALS(counter.load(), 2);
+		}
 	}
 };
+
 
 #endif

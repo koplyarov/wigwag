@@ -40,12 +40,12 @@ namespace wigwag
 		{ }
 
 		template < typename HandlerFunc_ >
-		token connect(const HandlerFunc_& handler, handler_attributes attributes = handler_attributes::none) const
-		{ return _impl->connect(handler, attributes); }
+		token connect(HandlerFunc_ handler, handler_attributes attributes = handler_attributes::none) const
+		{ return _impl->connect(std::move(handler), attributes); }
 
 		template < typename HandlerFunc_ >
-		token connect(const std::shared_ptr<task_executor>& worker, const HandlerFunc_& handler, handler_attributes attributes = handler_attributes::none) const
-		{ return _impl->connect(worker, handler, attributes); }
+		token connect(const std::shared_ptr<task_executor>& worker, HandlerFunc_ handler, handler_attributes attributes = handler_attributes::none) const
+		{ return _impl->connect(worker, std::move(handler), attributes); }
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>
