@@ -22,7 +22,7 @@ namespace creation
 	namespace detail
 	{
 		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_storage, std::declval<typename T_::template storage<std::shared_ptr<int>, int>>());
-		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_get_ptr, std::declval<const T_>().get_ptr());
+		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_get_ptr, T_().get_ptr());
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
 		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_create, std::declval<T_>().create<int>(42));
