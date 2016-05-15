@@ -11,6 +11,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/enabler.hpp>
+
 #include <utility>
 
 
@@ -48,14 +50,14 @@ namespace creation
 
 		private:
 			template < bool has_default_ctor = std::is_constructible<DefaultType_>::value>
-			void ensure_created(typename std::enable_if<has_default_ctor, detail::enabler>::type = detail::enabler()) const
+			void ensure_created(typename std::enable_if<has_default_ctor, wigwag::detail::enabler>::type = wigwag::detail::enabler()) const
 			{
 				if (!_ptr)
 					_ptr.reset(new DefaultType_());
 			}
 
 			template < bool has_default_ctor = std::is_constructible<DefaultType_>::value>
-			void ensure_created(typename std::enable_if<!has_default_ctor, detail::enabler>::type = detail::enabler()) const
+			void ensure_created(typename std::enable_if<!has_default_ctor, wigwag::detail::enabler>::type = wigwag::detail::enabler()) const
 			{ WIGWAG_ASSERT(_ptr, "Internal wigwag error, _ptr must have been initialized before!"); }
 		};
 	};

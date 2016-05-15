@@ -12,6 +12,7 @@
 
 
 #include <wigwag/detail/creation_storage_adapter.hpp>
+#include <wigwag/detail/policies_concepts.hpp>
 #include <wigwag/detail/policy_picker.hpp>
 #include <wigwag/detail/signal_impl.hpp>
 #include <wigwag/policies.hpp>
@@ -26,12 +27,12 @@ namespace wigwag
 	namespace detail
 	{
 		using signal_policies_config = policies_config<
-				policies_config_entry<exception_handling::policy_concept, exception_handling::default_>,
-				policies_config_entry<threading::policy_concept, threading::default_>,
-				policies_config_entry<state_populating::policy_concept, state_populating::default_>,
-				policies_config_entry<life_assurance::policy_concept, life_assurance::default_>,
-				policies_config_entry<creation::policy_concept, creation::default_>,
-				policies_config_entry<ref_counter::policy_concept, ref_counter::default_>
+				policies_config_entry<exception_handling::policy_concept, wigwag::exception_handling::default_>,
+				policies_config_entry<threading::policy_concept, wigwag::threading::default_>,
+				policies_config_entry<state_populating::policy_concept, wigwag::state_populating::default_>,
+				policies_config_entry<life_assurance::policy_concept, wigwag::life_assurance::default_>,
+				policies_config_entry<creation::policy_concept, wigwag::creation::default_>,
+				policies_config_entry<ref_counter::policy_concept, wigwag::ref_counter::default_>
 			>;
 	}
 
@@ -53,12 +54,12 @@ namespace wigwag
 		template < template <typename> class PolicyConcept_ >
 		using policy = typename detail::policy_picker<PolicyConcept_, detail::signal_policies_config, Policies_...>::type;
 
-		using exception_handling_policy = policy<exception_handling::policy_concept>;
-		using threading_policy = policy<threading::policy_concept>;
-		using state_populating_policy = policy<state_populating::policy_concept>;
-		using life_assurance_policy = policy<life_assurance::policy_concept>;
-		using creation_policy = policy<creation::policy_concept>;
-		using ref_counter_policy = policy<ref_counter::policy_concept>;
+		using exception_handling_policy = policy<detail::exception_handling::policy_concept>;
+		using threading_policy = policy<detail::threading::policy_concept>;
+		using state_populating_policy = policy<detail::state_populating::policy_concept>;
+		using life_assurance_policy = policy<detail::life_assurance::policy_concept>;
+		using creation_policy = policy<detail::creation::policy_concept>;
+		using ref_counter_policy = policy<detail::ref_counter::policy_concept>;
 
 	public:
 		using handler_type = std::function<signature>;

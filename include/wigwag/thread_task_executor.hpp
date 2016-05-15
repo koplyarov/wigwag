@@ -11,6 +11,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/policies_concepts.hpp>
+#include <wigwag/detail/policy_picker.hpp>
 #include <wigwag/policies.hpp>
 #include <wigwag/task_executor.hpp>
 
@@ -26,7 +28,7 @@ namespace wigwag
 	namespace detail
 	{
 		using thread_task_executor_policies_config = policies_config<
-				policies_config_entry<exception_handling::policy_concept, exception_handling::default_>
+				policies_config_entry<exception_handling::policy_concept, wigwag::exception_handling::default_>
 			>;
 	}
 
@@ -34,9 +36,9 @@ namespace wigwag
 	template < typename... Policies_ >
 	class basic_thread_task_executor :
 		public task_executor,
-		private detail::policy_picker<exception_handling::policy_concept, detail::thread_task_executor_policies_config, Policies_...>::type
+		private detail::policy_picker<detail::exception_handling::policy_concept, detail::thread_task_executor_policies_config, Policies_...>::type
 	{
-		using exception_handling_policy = typename detail::policy_picker<exception_handling::policy_concept, detail::thread_task_executor_policies_config, Policies_...>::type;
+		using exception_handling_policy = typename detail::policy_picker<detail::exception_handling::policy_concept, detail::thread_task_executor_policies_config, Policies_...>::type;
 
 		using task_queue = std::queue<std::function<void()>>;
 

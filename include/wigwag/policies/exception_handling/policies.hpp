@@ -12,7 +12,6 @@
 
 
 #include <wigwag/policies/exception_handling/none.hpp>
-#include <wigwag/policies/exception_handling/policy_concept.hpp>
 #include <wigwag/policies/exception_handling/print_to_stderr.hpp>
 
 namespace wigwag {

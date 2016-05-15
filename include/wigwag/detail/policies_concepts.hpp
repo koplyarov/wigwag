@@ -1,5 +1,5 @@
-#ifndef WIGWAG_POLICIES_CREATION_POLICIES_HPP
-#define WIGWAG_POLICIES_CREATION_POLICIES_HPP
+#ifndef WIGWAG_DETAIL_POLICIES_CONCEPTS_HPP
+#define WIGWAG_DETAIL_POLICIES_CONCEPTS_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,16 +11,11 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/policies/creation/ahead_of_time.hpp>
-#include <wigwag/policies/creation/lazy.hpp>
-
-
-namespace wigwag {
-namespace creation
-{
-
-	using default_ = ahead_of_time;
-
-}}
+#include <wigwag/detail/policies/creation/policy_concept.hpp>
+#include <wigwag/detail/policies/exception_handling/policy_concept.hpp>
+#include <wigwag/detail/policies/life_assurance/policy_concept.hpp>
+#include <wigwag/detail/policies/ref_counter/policy_concept.hpp>
+#include <wigwag/detail/policies/state_populating/policy_concept.hpp>
+#include <wigwag/detail/policies/threading/policy_concept.hpp>
 
 #endif

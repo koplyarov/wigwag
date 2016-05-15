@@ -14,7 +14,6 @@
 #include <wigwag/policies/threading/none.hpp>
 #include <wigwag/policies/threading/own_mutex.hpp>
 #include <wigwag/policies/threading/own_recursive_mutex.hpp>
-#include <wigwag/policies/threading/policy_concept.hpp>
 #include <wigwag/policies/threading/shared_mutex.hpp>
 #include <wigwag/policies/threading/shared_recursive_mutex.hpp>
 

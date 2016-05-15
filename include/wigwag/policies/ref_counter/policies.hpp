@@ -12,7 +12,6 @@
 
 
 #include <wigwag/policies/ref_counter/atomic.hpp>
-#include <wigwag/policies/ref_counter/policy_concept.hpp>
 #include <wigwag/policies/ref_counter/single_threaded.hpp>
 
 

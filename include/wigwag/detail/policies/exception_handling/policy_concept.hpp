@@ -1,5 +1,5 @@
-#ifndef WIGWAG_POLICIES_REF_COUNTER_POLICY_CONCEPT_HPP
-#define WIGWAG_POLICIES_REF_COUNTER_POLICY_CONCEPT_HPP
+#ifndef WIGWAG_POLICIES_EXCEPTION_HANDLING_POLICY_CONCEPT_HPP
+#define WIGWAG_POLICIES_EXCEPTION_HANDLING_POLICY_CONCEPT_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,34 +11,34 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/policy_version_detector.hpp>
+#include <wigwag/detail/type_expression_check.hpp>
+
+#include <functional>
+
+
 namespace wigwag {
-namespace ref_counter
+namespace detail {
+namespace exception_handling
 {
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	namespace detail
-	{
-		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_ctor, T_(0));
-		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_add_ref, std::declval<T_>().add_ref() == 0);
-		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_release, std::declval<T_>().release() == 0);
+	WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_handle_exceptions, std::declval<T_>().handle_exceptions(std::function<void(int, double)>(), 42, 3.14));
 
-		template < typename T_ >
-		struct check_policy_v1_0
-		{
-			using adapted_policy = typename std::conditional<has_ctor<T_>::value && has_add_ref<T_>::value && has_release<T_>::value, T_, void>::type;
-		};
-	}
+	template < typename T_ >
+	struct check_policy_v1_0
+		{ using adapted_policy = typename std::conditional<has_handle_exceptions<T_>::value, T_, void>::type; };
 
 
 	template < typename T_ >
 	struct policy_concept
 	{
-		using adapted_policy = typename wigwag::detail::policy_version_detector<detail::check_policy_v1_0<T_>>::adapted_policy;
+		using adapted_policy = typename wigwag::detail::policy_version_detector<check_policy_v1_0<T_>>::adapted_policy;
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>
 
-}}
+}}}
 
 #endif
