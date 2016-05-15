@@ -24,11 +24,11 @@ namespace creation
 		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_storage, std::declval<typename T_::template storage<std::shared_ptr<int>, int>>());
 		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_get_ptr, std::declval<const T_>().get_ptr());
 
-		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_create, std::declval<T_>().
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-			template
+#if defined(_MSC_VER) && _MSC_VER < 1900
+		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_create, std::declval<T_>().create<int>(42));
+#else
+		WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_create, std::declval<T_>().template create<int>(42));
 #endif
-			create<int>(42));
 
 		template < typename T_, bool HasStorage_ =  detail::has_storage<T_>::value >
 		struct check_policy_v1_1
