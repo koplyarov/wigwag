@@ -11,7 +11,10 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/policies/exception_handling/tag.hpp>
+
 #include <stdexcept>
+#include <utility>
 
 #include <stdio.h>
 
@@ -25,6 +28,8 @@ namespace exception_handling
 #if !WIGWAG_NOEXCEPTIONS
 	struct print_to_stderr
 	{
+		using tag = exception_handling::tag<api_version<2, 0>>;
+
 		template < typename Func_, typename... Args_ >
 		void handle_exceptions(Func_&& func, Args_&&... args) const
 		{

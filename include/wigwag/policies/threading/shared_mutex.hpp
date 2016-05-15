@@ -12,6 +12,7 @@
 
 
 #include <wigwag/detail/config.hpp>
+#include <wigwag/policies/threading/tag.hpp>
 
 #include <memory>
 #include <thread>
@@ -25,6 +26,8 @@ namespace threading
 
 	struct shared_mutex
 	{
+		using tag = threading::tag<api_version<2, 0>>;
+
 		class lock_primitive
 		{
 		private:

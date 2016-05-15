@@ -12,6 +12,7 @@
 
 
 #include <wigwag/detail/config.hpp>
+#include <wigwag/policies/state_populating/tag.hpp>
 
 #include <functional>
 #include <mutex>
@@ -25,6 +26,8 @@ namespace state_populating
 
 	struct populator_and_withdrawer
 	{
+		using tag = state_populating::tag<api_version<2, 0>>;
+
 		template < typename HandlerType_ >
 		class handler_processor
 		{

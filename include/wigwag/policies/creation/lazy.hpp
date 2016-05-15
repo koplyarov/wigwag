@@ -12,6 +12,7 @@
 
 
 #include <wigwag/detail/enabler.hpp>
+#include <wigwag/policies/creation/tag.hpp>
 
 #include <utility>
 
@@ -24,6 +25,8 @@ namespace creation
 
 	struct lazy
 	{
+		using tag = creation::tag<api_version<2, 0>>;
+
 		template < typename OwningPtr_, typename DefaultType_ >
 		class storage
 		{

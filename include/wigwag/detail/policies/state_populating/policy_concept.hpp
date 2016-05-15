@@ -13,6 +13,7 @@
 
 #include <wigwag/detail/policy_version_detector.hpp>
 #include <wigwag/detail/type_expression_check.hpp>
+#include <wigwag/policies/state_populating/tag.hpp>
 
 #include <functional>
 #include <mutex>
@@ -25,29 +26,14 @@ namespace state_populating
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_handler_processor, std::declval<typename T_::template handler_processor<std::function<void()>>>());
-	WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_populate_state, std::declval<T_>().populate_state(std::function<void()>()));
-	WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_withdraw_state, std::declval<T_>().withdraw_state(std::declval<std::mutex&>(), std::function<void()>()));
-
-	template < typename T_, bool HasLockPrimitive_ =  has_handler_processor<T_>::value >
-	struct check_handler_processor_v1_0
-	{ using adapted_policy = void; };
-
 	template < typename T_ >
-	struct check_handler_processor_v1_0<T_, true>
-	{
-		using handler_processor = typename T_::template handler_processor<std::function<void()>>;
-		static const bool matches =
-			has_populate_state<handler_processor>::value &&
-			has_withdraw_state<handler_processor>::value;
-
-		using adapted_policy = typename std::conditional<matches, T_, void>::type;
-	};
+	struct check_policy_v2_0
+	{ using adapted_policy = typename policy_adapter<T_, wigwag::state_populating::tag<api_version<2, 0>>, T_>::type; };
 
 
 	template < typename T_ >
 	struct policy_concept
-	{ using adapted_policy = typename wigwag::detail::policy_version_detector<check_handler_processor_v1_0<T_>>::adapted_policy; };
+	{ using adapted_policy = typename wigwag::detail::policy_version_detector<check_policy_v2_0<T_>>::adapted_policy; };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

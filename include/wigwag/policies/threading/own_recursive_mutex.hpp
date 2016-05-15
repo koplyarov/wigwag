@@ -12,6 +12,7 @@
 
 
 #include <wigwag/detail/config.hpp>
+#include <wigwag/policies/threading/tag.hpp>
 
 #include <thread>
 
@@ -24,6 +25,8 @@ namespace threading
 
 	struct own_recursive_mutex
 	{
+		using tag = threading::tag<api_version<2, 0>>;
+
 		class lock_primitive
 		{
 		private:

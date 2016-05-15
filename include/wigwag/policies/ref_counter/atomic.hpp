@@ -12,6 +12,7 @@
 
 
 #include <wigwag/detail/annotations.hpp>
+#include <wigwag/policies/ref_counter/tag.hpp>
 
 #include <atomic>
 
@@ -24,6 +25,9 @@ namespace ref_counter
 
 	class atomic
 	{
+	public:
+		using tag = ref_counter::tag<api_version<2, 0>>;
+
 	private:
 		mutable std::atomic<int>	_counter;
 

@@ -1,5 +1,5 @@
-#ifndef WIGWAG_POLICIES_THREADING_NONE_HPP
-#define WIGWAG_POLICIES_THREADING_NONE_HPP
+#ifndef WIGWAG_POLICIES_LIFE_ASSURANCE_TAG_HPP
+#define WIGWAG_POLICIES_LIFE_ASSURANCE_TAG_HPP
 
 // Copyright (c) 2016, Dmitry Koplyarov <koplyarov.da@gmail.com>
 //
@@ -11,34 +11,16 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
-#include <wigwag/detail/config.hpp>
-#include <wigwag/policies/threading/tag.hpp>
+#include <wigwag/api_version.hpp>
 
 
 namespace wigwag {
-namespace threading
+namespace life_assurance
 {
 
-#include <wigwag/detail/disable_warnings.hpp>
-
-	struct none
-	{
-		using tag = threading::tag<api_version<2, 0>>;
-
-		class lock_primitive
-		{
-		public:
-			void get_primitive() const WIGWAG_NOEXCEPT { }
-
-			void lock_nonrecursive() const WIGWAG_NOEXCEPT { }
-			void unlock_nonrecursive() const WIGWAG_NOEXCEPT { }
-
-			void lock_recursive() const WIGWAG_NOEXCEPT { }
-			void unlock_recursive() const WIGWAG_NOEXCEPT { }
-		};
-	};
-
-#include <wigwag/detail/enable_warnings.hpp>
+	template < typename Version_ >
+	struct tag
+	{ using version = Version_; };
 
 }}
 

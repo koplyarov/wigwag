@@ -13,6 +13,7 @@
 
 #include <wigwag/detail/annotations.hpp>
 #include <wigwag/detail/config.hpp>
+#include <wigwag/policies/life_assurance/tag.hpp>
 
 #include <atomic>
 #include <condition_variable>
@@ -28,6 +29,8 @@ namespace life_assurance
 
 	struct intrusive_life_tokens
 	{
+		using tag = life_assurance::tag<api_version<2, 0>>;
+
 		class life_assurance;
 		class life_checker;
 		class execution_guard;

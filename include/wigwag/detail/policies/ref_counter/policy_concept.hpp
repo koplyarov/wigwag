@@ -11,6 +11,10 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/detail/policy_version_detector.hpp>
+#include <wigwag/policies/ref_counter/tag.hpp>
+
+
 namespace wigwag {
 namespace detail {
 namespace ref_counter
@@ -18,21 +22,15 @@ namespace ref_counter
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_ctor, T_(0));
-	WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_add_ref, std::declval<T_>().add_ref() == 0);
-	WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_release, std::declval<T_>().release() == 0);
-
 	template < typename T_ >
-	struct check_policy_v1_0
-	{
-		using adapted_policy = typename std::conditional<has_ctor<T_>::value && has_add_ref<T_>::value && has_release<T_>::value, T_, void>::type;
-	};
+	struct check_policy_v2_0
+	{ using adapted_policy = typename policy_adapter<T_, wigwag::ref_counter::tag<api_version<2, 0>>, T_>::type; };
 
 
 	template < typename T_ >
 	struct policy_concept
 	{
-		using adapted_policy = typename wigwag::detail::policy_version_detector<check_policy_v1_0<T_>>::adapted_policy;
+		using adapted_policy = typename wigwag::detail::policy_version_detector<check_policy_v2_0<T_>>::adapted_policy;
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>

@@ -12,6 +12,7 @@
 
 
 #include <wigwag/detail/config.hpp>
+#include <wigwag/policies/life_assurance/tag.hpp>
 
 
 namespace wigwag {
@@ -22,6 +23,8 @@ namespace life_assurance
 
 	struct none
 	{
+		using tag = life_assurance::tag<api_version<2, 0>>;
+
 		class shared_data
 		{ };
 

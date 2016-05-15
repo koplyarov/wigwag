@@ -11,6 +11,11 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/policies/exception_handling/tag.hpp>
+
+#include <utility>
+
+
 namespace wigwag {
 namespace exception_handling
 {
@@ -19,12 +24,11 @@ namespace exception_handling
 
 	struct none
 	{
+		using tag = exception_handling::tag<api_version<2, 0>>;
+
 		template < typename Func_, typename... Args_ >
 		void handle_exceptions(Func_&& func, Args_&&... args) const
 		{ func(std::forward<Args_>(args)...); }
-
-		void AZAZA() const
-		{ printf("AZAZA\n"); }
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>

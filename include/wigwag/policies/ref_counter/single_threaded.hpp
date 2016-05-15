@@ -11,6 +11,9 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/policies/ref_counter/tag.hpp>
+
+
 namespace wigwag {
 namespace ref_counter
 {
@@ -19,6 +22,9 @@ namespace ref_counter
 
 	class single_threaded
 	{
+	public:
+		using tag = ref_counter::tag<api_version<2, 0>>;
+
 	private:
 		mutable int		_counter;
 

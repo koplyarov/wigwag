@@ -13,6 +13,7 @@
 
 #include <wigwag/detail/policy_version_detector.hpp>
 #include <wigwag/detail/type_expression_check.hpp>
+#include <wigwag/policies/threading/tag.hpp>
 
 
 namespace wigwag {
@@ -22,38 +23,15 @@ namespace threading
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_lock_primitive, std::declval<typename T_::lock_primitive>());
-	WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_get_primitive, std::declval<T_>().get_primitive());
-	WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_lock_recursive, std::declval<T_>().lock_recursive());
-	WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_unlock_recursive, std::declval<T_>().unlock_recursive());
-	WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_lock_nonrecursive, std::declval<T_>().lock_nonrecursive());
-	WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_unlock_nonrecursive, std::declval<T_>().unlock_nonrecursive());
-
-	template < typename T_, bool HasLockPrimitive_ = has_lock_primitive<T_>::value >
-	struct check_lock_primitive_v1_0
-	{
-		using adapted_policy = void;
-	};
-
 	template < typename T_ >
-	struct check_lock_primitive_v1_0<T_, true>
-	{
-		using lock_primitive = typename T_::lock_primitive;
-		static const bool matches =
-			has_get_primitive<lock_primitive>::value &&
-			has_lock_recursive<lock_primitive>::value &&
-			has_unlock_recursive<lock_primitive>::value &&
-			has_lock_nonrecursive<lock_primitive>::value &&
-			has_unlock_nonrecursive<lock_primitive>::value;
-
-		using adapted_policy = typename std::conditional<matches, T_, void>::type;
-	};
+	struct check_policy_v2_0
+	{ using adapted_policy = typename policy_adapter<T_, wigwag::threading::tag<api_version<2, 0>>, T_>::type; };
 
 
 	template < typename T_ >
 	struct policy_concept
 	{
-		using adapted_policy = typename wigwag::detail::policy_version_detector<check_lock_primitive_v1_0<T_>>::adapted_policy;
+		using adapted_policy = typename wigwag::detail::policy_version_detector<check_policy_v2_0<T_>>::adapted_policy;
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>

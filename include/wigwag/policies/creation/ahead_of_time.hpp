@@ -11,6 +11,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <wigwag/policies/creation/tag.hpp>
+
 #include <utility>
 
 
@@ -22,6 +24,8 @@ namespace creation
 
 	struct ahead_of_time
 	{
+		using tag = creation::tag<api_version<2, 0>>;
+
 		template < typename OwningPtr_, typename DefaultType_ >
 		class storage
 		{

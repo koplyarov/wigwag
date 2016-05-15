@@ -13,6 +13,7 @@
 
 #include <wigwag/detail/policy_version_detector.hpp>
 #include <wigwag/detail/type_expression_check.hpp>
+#include <wigwag/policies/exception_handling/tag.hpp>
 
 #include <functional>
 
@@ -24,17 +25,15 @@ namespace exception_handling
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(has_handle_exceptions, std::declval<T_>().handle_exceptions(std::function<void(int, double)>(), 42, 3.14));
-
 	template < typename T_ >
-	struct check_policy_v1_0
-		{ using adapted_policy = typename std::conditional<has_handle_exceptions<T_>::value, T_, void>::type; };
+	struct check_policy_v2_0
+	{ using adapted_policy = typename policy_adapter<T_, wigwag::exception_handling::tag<api_version<2, 0>>, T_>::type; };
 
 
 	template < typename T_ >
 	struct policy_concept
 	{
-		using adapted_policy = typename wigwag::detail::policy_version_detector<check_policy_v1_0<T_>>::adapted_policy;
+		using adapted_policy = typename wigwag::detail::policy_version_detector<check_policy_v2_0<T_>>::adapted_policy;
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>

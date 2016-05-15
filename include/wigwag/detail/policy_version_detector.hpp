@@ -20,6 +20,11 @@ namespace detail
 
 #include <wigwag/detail/disable_warnings.hpp>
 
+
+	template < typename T_, typename Tag_, typename AdaptedT_ >
+	struct policy_adapter
+	{ using type = typename std::conditional<std::is_same<typename T_::tag, Tag_>::value, T_, void>::type; };
+
 	template < typename... VersionChecks_ >
 	struct policy_version_detector
 	{

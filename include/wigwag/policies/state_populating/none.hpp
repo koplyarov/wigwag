@@ -12,6 +12,7 @@
 
 
 #include <wigwag/detail/config.hpp>
+#include <wigwag/policies/state_populating/tag.hpp>
 
 
 namespace wigwag {
@@ -22,6 +23,8 @@ namespace state_populating
 
 	struct none
 	{
+		using tag = state_populating::tag<api_version<2, 0>>;
+
 		template < typename HandlerType_ >
 		struct handler_processor
 		{
