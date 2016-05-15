@@ -14,7 +14,9 @@
 
 #if defined(_MSC_VER)
 #	pragma warning(pop)
-#	pragma warning(default: 5031) // Sorry :(
+#	if _MSC_VER >= 1900
+#		pragma warning(default: 5031) // Sorry :(
+#	endif
 #endif
 
 #if !defined(WIGWAG_WARNINGS_DISABLED)
