@@ -40,7 +40,7 @@ namespace threading
 		struct check_lock_primitive_v1_0<T_, true>
 		{
 			using lock_primitive = typename T_::lock_primitive;
-			static constexpr bool matches =
+			static const bool matches =
 				has_get_primitive<lock_primitive>::value &&
 				has_lock_recursive<lock_primitive>::value &&
 				has_unlock_recursive<lock_primitive>::value &&

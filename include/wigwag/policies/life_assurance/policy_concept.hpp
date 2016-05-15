@@ -39,13 +39,13 @@ namespace life_assurance
 
 		template < typename T_, bool HasLockPrimitive_ =  detail::has_life_assurance<T_>::value >
 		struct check_life_assurance
-		{ static constexpr bool value = false; };
+		{ static const bool value = false; };
 
 		template < typename T_ >
 		struct check_life_assurance<T_, true>
 		{
 			using life_assurance = typename T_::life_assurance;
-			static constexpr bool value =
+			static const bool value =
 				detail::has_node_should_be_released<life_assurance>::value &&
 				detail::has_release_node<life_assurance>::value;
 		};
@@ -53,31 +53,31 @@ namespace life_assurance
 
 		template < typename T_, bool HasLockPrimitive_ =  detail::has_life_checker<T_>::value >
 		struct check_life_checker
-		{ static constexpr bool value = false; };
+		{ static const bool value = false; };
 
 		template < typename T_ >
 		struct check_life_checker<T_, true>
 		{
 			using life_checker = typename T_::life_checker;
-			static constexpr bool value = true;
+			static const bool value = true;
 		};
 
 
 		template < typename T_, bool HasLockPrimitive_ =  detail::has_execution_guard<T_>::value >
 		struct check_execution_guard
-		{ static constexpr bool value = false; };
+		{ static const bool value = false; };
 
 		template < typename T_ >
 		struct check_execution_guard<T_, true>
 		{
 			using execution_guard = typename T_::execution_guard;
-			static constexpr bool value = has_is_alive<execution_guard>::value;
+			static const bool value = has_is_alive<execution_guard>::value;
 		};
 
 		template < typename T_ >
 		struct check_policy_v1_0
 		{
-			static constexpr bool matches =
+			static const bool matches =
 				has_shared_data<T_>::value &&
 				check_life_assurance<T_>::value &&
 				check_life_checker<T_>::value &&

@@ -38,7 +38,7 @@ namespace state_populating
 		struct check_handler_processor_v1_0<T_, true>
 		{
 			using handler_processor = typename T_::template handler_processor<std::function<void()>>;
-			static constexpr bool matches =
+			static const bool matches =
 				has_populate_state<handler_processor>::value &&
 				has_withdraw_state<handler_processor>::value;
 

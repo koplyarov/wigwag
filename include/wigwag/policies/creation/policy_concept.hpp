@@ -38,7 +38,7 @@ namespace creation
 		struct check_policy_v1_1<T_, true>
 		{
 			using storage = typename T_::template storage<std::shared_ptr<int>, int>;
-			static constexpr bool matches =
+			static const bool matches =
 				detail::has_create<storage>::value &&
 				detail::has_get_ptr<storage>::value;
 
