@@ -35,7 +35,7 @@ find_package(Threads)
 
 if (MSVC)
 	set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/test/no_exceptions_compilation_test.cpp PROPERTIES COMPILE_FLAGS
-		"/W4 /WX /D_HAS_EXCEPTIONS=0")
+		"/W4 /WX /D_HAS_EXCEPTIONS=0 \"/D__uncaught_exception=[]{return false;}\"")
 	get_source_file_property(TMP_COMPILE_FLAGS ${CMAKE_CURRENT_SOURCE_DIR}/src/test/no_exceptions_compilation_test.cpp COMPILE_FLAGS)
 	string(REPLACE "/EHsc" "/EHs-c-" TMP_COMPILE_FLAGS ${TMP_COMPILE_FLAGS})
 	set_source_files_properties(myprogram.cpp COMPILE_FLAGS ${TMP_COMPILE_FLAGS})

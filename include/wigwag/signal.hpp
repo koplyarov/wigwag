@@ -89,9 +89,9 @@ namespace wigwag
 				_impl.template create<impl_type_with_attr>(attributes, std::forward<Args_>(args)...);
 		}
 
-		template < typename... Args_, bool enable = sizeof...(Args_) != 0, typename = typename std::enable_if<enable>::type >
-		signal(Args_&&... args)
-		{ _impl.template create<impl_type>(std::forward<Args_>(args)...); }
+		template < typename Arg0_, typename... Args_ >
+		signal(Arg0_&& arg0, Args_&&... args)
+		{ _impl.template create<impl_type>(std::forward<Arg0_>(arg0), std::forward<Args_>(args)...); }
 
 		template < bool has_default_ctor = std::is_constructible<impl_type>::value, typename = typename std::enable_if<has_default_ctor>::type >
 		signal()
