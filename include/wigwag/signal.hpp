@@ -89,11 +89,11 @@ namespace wigwag
 				_impl.template create<impl_type_with_attr>(attributes, std::forward<Args_>(args)...);
 		}
 
-		template < typename... Args_ >
+		template < typename... Args_, bool enable = sizeof...(Args_) != 0, typename = typename std::enable_if<enable>::type >
 		signal(Args_&&... args)
 		{ _impl.template create<impl_type>(std::forward<Args_>(args)...); }
 
-		template < bool has_default_ctor = std::is_constructible<impl_type>::value, typename = typename std::enable_if<has_default_ctor>::type>
+		template < bool has_default_ctor = std::is_constructible<impl_type>::value, typename = typename std::enable_if<has_default_ctor>::type >
 		signal()
 		{ _impl.template create<impl_type>(); }
 
@@ -130,18 +130,6 @@ namespace wigwag
 			if (_impl)
 				_impl->invoke(args...);
 		}
-
-	private:
-		//template < bool has_default_ctor = std::is_constructible<impl_type>::value>
-		//void ensure_impl_created(typename std::enable_if<has_default_ctor, detail::enabler>::type = detail::enabler()) const
-		//{
-			//if (!_impl)
-				//_impl.reset(creation_policy::template create_just_in_time<impl_type>());
-		//}
-
-		//template < bool has_default_ctor = std::is_constructible<impl_type>::value>
-		//void ensure_impl_created(typename std::enable_if<!has_default_ctor, detail::enabler>::type = detail::enabler()) const
-		//{ WIGWAG_ASSERT(_impl, "Internal wigwag error, _impl must have been initialized before!"); }
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>

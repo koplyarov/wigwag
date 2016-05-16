@@ -148,6 +148,9 @@ namespace life_assurance
 					unlock();
 			}
 
+			execution_guard(const execution_guard&) = delete;
+			execution_guard& operator = (const execution_guard&) = delete;
+
 			life_assurance::int_type is_alive() const WIGWAG_NOEXCEPT
 			{ return _alive; }
 

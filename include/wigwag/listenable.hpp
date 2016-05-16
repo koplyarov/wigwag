@@ -70,7 +70,7 @@ namespace wigwag
 		listenable()
 		{ _impl.template create<impl_type>(); }
 
-		template < typename... Args_ >
+		template < typename... Args_, bool enable = sizeof...(Args_) != 0, typename = typename std::enable_if<enable>::type >
 		listenable(Args_&&... args)
 		{ _impl.template create<impl_type>(std::forward<Args_>(args)...); }
 
