@@ -92,8 +92,14 @@
 
 #if defined(_MSC_VER)
 #	define WIGWAG_HAS_UNRESTRICTED_UNIONS (_MSC_VER >= 1900)
+#	if _MSC_VER < 1900
+#		define WIGWAG_ALIGNOF __alignof
+#	else
+#		define WIGWAG_ALIGNOF alignof
+#	endif
 #else
 #	define WIGWAG_HAS_UNRESTRICTED_UNIONS 1
+#	define WIGWAG_ALIGNOF alignof
 #endif
 
 

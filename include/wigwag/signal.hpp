@@ -34,6 +34,10 @@ namespace wigwag
 				policies_config_entry<creation::policy_concept, wigwag::creation::default_>,
 				policies_config_entry<ref_counter::policy_concept, wigwag::ref_counter::default_>
 			>;
+
+		template < typename T_ >
+		struct signature_getter
+		{ using type = T_; };
 	}
 
 
@@ -50,7 +54,7 @@ namespace wigwag
 		>
 	class signal<RetType_(ArgTypes_...), Policies_...>
 	{
-		using signature = RetType_(ArgTypes_...);
+		using signature = typename detail::signature_getter<RetType_(ArgTypes_...)>::type;
 
 		template < template <typename> class PolicyConcept_ >
 		using policy = typename detail::policy_picker<PolicyConcept_, detail::signal_policies_config, Policies_...>::type;

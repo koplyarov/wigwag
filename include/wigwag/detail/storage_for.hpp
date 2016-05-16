@@ -58,7 +58,7 @@ namespace detail
 		struct no_construct_tag { };
 
 	private:
-		using storage = typename std::aligned_storage<sizeof(T_), alignof(T_)>::type;
+		using storage = typename std::aligned_storage<sizeof(T_), WIGWAG_ALIGNOF(T_)>::type;
 
 	private:
 		storage		obj;
