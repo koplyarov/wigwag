@@ -12,7 +12,6 @@
 
 
 #include <wigwag/detail/config.hpp>
-#include <wigwag/detail/is_constructible.hpp>
 #include <wigwag/policies/state_populating/tag.hpp>
 
 #include <functional>
@@ -45,7 +44,7 @@ namespace state_populating
 			{ }
 
 			template < typename K_, typename V_ >
-			handler_processor(const std::pair<K_, V_>& populator_and_withdrawer_pair, typename std::enable_if<wigwag::detail::is_constructible<handler_processor_func, K_>::value && wigwag::detail::is_constructible<handler_processor_func, V_>::value, wigwag::detail::enabler>::type e = wigwag::detail::enabler())
+			handler_processor(const std::pair<K_, V_>& populator_and_withdrawer_pair, typename std::enable_if<std::is_constructible<handler_processor_func, K_>::value && std::is_constructible<handler_processor_func, V_>::value, wigwag::detail::enabler>::type e = wigwag::detail::enabler())
 				: _populator(populator_and_withdrawer_pair.first), _withdrawer(populator_and_withdrawer_pair.second)
 			{ }
 
