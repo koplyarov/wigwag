@@ -90,5 +90,11 @@
 #	define WIGWAG_NOEXCEPT noexcept
 #endif
 
+#if defined(_MSC_VER)
+#	define WIGWAG_HAS_UNRESTRICTED_UNIONS (_MSC_VER >= 1900)
+#else
+#	define WIGWAG_HAS_UNRESTRICTED_UNIONS 1
+#endif
+
 
 #endif

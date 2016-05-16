@@ -21,6 +21,9 @@
 #	endif
 #	pragma warning(push)
 #	pragma warning(disable: 4355 4625 4626)
+#	if _MSC_VER >= 1700 && _MSC_VER < 1900
+#		pragma warning(disable: 4127)
+#	endif
 #	if _MSC_VER >= 1900
 #		pragma warning(disable: 5026 5027)
 #	endif

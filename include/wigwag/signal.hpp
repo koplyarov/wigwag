@@ -51,6 +51,7 @@ namespace wigwag
 	class signal<RetType_(ArgTypes_...), Policies_...>
 	{
 		using signature = RetType_(ArgTypes_...);
+
 		template < template <typename> class PolicyConcept_ >
 		using policy = typename detail::policy_picker<PolicyConcept_, detail::signal_policies_config, Policies_...>::type;
 

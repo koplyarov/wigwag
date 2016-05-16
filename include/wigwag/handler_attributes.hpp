@@ -13,6 +13,8 @@
 
 #include <wigwag/detail/flags.hpp>
 
+#include <stdint.h>
+
 
 namespace wigwag
 {

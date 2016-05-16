@@ -17,6 +17,7 @@
 #include <wigwag/detail/intrusive_list.hpp>
 #include <wigwag/detail/intrusive_ptr.hpp>
 #include <wigwag/detail/intrusive_ref_counter.hpp>
+#include <wigwag/detail/storage_for.hpp>
 #include <wigwag/handler_attributes.hpp>
 #include <wigwag/token.hpp>
 
@@ -61,14 +62,6 @@ namespace detail
 		{
 			friend class detail::intrusive_list<handler_node>;
 
-			union handler_storage
-			{
-				handler_type obj;
-
-				handler_storage(handler_type&& handler) : obj(std::move(handler)) { }
-				~handler_storage() { }
-			};
-
 			class lock_primitive_adapter
 			{
 			private:
@@ -85,7 +78,7 @@ namespace detail
 
 		private:
 			intrusive_ptr<listenable_impl>	_listenable_impl;
-			handler_storage					_handler;
+			storage_for<handler_type>		_handler;
 
 		public:
 			template < typename MakeHandlerFunc_ >
@@ -107,10 +100,10 @@ namespace detail
 				if (!suppress_populator())
 				{
 					lock_primitive_adapter lp(_listenable_impl->get_lock_primitive());
-					_listenable_impl->get_handler_processor().withdraw_state(lp, _handler.obj);
+					_listenable_impl->get_handler_processor().withdraw_state(lp, _handler.ref());
 				}
 
-				_handler.obj.~handler_type();
+				_handler.ref().~handler_type();
 
 				if (life_assurance::release_node())
 				{
@@ -135,7 +128,7 @@ namespace detail
 				}
 			}
 
-			const handler_type& get_handler() const { return _handler.obj; }
+			const handler_type& get_handler() const { return _handler.ref(); }
 			const life_assurance& get_life_assurance() const { return *this; }
 
 		protected:
@@ -175,7 +168,7 @@ namespace detail
 
 		virtual ~listenable_impl() { }
 
-#define DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(...) typename std::enable_if<__VA_ARGS__, enabler>::type = enabler()
+#define DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(...) typename std::enable_if<__VA_ARGS__, basic_enabler<__LINE__>>::type = basic_enabler<__LINE__>()
 
 		template < typename T_ > listenable_impl(T_ eh, DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(std::is_constructible<exception_handler, T_&&>::value)) : exception_handler(std::move(eh)) { }
 		template < typename T_ > listenable_impl(T_ lp, DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(std::is_constructible<lock_primitive, T_&&>::value)) : lock_primitive(std::move(lp)) { }
