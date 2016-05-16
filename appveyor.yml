@@ -7,8 +7,8 @@ environment:
   global:
     MSVC_DEFAULT_OPTIONS: ON
   matrix:
-    - VS_VERSION: "Visual Studio 14 2015"
     - VS_VERSION: "Visual Studio 12 2013"
+    - VS_VERSION: "Visual Studio 14 2015"
 
 configuration:
   - Debug
