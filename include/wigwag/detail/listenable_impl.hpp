@@ -17,6 +17,7 @@
 #include <wigwag/detail/intrusive_list.hpp>
 #include <wigwag/detail/intrusive_ptr.hpp>
 #include <wigwag/detail/intrusive_ref_counter.hpp>
+#include <wigwag/detail/is_constructible.hpp>
 #include <wigwag/detail/storage_for.hpp>
 #include <wigwag/handler_attributes.hpp>
 #include <wigwag/token.hpp>
@@ -71,6 +72,9 @@ namespace detail
 				lock_primitive_adapter(const lock_primitive& lp)
 					: _lp(lp)
 				{ }
+
+				lock_primitive_adapter(const lock_primitive_adapter&) = delete;
+				lock_primitive_adapter& operator = (const lock_primitive_adapter&) = delete;
 
 				void lock() const { _lp.lock_nonrecursive(); }
 				void unlock() const { _lp.unlock_nonrecursive(); }
@@ -159,9 +163,9 @@ namespace detail
 	public:
 		template <
 				bool has_default_ctor =
-					std::is_constructible<exception_handler>::value &&
-					std::is_constructible<lock_primitive>::value &&
-					std::is_constructible<handler_processor>::value,
+					is_constructible<exception_handler>::value &&
+					is_constructible<lock_primitive>::value &&
+					is_constructible<handler_processor>::value,
 				typename = typename std::enable_if<has_default_ctor>::type
 			>
 		listenable_impl() { }
@@ -170,22 +174,22 @@ namespace detail
 
 #define DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(...) typename std::enable_if<__VA_ARGS__, basic_enabler<__LINE__>>::type = basic_enabler<__LINE__>()
 
-		template < typename T_ > listenable_impl(T_ eh, DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(std::is_constructible<exception_handler, T_&&>::value)) : exception_handler(std::move(eh)) { }
-		template < typename T_ > listenable_impl(T_ lp, DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(std::is_constructible<lock_primitive, T_&&>::value)) : lock_primitive(std::move(lp)) { }
-		template < typename T_ > listenable_impl(T_ hp, DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(std::is_constructible<handler_processor, T_&&>::value)) : handler_processor(std::move(hp)) { }
+		template < typename T_ > listenable_impl(T_ eh, DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(is_constructible<exception_handler, T_&&>::value)) : exception_handler(std::move(eh)) { }
+		template < typename T_ > listenable_impl(T_ lp, DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(is_constructible<lock_primitive, T_&&>::value)) : lock_primitive(std::move(lp)) { }
+		template < typename T_ > listenable_impl(T_ hp, DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(is_constructible<handler_processor, T_&&>::value)) : handler_processor(std::move(hp)) { }
 
 		template < typename T_, typename U_ >
-		listenable_impl(T_ eh, U_ lp, DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(std::is_constructible<exception_handler, T_&&>::value && std::is_constructible<lock_primitive, U_&&>::value))
+		listenable_impl(T_ eh, U_ lp, DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(is_constructible<exception_handler, T_&&>::value && is_constructible<lock_primitive, U_&&>::value))
 			: exception_handler(std::move(eh)), lock_primitive(std::move(lp))
 		{ }
 
 		template < typename T_, typename U_ >
-		listenable_impl(T_ eh, U_ hp, DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(std::is_constructible<exception_handler, T_&&>::value && std::is_constructible<handler_processor, U_&&>::value))
+		listenable_impl(T_ eh, U_ hp, DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(is_constructible<exception_handler, T_&&>::value && is_constructible<handler_processor, U_&&>::value))
 			: exception_handler(std::move(eh)), handler_processor(std::move(hp))
 		{ }
 
 		template < typename T_, typename U_ >
-		listenable_impl(T_ lp, U_ hp, DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(std::is_constructible<lock_primitive, T_&&>::value && std::is_constructible<handler_processor, U_&&>::value))
+		listenable_impl(T_ lp, U_ hp, DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(is_constructible<lock_primitive, T_&&>::value && is_constructible<handler_processor, U_&&>::value))
 			: lock_primitive(std::move(lp)), handler_processor(std::move(hp))
 		{ }
 
