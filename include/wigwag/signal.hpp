@@ -48,14 +48,15 @@ namespace wigwag
 	class signal;
 
 	template <
-			typename RetType_,
 			typename... ArgTypes_,
 			typename... Policies_
 		>
-	class signal<RetType_(ArgTypes_...), Policies_...>
+	class signal<void(ArgTypes_...), Policies_...>
 	{
-		using signature = typename detail::signature_getter<RetType_(ArgTypes_...)>::type;
+	public:
+		using signature = typename detail::signature_getter<void(ArgTypes_...)>::type;
 
+	private:
 		template < template <typename> class PolicyConcept_ >
 		using policy = typename detail::policy_picker<PolicyConcept_, detail::signal_policies_config, Policies_...>::type;
 
