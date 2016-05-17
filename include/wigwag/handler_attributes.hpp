@@ -13,15 +13,13 @@
 
 #include <wigwag/detail/flags.hpp>
 
-#include <stdint.h>
-
 
 namespace wigwag
 {
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	enum class handler_attributes : uint8_t
+	enum class handler_attributes
 	{
 		none					= 0x0,
 		suppress_populator		= 0x1
