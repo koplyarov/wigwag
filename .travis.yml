@@ -22,6 +22,9 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - valgrind
+      - gcc-4.8
+      - g++-4.8
+      - clang-3.4
 
 script: 
   - ( mkdir build && cd build && cmake -DWIGWAG_VALGRIND=TRUE .. && make )
