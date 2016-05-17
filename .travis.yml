@@ -2,9 +2,20 @@ sudo: required
 dist: trusty
 language: cpp
 cache: apt
-compiler:
-  - gcc-4.8
-  - clang-3.4
+
+matrix:
+  include:
+    - compiler: gcc
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-4.8']
+      env: COMPILER=gcc-4.8 COMPILERXX=g++-4.8
+    - compiler: clang
+      addons:
+        apt:
+          packages: ['clang-3.4']
+      env: COMPILER=clang-3.4 COMPILERXX=clang++-3.4
 
 before_install:
   - sudo apt-get install -yq cxxtest
@@ -14,25 +25,20 @@ install:
   - tar xf lcov_1.11.orig.tar.gz
   - sudo make -C lcov-1.11/ install
   - gem install coveralls-lcov
-  - if [ "$CXX" = "g++-4.8" ]; then sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.8 90; fi
+  - if [ "$CXX" = "g++" ]; then sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.8 90; fi
 
 addons:
   apt:
-    sources:
-      - ubuntu-toolchain-r-test
     packages:
       - valgrind
-      - gcc-4.8
-      - g++-4.8
-      - clang-3.4
 
 script: 
-  - ( mkdir build && cd build && cmake -DWIGWAG_VALGRIND=TRUE .. && make )
+  - ( mkdir build && cd build && CC="$COMPILER" CXX="$COMPILERXX" cmake -DWIGWAG_VALGRIND=TRUE .. && make )
   - valgrind --suppressions=etc/valgrind.sup --tool=helgrind --gen-suppressions=all --error-exitcode=1 ./build/bin/wigwag_test
   - valgrind --suppressions=etc/valgrind.sup --tool=memcheck --leak-check=full --gen-suppressions=all --error-exitcode=1 ./build/bin/wigwag_test
   - rm -rf ./build
-  - ( mkdir build && cd build && cmake -DWIGWAG_COVERAGE=TRUE .. && make )
+  - ( mkdir build && cd build && CC="$COMPILER" CXX="$COMPILERXX" cmake -DWIGWAG_COVERAGE=TRUE .. && make )
   - ./build/bin/wigwag_test
 
 after_success:
-  - if [ "$CXX" = "g++-4.8" ]; then lcov --directory . --capture --output-file coverage.info && lcov --remove coverage.info 'build/unittest_wigwag.cpp' 'src/*' '/usr/*' --output-file coverage.info && lcov --list coverage.info && coveralls-lcov --repo-token ${COVERALLS_TOKEN} coverage.info; fi
+  - if [ "$CXX" = "g++" ]; then echo "Sending coverage info"; lcov --directory . --capture --output-file coverage.info && lcov --remove coverage.info 'build/unittest_wigwag.cpp' 'src/*' '/usr/*' --output-file coverage.info && lcov --list coverage.info && coveralls-lcov --repo-token ${COVERALLS_TOKEN} coverage.info; fi
