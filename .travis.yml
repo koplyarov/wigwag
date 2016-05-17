@@ -24,6 +24,13 @@ addons:
       - g++-4.8
       - valgrind
 
+env:
+  - matrix:
+    - CC=gcc-4.8
+      CXX=g++-4.8
+    - CC=clang-3.4
+      CXX=clang-3.4
+
 script: 
   - ( mkdir build && cd build && cmake -DWIGWAG_VALGRIND=TRUE .. && make )
   - valgrind --suppressions=etc/valgrind.sup --tool=helgrind --gen-suppressions=all --error-exitcode=1 ./build/bin/wigwag_test
