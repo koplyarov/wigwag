@@ -28,10 +28,11 @@ namespace state_populating
 		template < typename HandlerType_ >
 		struct handler_processor
 		{
+			bool has_populate_state() const WIGWAG_NOEXCEPT { return false; }
 			void populate_state(const HandlerType_&) const WIGWAG_NOEXCEPT { }
 
-			template < typename LockPrimitive_ >
-			void withdraw_state(LockPrimitive_&, const HandlerType_&) const WIGWAG_NOEXCEPT { }
+			bool has_withdraw_state() const WIGWAG_NOEXCEPT { return false; }
+			void withdraw_state(const HandlerType_&) const WIGWAG_NOEXCEPT { }
 		};
 	};
 

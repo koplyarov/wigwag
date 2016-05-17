@@ -55,24 +55,28 @@ private:
 	{
 	private:
 		std::atomic<int>&		_counter;
+		bool					_movedFrom;
 
 	public:
 		copy_ctor_counter(std::atomic<int>& counter)
-			: _counter(counter)
+			: _counter(counter), _movedFrom(false)
 		{ }
 
 		copy_ctor_counter(const copy_ctor_counter& other)
-			: _counter(other._counter)
+			: _counter(other._counter), _movedFrom(false)
 		{ ++_counter; }
 
 		copy_ctor_counter(copy_ctor_counter&& other)
-			: _counter(other._counter)
-		{ }
+			: _counter(other._counter), _movedFrom(false)
+		{ other._movedFrom = true; }
 
 		copy_ctor_counter& operator = (const copy_ctor_counter&) = delete;
 
 		void operator() () const
-		{ }
+		{
+			if (_movedFrom)
+				throw std::runtime_error("Accessing invalid copy_ctor_counter!");
+		}
 	};
 
 public:
@@ -911,7 +915,7 @@ public:
 
 		{
 			std::shared_ptr<threadless_task_executor> worker = std::make_shared<threadless_task_executor>();
-			signal<void()> s;
+			signal<void()> s([](const signal<void()>::handler_type&) { });
 			std::atomic<int> counter(0);
 
 			token t = s.connect(worker, copy_ctor_counter(counter));

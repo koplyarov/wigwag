@@ -74,23 +74,6 @@ namespace detail
 		{
 			friend class detail::intrusive_list<handler_node>;
 
-			class lock_primitive_adapter
-			{
-			private:
-				const lock_primitive&	_lp;
-
-			public:
-				lock_primitive_adapter(const lock_primitive& lp)
-					: _lp(lp)
-				{ }
-
-				lock_primitive_adapter(const lock_primitive_adapter&) = delete;
-				lock_primitive_adapter& operator = (const lock_primitive_adapter&) = delete;
-
-				void lock() const { _lp.lock_nonrecursive(); }
-				void unlock() const { _lp.unlock_nonrecursive(); }
-			};
-
 		private:
 			intrusive_ptr<listenable_impl>	_listenable_impl;
 			storage_for<handler_type>		_handler;
@@ -112,10 +95,11 @@ namespace detail
 			{
 				life_assurance::release_life_assurance(*_listenable_impl);
 
-				if (!suppress_populator())
+				if (!suppress_populator() && _listenable_impl->get_handler_processor().has_withdraw_state())
 				{
-					lock_primitive_adapter lp(_listenable_impl->get_lock_primitive());
-					_listenable_impl->get_handler_processor().withdraw_state(lp, _handler.ref());
+					_listenable_impl->get_lock_primitive().lock_nonrecursive();
+					auto sg = detail::at_scope_exit([&] { _listenable_impl->get_lock_primitive().unlock_nonrecursive(); } );
+					_listenable_impl->get_handler_processor().withdraw_state(_handler.ref());
 				}
 
 				_handler.ref().~handler_type();
@@ -230,7 +214,7 @@ namespace detail
 			get_lock_primitive().lock_nonrecursive();
 			auto sg = detail::at_scope_exit([&] { get_lock_primitive().unlock_nonrecursive(); } );
 
-			if (!contains_flag(attributes, handler_attributes::suppress_populator))
+			if (!contains_flag(attributes, handler_attributes::suppress_populator) && get_handler_processor().has_populate_state())
 				get_exception_handler().handle_exceptions([&] { get_handler_processor().populate_state(handler); });
 
 			return create_node(attributes, std::move(handler));

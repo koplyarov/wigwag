@@ -38,8 +38,7 @@ namespace state_populating
 			handler_processor_func		_withdrawer;
 
 		public:
-			handler_processor(handler_processor_func populator = &populator_and_withdrawer::handler_processor<HandlerType_>::empty_handler,
-						handler_processor_func withdrawer = &populator_and_withdrawer::handler_processor<HandlerType_>::empty_handler)
+			handler_processor(handler_processor_func populator = handler_processor_func(), handler_processor_func withdrawer = handler_processor_func())
 				: _populator(populator), _withdrawer(withdrawer)
 			{ }
 
@@ -48,16 +47,11 @@ namespace state_populating
 				: _populator(populator_and_withdrawer_pair.first), _withdrawer(populator_and_withdrawer_pair.second)
 			{ }
 
+			bool has_populate_state() const WIGWAG_NOEXCEPT { return (bool)_populator; }
 			void populate_state(const HandlerType_& handler) const { _populator(handler); }
 
-			template < typename LockPrimitive_ >
-			void withdraw_state(LockPrimitive_& lp, const HandlerType_& handler) const
-			{
-				std::lock_guard<LockPrimitive_> l(lp);
-				_withdrawer(handler);
-			}
-
-			static void empty_handler(const HandlerType_&) WIGWAG_NOEXCEPT { }
+			bool has_withdraw_state() const WIGWAG_NOEXCEPT { return (bool)_withdrawer; }
+			void withdraw_state(const HandlerType_& handler) const { _withdrawer(handler); }
 		};
 	};
 

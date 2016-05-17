@@ -36,16 +36,15 @@ namespace state_populating
 			handler_processor_func		_populator;
 
 		public:
-			handler_processor(handler_processor_func populator = &populator_only::handler_processor<HandlerType_>::empty_handler)
+			handler_processor(handler_processor_func populator = handler_processor_func())
 				: _populator(populator)
 			{ }
 
+			bool has_populate_state() const WIGWAG_NOEXCEPT { return (bool)_populator; }
 			void populate_state(const HandlerType_& handler) const { _populator(handler); }
 
-			template < typename LockPrimitive_ >
-			void withdraw_state(LockPrimitive_&, const HandlerType_&) const WIGWAG_NOEXCEPT { }
-
-			static void empty_handler(const HandlerType_&) WIGWAG_NOEXCEPT { }
+			bool has_withdraw_state() const WIGWAG_NOEXCEPT { return false; }
+			void withdraw_state(const HandlerType_&) const WIGWAG_NOEXCEPT { }
 		};
 	};
 

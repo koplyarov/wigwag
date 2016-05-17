@@ -78,7 +78,7 @@ namespace detail
 			return this->create_node(attributes,
 					[&](life_checker lc) {
 						async_handler<Signature_, LifeAssurancePolicy_> real_handler(std::move(worker), std::move(lc), std::move(handler));
-						if (!contains_flag(attributes, handler_attributes::suppress_populator))
+						if (!contains_flag(attributes, handler_attributes::suppress_populator) && this->get_handler_processor().has_populate_state())
 							this->get_exception_handler().handle_exceptions([&] { this->get_handler_processor().populate_state(real_handler); });
 						return real_handler;
 					});
