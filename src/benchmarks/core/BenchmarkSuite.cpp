@@ -35,12 +35,11 @@ namespace benchmarks
 		private:
 			PreMeasureBenchmarkContext*		_inst;
 			std::string						_name;
-			int64_t							_count;
 			Profiler						_prof;
 
 		public:
-			OperationProfiler(PreMeasureBenchmarkContext* inst, const std::string& name, int64_t count)
-				: _inst(inst), _name(name), _count(count)
+			OperationProfiler(PreMeasureBenchmarkContext* inst, const std::string& name)
+				: _inst(inst), _name(name)
 			{
 				BENCHMARKS_BARRIER;
 				_prof.Reset();
@@ -77,7 +76,7 @@ namespace benchmarks
 		}
 
 		virtual IOperationProfilerPtr Profile(const std::string& name, int64_t count)
-		{ return std::make_shared<OperationProfiler>(this, name, count); }
+		{ return std::make_shared<OperationProfiler>(this, name); }
 	};
 
 
@@ -166,7 +165,6 @@ namespace benchmarks
 			s_logger.Debug() << "num_iterations: " << num_iterations << ", min_duration: " << min_duration.count() << " ns, max_duration: " << max_duration.count() << " ns, max_rss: " << max_rss;
 
 			auto next_min_duration = min_duration * multiplier;
-			auto next_max_duration = max_duration * multiplier;
 			auto next_max_rss = max_rss * multiplier;
 
 			if (max_duration > seconds(10))
