@@ -9,13 +9,13 @@ matrix:
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-4.8']
+          packages: ['g++-4.8', 'valgrind']
       env: COMPILER=gcc-4.8 COMPILERXX=g++-4.8
     - compiler: clang
       addons:
         apt:
-          packages: ['clang-3.4']
-      env: COMPILER=clang-3.4 COMPILERXX=clang++-3.4
+          packages: ['clang-3.5', 'valgrind']
+      env: COMPILER=clang-3.5 COMPILERXX=clang++-3.5
 
 before_install:
   - sudo apt-get install -yq cxxtest
@@ -26,11 +26,6 @@ install:
   - sudo make -C lcov-1.11/ install
   - gem install coveralls-lcov
   - if [ "$CXX" = "g++" ]; then sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.8 90; fi
-
-addons:
-  apt:
-    packages:
-      - valgrind
 
 script: 
   - ( mkdir build && cd build && CC="$COMPILER" CXX="$COMPILERXX" cmake -DWIGWAG_VALGRIND=TRUE .. && make )
