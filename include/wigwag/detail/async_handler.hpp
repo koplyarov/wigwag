@@ -34,8 +34,8 @@ namespace detail
 		std::function<Signature_>		_func;
 
 	public:
-		async_handler(const std::shared_ptr<task_executor>& worker, const life_checker& checker, std::function<Signature_> func)
-			: _worker(worker), _life_checker(checker), _func(std::move(func))
+		async_handler(std::shared_ptr<task_executor> worker, life_checker checker, std::function<Signature_> func)
+			: _worker(std::move(worker)), _life_checker(std::move(checker)), _func(std::move(func))
 		{ }
 
 		template < typename... Args_ >

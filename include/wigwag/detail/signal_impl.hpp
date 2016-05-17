@@ -67,7 +67,7 @@ namespace detail
 			return listenable_base::connect(std::move(handler), attributes);
 		}
 
-		virtual token connect(const std::shared_ptr<task_executor>& worker, handler_type handler, handler_attributes attributes)
+		virtual token connect(std::shared_ptr<task_executor> worker, handler_type handler, handler_attributes attributes)
 		{
 			if (contains_flag(this->get_attributes(), signal_attributes::connect_sync_only))
 				WIGWAG_THROW("The signal restrains connecting asynchronous handlers!");
@@ -76,8 +76,8 @@ namespace detail
 			auto sg = detail::at_scope_exit([&] { this->get_lock_primitive().unlock_nonrecursive(); } );
 
 			return this->create_node(attributes,
-					[&](const life_checker& lc) {
-						async_handler<Signature_, LifeAssurancePolicy_> real_handler(worker, lc, std::move(handler));
+					[&](life_checker lc) {
+						async_handler<Signature_, LifeAssurancePolicy_> real_handler(std::move(worker), std::move(lc), std::move(handler));
 						if (!contains_flag(attributes, handler_attributes::suppress_populator))
 							this->get_exception_handler().handle_exceptions([&] { this->get_handler_processor().populate_state(real_handler); });
 						return real_handler;

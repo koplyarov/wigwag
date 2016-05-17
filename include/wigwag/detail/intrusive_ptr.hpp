@@ -62,6 +62,13 @@ namespace detail
 				_raw->release();
 		}
 
+		intrusive_ptr& operator = (intrusive_ptr&& other)
+		{
+			intrusive_ptr tmp(std::move(other));
+			swap(tmp);
+			return *this;
+		}
+
 		intrusive_ptr& operator = (const intrusive_ptr& other)
 		{
 			intrusive_ptr tmp(other);

@@ -122,8 +122,8 @@ namespace wigwag
 		{ return _impl->connect(std::move(handler), attributes); }
 
 		template < typename HandlerFunc_ >
-		token connect(const std::shared_ptr<task_executor>& worker, HandlerFunc_ handler, handler_attributes attributes = handler_attributes::none) const
-		{ return _impl->connect(worker, std::move(handler), attributes); }
+		token connect(std::shared_ptr<task_executor> worker, HandlerFunc_ handler, handler_attributes attributes = handler_attributes::none) const
+		{ return _impl->connect(std::move(worker), std::move(handler), attributes); }
 
 		void operator() (ArgTypes_... args) const
 		{

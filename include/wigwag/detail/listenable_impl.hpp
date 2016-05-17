@@ -97,12 +97,12 @@ namespace detail
 
 		public:
 			template < typename MakeHandlerFunc_ >
-			handler_node(const intrusive_ptr<listenable_impl>& impl, const MakeHandlerFunc_& mhf)
-				: _listenable_impl(impl), _handler(mhf(life_checker(*_listenable_impl, *this)))
+			handler_node(intrusive_ptr<listenable_impl> impl, const MakeHandlerFunc_& mhf)
+				: _listenable_impl(std::move(impl)), _handler(mhf(life_checker(*_listenable_impl, *this)))
 			{ _listenable_impl->get_handlers_container().push_back(*this); }
 
-			handler_node(const intrusive_ptr<listenable_impl>& impl, handler_type handler)
-				: _listenable_impl(impl), _handler(std::move(handler))
+			handler_node(intrusive_ptr<listenable_impl> impl, handler_type handler)
+				: _listenable_impl(std::move(impl)), _handler(std::move(handler))
 			{ _listenable_impl->get_handlers_container().push_back(*this); }
 
 			virtual ~handler_node()
@@ -194,7 +194,7 @@ namespace detail
 		listenable_impl(T_ eh, U_ lp, DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(check_constructible<exception_handler, T_&&>::value && check_constructible<lock_primitive, U_&&>::value))
 			: exception_handler(std::move(eh)), lock_primitive(std::move(lp))
 		{ }
-		
+
 		template < typename T_, typename U_ >
 		listenable_impl(T_ eh, U_ hp, DETAIL_LISTENABLE_IMPL_CTOR_ENABLER(check_constructible<exception_handler, T_&&>::value && check_constructible<handler_processor, U_&&, lock_primitive>::value))
 			: exception_handler(std::move(eh)), handler_processor(std::move(hp))

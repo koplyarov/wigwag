@@ -91,8 +91,8 @@ namespace wigwag
 		auto lock_primitive() const -> decltype(_impl->get_lock_primitive().get_primitive())
 		{ return _impl->get_lock_primitive().get_primitive(); }
 
-		token connect(const ListenerType_& handler, handler_attributes attributes = handler_attributes::none) const
-		{ return _impl->connect(handler, attributes); }
+		token connect(ListenerType_ handler, handler_attributes attributes = handler_attributes::none) const
+		{ return _impl->connect(std::move(handler), attributes); }
 
 		template < typename InvokeListenerFunc_ >
 		void invoke(const InvokeListenerFunc_& invoke_listener_func)

@@ -35,8 +35,8 @@ namespace wigwag
 		impl_type_ptr 	_impl;
 
 	public:
-		explicit signal_connector(const impl_type_ptr& impl)
-			: _impl(impl)
+		explicit signal_connector(impl_type_ptr impl)
+			: _impl(std::move(impl))
 		{ }
 
 		template < typename HandlerFunc_ >
@@ -44,8 +44,8 @@ namespace wigwag
 		{ return _impl->connect(std::move(handler), attributes); }
 
 		template < typename HandlerFunc_ >
-		token connect(const std::shared_ptr<task_executor>& worker, HandlerFunc_ handler, handler_attributes attributes = handler_attributes::none) const
-		{ return _impl->connect(worker, std::move(handler), attributes); }
+		token connect(std::shared_ptr<task_executor> worker, HandlerFunc_ handler, handler_attributes attributes = handler_attributes::none) const
+		{ return _impl->connect(std::move(worker), std::move(handler), attributes); }
 	};
 
 #include <wigwag/detail/enable_warnings.hpp>
