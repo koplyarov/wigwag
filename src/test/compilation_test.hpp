@@ -146,7 +146,7 @@ public:
 			l3()
 	{ }
 
-	virtual void f()
+	void f()
 	{
 		s1.connect([]{});
 		s2.connect([]{});
@@ -157,7 +157,7 @@ public:
 		l3.connect([]{});
 	}
 
-	virtual void f() const
+	void f() const
 	{
 		s1();
 		s2();
