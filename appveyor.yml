@@ -39,4 +39,4 @@ build:
   verbosity: minimal
 
 test_script:
-  - cmd: "%APPVEYOR_BUILD_FOLDER%\build\bin\%CONFIGURATION%\wigwag_test"
+  - cmd: "%APPVEYOR_BUILD_FOLDER%\\build\\bin\\%CONFIGURATION%\\wigwag_test"
