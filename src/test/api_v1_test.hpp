@@ -48,7 +48,7 @@ private:
 		{ }
 
 		virtual void f() const { _f_impl(); }
-		virtual void g(int i) const { _g_impl(i); }
+		virtual void g(int i) { _g_impl(i); }
 	};
 
 	class copy_ctor_counter
@@ -151,7 +151,7 @@ public:
 		l.invoke([](const test_listener& f) { f.f(); });
 		TS_ASSERT_EQUALS(f_value, 12);
 		TS_ASSERT_EQUALS(g_value, 32);
-		l.invoke([](const test_listener& f) { f.g(15); });
+		l.invoke([](test_listener& f) { f.g(15); });
 		TS_ASSERT_EQUALS(f_value, 12);
 		TS_ASSERT_EQUALS(g_value, 77);
 
@@ -159,7 +159,7 @@ public:
 		l.invoke([](const test_listener& f) { f.f(); });
 		TS_ASSERT_EQUALS(f_value, 22);
 		TS_ASSERT_EQUALS(g_value, 77);
-		l.invoke([](const test_listener& f) { f.g(5); });
+		l.invoke([](test_listener& f) { f.g(5); });
 		TS_ASSERT_EQUALS(f_value, 22);
 		TS_ASSERT_EQUALS(g_value, 87);
 	}
@@ -346,7 +346,7 @@ public:
 
 		{
 			token t = l.connect(test_listener([]{}, [&] (int i) { throw i; }));
-			TS_ASSERT_THROWS_ANYTHING(l.invoke([](const test_listener& l){ l.g(42); }));
+			TS_ASSERT_THROWS_ANYTHING(l.invoke([](test_listener& l){ l.g(42); }));
 		}
 	}
 
@@ -373,7 +373,7 @@ public:
 
 		{
 			token t = l.connect(test_listener([]{}, [&] (int i) { throw i; }));
-			TS_ASSERT_THROWS_ANYTHING(l.invoke([](const test_listener& l){ l.g(42); }));
+			TS_ASSERT_THROWS_ANYTHING(l.invoke([](test_listener& l){ l.g(42); }));
 		}
 	}
 
@@ -401,7 +401,7 @@ public:
 			tp += l.connect(test_listener([&] { throw std::runtime_error("Test exception"); }, [](int){}));
 			tp += l.connect(test_listener([]{}, [&] (int i) { throw i; }));
 			TS_ASSERT_THROWS_NOTHING(l.invoke([](const test_listener& l){ l.f(); }));
-			TS_ASSERT_THROWS_ANYTHING(l.invoke([](const test_listener& l){ l.g(42); }));
+			TS_ASSERT_THROWS_ANYTHING(l.invoke([](test_listener& l){ l.g(42); }));
 		}
 	}
 

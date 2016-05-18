@@ -127,7 +127,7 @@ namespace detail
 				}
 			}
 
-			const handler_type& get_handler() const { return _handler.ref(); }
+			handler_type& get_handler() { return _handler.ref(); }
 			const life_assurance& get_life_assurance() const { return *this; }
 
 		protected:
