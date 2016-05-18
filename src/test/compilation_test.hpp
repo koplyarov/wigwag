@@ -128,12 +128,43 @@ class instantiations_test
 {
 public:
 	signal<void(), exception_handling::none> s1;
-	signal<void(), threading::shared_mutex> s2;
+	signal<void(), threading::shared_recursive_mutex> s2;
 	signal<void(), life_assurance::none, state_populating::none> s3;
+	signal<void(), threading::shared_recursive_mutex, creation::lazy> s4;
 
 	listenable<std::function<void()>, exception_handling::none> l1;
-	listenable<std::function<void()>, threading::shared_mutex> l2;
+	listenable<std::function<void()>, threading::shared_recursive_mutex> l2;
 	listenable<std::function<void()>, life_assurance::none, state_populating::none> l3;
 
-	instantiations_test();
+	instantiations_test()
+		:	s1(),
+			s2(std::make_shared<std::recursive_mutex>()),
+			s3(),
+			s4(std::make_shared<std::recursive_mutex>()),
+			l1(),
+			l2(std::make_shared<std::recursive_mutex>()),
+			l3()
+	{ }
+
+	virtual void f()
+	{
+		s1.connect([]{});
+		s2.connect([]{});
+		s3.connect([]{});
+		s4.connect([]{});
+		l1.connect([]{});
+		l2.connect([]{});
+		l3.connect([]{});
+	}
+
+	virtual void f() const
+	{
+		s1();
+		s2();
+		s3();
+		s4();
+		l1.invoke([](const std::function<void()>& f){ f(); });
+		l2.invoke([](const std::function<void()>& f){ f(); });
+		l3.invoke([](const std::function<void()>& f){ f(); });
+	}
 };
