@@ -70,9 +70,11 @@ namespace wigwag
 	public:
 		using handler_type = std::function<signature>;
 
-	private:
+	WIGWAG_PRIVATE_IS_CONSTRUCTIBLE_WORKAROUND:
 		using impl_type = detail::signal_impl<signature, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy, ref_counter_policy>;
 		using impl_type_with_attr = detail::signal_with_attributes_impl<signature, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy, ref_counter_policy>;
+
+	private:
 		using impl_type_ptr = detail::intrusive_ptr<impl_type>;
 
 		using storage = typename creation_policy::template storage<impl_type_ptr, impl_type>;
@@ -81,7 +83,7 @@ namespace wigwag
 		detail::creation_storage_adapter<storage>		_impl;
 
 	public:
-		template < typename... Args_ >
+		template < typename... Args_, bool E_ = std::is_constructible<impl_type, Args_...>::value, typename = typename std::enable_if<E_>::type >
 		signal(signal_attributes attributes, Args_&&... args)
 		{
 			if (attributes == signal_attributes::none)
@@ -90,13 +92,9 @@ namespace wigwag
 				_impl.template create<impl_type_with_attr>(attributes, std::forward<Args_>(args)...);
 		}
 
-		template < typename Arg0_, typename... Args_ >
-		signal(Arg0_&& arg0, Args_&&... args)
-		{ _impl.template create<impl_type>(std::forward<Arg0_>(arg0), std::forward<Args_>(args)...); }
-
-		template < bool has_default_ctor = std::is_constructible<impl_type>::value, typename = typename std::enable_if<has_default_ctor>::type >
-		signal()
-		{ _impl.template create<impl_type>(); }
+		template < typename... Args_, bool E_ = std::is_constructible<impl_type, Args_...>::value, typename = typename std::enable_if<E_>::type >
+		signal(Args_&&... args)
+		{ _impl.template create<impl_type>(std::forward<Args_>(args)...); }
 
 		~signal()
 		{

@@ -52,15 +52,15 @@ namespace creation
 			{ return (bool)_ptr; }
 
 		private:
-			template < bool has_default_ctor = std::is_constructible<DefaultType_>::value>
-			void ensure_created(typename std::enable_if<has_default_ctor, wigwag::detail::enabler>::type = wigwag::detail::enabler()) const
+			template < bool E_ = std::is_constructible<DefaultType_>::value>
+			void ensure_created(typename std::enable_if<E_, wigwag::detail::enabler>::type = wigwag::detail::enabler()) const
 			{
 				if (!_ptr)
 					_ptr.reset(new DefaultType_());
 			}
 
-			template < bool has_default_ctor = std::is_constructible<DefaultType_>::value>
-			void ensure_created(typename std::enable_if<!has_default_ctor, wigwag::detail::enabler>::type = wigwag::detail::enabler()) const
+			template < bool E_ = std::is_constructible<DefaultType_>::value>
+			void ensure_created(typename std::enable_if<!E_, wigwag::detail::enabler>::type = wigwag::detail::enabler()) const
 			{ WIGWAG_ASSERT(_ptr, "Internal wigwag error, _ptr must have been initialized before!"); }
 		};
 	};

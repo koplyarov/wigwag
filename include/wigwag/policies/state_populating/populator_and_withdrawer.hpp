@@ -31,6 +31,7 @@ namespace state_populating
 		template < typename HandlerType_ >
 		class handler_processor
 		{
+		WIGWAG_PRIVATE_IS_CONSTRUCTIBLE_WORKAROUND:
 			using handler_processor_func = std::function<void(const HandlerType_&)>;
 
 		private:

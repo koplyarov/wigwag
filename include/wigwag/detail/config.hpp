@@ -68,9 +68,15 @@
 #endif
 
 
+#if _MSC_VER
+#	define WIGWAG_FUNCTION __FUNCTION__
+#else
+#	define WIGWAG_FUNCTION __func__
+#endif
+
 #if !defined(WIGWAG_THROW)
 #	if WIGWAG_NOEXCEPTIONS
-#		define WIGWAG_THROW(Msg_) do { fprintf(stderr, "WIGWAG_THROW: %s\nFile: %s:%d\nFunction: %s\n", Msg_, __FILE__, __LINE__, __func__); std::terminate(); } while (0)
+#		define WIGWAG_THROW(Msg_) do { fprintf(stderr, "WIGWAG_THROW: %s\nFile: %s:%d\nFunction: %s\n", Msg_, __FILE__, __LINE__, WIGWAG_FUNCTION); std::terminate(); } while (0)
 #	else
 #		define WIGWAG_THROW(Msg_) throw std::runtime_error(Msg_)
 #	endif
@@ -78,7 +84,7 @@
 
 #if !defined(WIGWAG_ASSERT)
 #	if WIGWAG_DEBUG
-#		define WIGWAG_ASSERT(Expr_, Msg_) do { if (!(Expr_)) { fprintf(stderr, "WIGWAG_ASSERT: %s\nFile: %s:%d\nFunction: %s\n", Msg_, __FILE__, __LINE__, __func__); std::terminate(); } } while (0)
+#		define WIGWAG_ASSERT(Expr_, Msg_) do { if (!(Expr_)) { fprintf(stderr, "WIGWAG_ASSERT: %s\nFile: %s:%d\nFunction: %s\n", Msg_, __FILE__, __LINE__, WIGWAG_FUNCTION); std::terminate(); } } while (0)
 #	else
 #		define WIGWAG_ASSERT(...) do { } while (0)
 #	endif
@@ -94,12 +100,15 @@
 #	define WIGWAG_HAS_UNRESTRICTED_UNIONS (_MSC_VER >= 1900)
 #	if _MSC_VER < 1900
 #		define WIGWAG_ALIGNOF __alignof
+#		define WIGWAG_PRIVATE_IS_CONSTRUCTIBLE_WORKAROUND public
 #	else
 #		define WIGWAG_ALIGNOF alignof
+#		define WIGWAG_PRIVATE_IS_CONSTRUCTIBLE_WORKAROUND private
 #	endif
 #else
 #	define WIGWAG_HAS_UNRESTRICTED_UNIONS 1
 #	define WIGWAG_ALIGNOF alignof
+#	define WIGWAG_PRIVATE_IS_CONSTRUCTIBLE_WORKAROUND private
 #endif
 
 

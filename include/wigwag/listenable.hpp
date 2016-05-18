@@ -56,17 +56,18 @@ namespace wigwag
 	public:
 		using listener_type = ListenerType_;
 
-	private:
+	WIGWAG_PRIVATE_IS_CONSTRUCTIBLE_WORKAROUND:
 		using impl_type = detail::listenable_impl<ListenerType_, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy, ref_counter_policy>;
 		using impl_type_ptr = detail::intrusive_ptr<impl_type>;
 
+	private:
 		using storage = typename creation_policy::template storage<impl_type_ptr, impl_type>;
 
 	private:
 		detail::creation_storage_adapter<storage>		_impl;
 
 	public:
-		template < bool has_default_ctor = std::is_constructible<impl_type>::value, typename = typename std::enable_if<has_default_ctor>::type>
+		template < bool E_ = std::is_constructible<impl_type>::value, typename = typename std::enable_if<E_>::type>
 		listenable()
 		{ _impl.template create<impl_type>(); }
 

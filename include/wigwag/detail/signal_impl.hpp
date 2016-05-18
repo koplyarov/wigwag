@@ -35,8 +35,10 @@ namespace detail
 		:	public signal_connector_impl<Signature_>,
 			private listenable_impl<std::function<Signature_>, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_, RefCounterPolicy_>
 	{
+	WIGWAG_PRIVATE_IS_CONSTRUCTIBLE_WORKAROUND:
 		using listenable_base = listenable_impl<std::function<Signature_>, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_, RefCounterPolicy_>;
 
+	private:
 		using handler_type = std::function<Signature_>;
 
 		using handler_node = typename listenable_base::handler_node;
@@ -45,7 +47,7 @@ namespace detail
 		using execution_guard = typename listenable_base::execution_guard;
 
 	public:
-		template < typename... Args_ >
+		template < typename... Args_, bool E_ = std::is_constructible<listenable_base, Args_...>::value, typename = typename std::enable_if<E_>::type >
 		signal_impl(Args_&&... args)
 			: listenable_base(std::forward<Args_>(args)...)
 		{ }
@@ -127,12 +129,17 @@ namespace detail
 		>
 	class signal_with_attributes_impl : public signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_, RefCounterPolicy_>
 	{
+	WIGWAG_PRIVATE_IS_CONSTRUCTIBLE_WORKAROUND:
 		using base = signal_impl<Signature_, ExceptionHandlingPolicy_, ThreadingPolicy_, StatePopulatingPolicy_, LifeAssurancePolicy_, RefCounterPolicy_>;
 
 	private:
 		signal_attributes	_attributes;
 
 	public:
+		template < bool E_ = std::is_constructible<base>::value, typename = typename std::enable_if<E_>::type >
+		signal_with_attributes_impl()
+		{ }
+
 		template < typename... Args_ >
 		signal_with_attributes_impl(signal_attributes attributes, Args_&&... args)
 			: base(std::forward<Args_>(args)...), _attributes(attributes)

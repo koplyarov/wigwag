@@ -157,11 +157,11 @@ namespace detail
 
 	public:
 		template <
-				bool has_default_ctor =
+				bool E_ =
 					std::is_constructible<exception_handler>::value &&
 					std::is_constructible<lock_primitive>::value &&
 					std::is_constructible<handler_processor>::value,
-				typename = typename std::enable_if<has_default_ctor>::type
+				typename = typename std::enable_if<E_>::type
 			>
 		listenable_impl() { }
 
