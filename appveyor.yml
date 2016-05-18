@@ -29,9 +29,7 @@ before_build:
   - cmd: cd build
   - cmd: if "%platform%"=="Win32" set CMAKE_GENERATOR_NAME=%VS_VERSION%
   - cmd: if "%platform%"=="x64"   set CMAKE_GENERATOR_NAME=%VS_VERSION% Win64
-  - cmd: set CXXTEST_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%\cxxtest
-  - cmd: set CXXTEST_PYTHON_TESTGEN_EXECUTABLE=%APPVEYOR_BUILD_FOLDER%\cxxtest\python\cxxtest
-  - cmd: cmake -G "%CMAKE_GENERATOR_NAME%" -DCMAKE_BUILD_TYPE=%configuration% ..
+  - cmd: cmake -G "%CMAKE_GENERATOR_NAME%" -DCMAKE_BUILD_TYPE=%configuration% -DCXXTEST_INCLUDE_DIR=cxxtest -DCXXTEST_PYTHON_TESTGEN_EXECUTABLE=cxxtest\python\cxxtest ..
 
 build:
   project: C:\projects\wigwag\build\wigwag.sln
