@@ -221,7 +221,7 @@ namespace detail
 		}
 
 		template < typename InvokeListenerFunc_ >
-		void invoke(const InvokeListenerFunc_& invoke_listener_func)
+		void invoke(InvokeListenerFunc_&& invoke_listener_func)
 		{
 			get_lock_primitive().lock_recursive();
 			auto sg = detail::at_scope_exit([&] { get_lock_primitive().unlock_recursive(); } );

@@ -96,7 +96,7 @@ namespace wigwag
 		{ return _impl->connect(std::move(handler), attributes); }
 
 		template < typename InvokeListenerFunc_ >
-		void invoke(const InvokeListenerFunc_& invoke_listener_func) const
+		void invoke(InvokeListenerFunc_&& invoke_listener_func) const
 		{
 			if (_impl)
 				_impl->invoke(invoke_listener_func);

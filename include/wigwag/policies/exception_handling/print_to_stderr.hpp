@@ -31,7 +31,7 @@ namespace exception_handling
 		using tag = exception_handling::tag<api_version<2, 0>>;
 
 		template < typename Func_, typename... Args_ >
-		void handle_exceptions(const Func_& func, Args_&&... args) const
+		void handle_exceptions(Func_&& func, Args_&&... args) const
 		{
 			try
 			{ func(std::forward<Args_>(args)...); }
