@@ -38,7 +38,7 @@ namespace threading
 				: _mutex(std::move(mutex))
 			{ }
 
-			std::shared_ptr<std::recursive_mutex> get_primitive() const WIGWAG_NOEXCEPT { return _mutex; }
+			const std::shared_ptr<std::recursive_mutex>& get_primitive() const WIGWAG_NOEXCEPT { return _mutex; }
 
 			void lock_nonrecursive() const { _mutex->lock(); }
 			void unlock_nonrecursive() const { _mutex->unlock(); }
