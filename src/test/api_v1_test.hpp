@@ -29,6 +29,13 @@
 #include <test/utils/thread.hpp>
 
 
+#if  defined(_MSC_VER) && _MSC_VER < 1900
+#	define HAS_STD_FUNCTION_MOVE_BUG 1
+#else
+#	define HAS_STD_FUNCTION_MOVE_BUG 0
+#endif
+
+
 using namespace wigwag;
 using namespace std::chrono;
 
@@ -865,6 +872,7 @@ public:
 
 	static void test_task_executor_function_copying()
 	{
+#if !HAS_STD_FUNCTION_MOVE_BUG
 		{
 			std::atomic<int> counter(0);
 			std::shared_ptr<threadless_task_executor> worker = std::make_shared<threadless_task_executor>();
@@ -882,10 +890,12 @@ public:
 			thread::sleep(200);
 			TS_ASSERT_EQUALS(counter.load(), 0);
 		}
+#endif
 	}
 
 	static void test_signal_handler_copying()
 	{
+#if !HAS_STD_FUNCTION_MOVE_BUG
 		{
 			signal<void()> s;
 			std::atomic<int> counter(0);
@@ -929,10 +939,12 @@ public:
 			t.reset();
 			TS_ASSERT_EQUALS(counter.load(), 2);
 		}
+#endif
 	}
 
 	static void test_signal_parameters_copying()
 	{
+#if !HAS_STD_FUNCTION_MOVE_BUG
 		{
 			std::atomic<int> counter(0);
 			copy_ctor_counter state(counter);
@@ -981,6 +993,7 @@ public:
 			t.reset();
 			TS_ASSERT_EQUALS(counter.load(), 2);
 		}
+#endif
 	}
 };
 
