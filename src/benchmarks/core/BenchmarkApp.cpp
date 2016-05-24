@@ -141,19 +141,22 @@ namespace benchmarks
 
 				if (subtask == "measureIterationsCount")
 				{
-					MessageQueue mq(_queueName);
-					mq.SendMessage(std::make_shared<IterationsCountMessage>(_suite.MeasureIterationsCount(benchmark_id)));
+					auto iterations_count = _suite.MeasureIterationsCount(benchmark_id);
+					MessageQueue mq(_queueName, boost::interprocess::open_only);
+					mq.SendMessage(std::make_shared<IterationsCountMessage>(iterations_count));
 					return 0;
 				}
 				else if (subtask == "invokeBenchmark")
 				{
 					if (vm.count("iterations") == 0)
 						throw CmdLineException("Number of iterations is not specified!");
-					MessageQueue mq(_queueName);
 					SetMaxThreadPriority();
 					auto results_reporter = std::make_shared<BenchmarksResultsReporter>();
 					_suite.InvokeBenchmark(num_iterations, benchmark_id, results_reporter);
-					mq.SendMessage(std::make_shared<BenchmarkResultMessage>(BenchmarkResult(results_reporter->GetOperationTimes(), results_reporter->GetMemoryConsumption())));
+					auto result = BenchmarkResult(results_reporter->GetOperationTimes(), results_reporter->GetMemoryConsumption());
+
+					MessageQueue mq(_queueName, boost::interprocess::open_only);
+					mq.SendMessage(std::make_shared<BenchmarkResultMessage>(result));
 					return 0;
 				}
 				else if (!subtask.empty())
@@ -264,7 +267,7 @@ namespace benchmarks
 	{
 		std::string benchmark = id.GetId().ToString();
 
-		MessageQueue mq(_queueName);
+		MessageQueue mq(_queueName, boost::interprocess::create_only);
 		BOOST_SCOPE_EXIT_ALL(&) { MessageQueue::Remove(_queueName); };
 
 		{

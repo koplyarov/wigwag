@@ -27,15 +27,6 @@ namespace benchmarks
 	using namespace boost::interprocess;
 
 
-	static const int QueueSize = 4;
-	static const int MaxMessageSize = 4096 / QueueSize;
-
-
-	MessageQueue::MessageQueue(const std::string& name)
-		: _queue(open_or_create, name.c_str(), QueueSize, MaxMessageSize)
-	{ }
-
-
 	std::shared_ptr<MessageBase> MessageQueue::ReceiveMessageBase()
 	{
 		std::array<char, MaxMessageSize> buf;

@@ -28,10 +28,19 @@ namespace benchmarks
 	class MessageQueue
 	{
 	private:
+		static const int QueueSize = 4;
+		static const int MaxMessageSize = 4096 / QueueSize;
+
 		boost::interprocess::message_queue	_queue;
 
 	public:
-		MessageQueue(const std::string& name);
+		MessageQueue(const std::string& name, boost::interprocess::create_only_t t)
+			: _queue(t, name.c_str(), QueueSize, MaxMessageSize)
+		{ }
+
+		MessageQueue(const std::string& name, boost::interprocess::open_only_t t)
+			: _queue(t, name.c_str())
+		{ }
 
 		template < typename MessageType >
 		std::shared_ptr<MessageType> ReceiveMessage()
