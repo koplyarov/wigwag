@@ -18,14 +18,17 @@ init:
 install:
   - cmd: git clone --depth 1 --branch 4.4 https://github.com/CxxTest/cxxtest.git
 
+clone_folder: C:\projects\wigwag
+
 before_build:
+  - cmd: cd C:\projects\wigwag
+
+build_script:
   - cmd: md build
   - cmd: cd build
   - cmd: if "%platform%"=="Win32" set CMAKE_GENERATOR_NAME=%VS_VERSION%
   - cmd: if "%platform%"=="x64"   set CMAKE_GENERATOR_NAME=%VS_VERSION% Win64
   - cmd: cmake -G "%CMAKE_GENERATOR_NAME%" -DCMAKE_BUILD_TYPE=%configuration% -DCXXTEST_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%\cxxtest -DCXXTEST_PYTHON_TESTGEN_EXECUTABLE=%APPVEYOR_BUILD_FOLDER%\cxxtest\python\scripts\cxxtestgen ..
-
-build_script:
   - cmd: cmake --build . --target ALL_BUILD
 
 test_script:
