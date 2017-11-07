@@ -100,6 +100,8 @@ find_package(Boost COMPONENTS
 
 if (Boost_FOUND)
 	message(STATUS "Found boost, enabling wigwag_benchmarks")
+	add_subdirectory(src/benchmarks/core)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core)
 	include_directories(${Boost_INCLUDE_DIRS})
 
 	if (NOT WIN32)
@@ -138,14 +140,6 @@ if (Boost_FOUND)
 	endif()
 
 	add_executable(wigwag_benchmarks
-		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/BenchmarkApp.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/BenchmarkSuite.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/detail/BenchmarkResult.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/ipc/MessageQueue.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/Barrier.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/Logger.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/Memory.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/core/utils/ThreadPriority.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/descriptors/signal/qt5.hpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/benchmarks/main.cpp)
 
@@ -159,6 +153,7 @@ if (Boost_FOUND)
 	target_link_libraries(wigwag_benchmarks
 		${Boost_LIBRARIES}
 		${CMAKE_THREAD_LIBS_INIT}
+		benchmarks
 	)
 
 	if (MSVC)

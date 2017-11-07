@@ -8,12 +8,12 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <benchmarks/BenchmarkApp.hpp>
+#include <benchmarks/BenchmarkSuite.hpp>
 #include <benchmarks/FunctionBenchmarks.hpp>
 #include <benchmarks/GenericBenchmarks.hpp>
 #include <benchmarks/MutexBenchmarks.hpp>
 #include <benchmarks/SignalBenchmarks.hpp>
-#include <benchmarks/core/BenchmarkApp.hpp>
-#include <benchmarks/core/BenchmarkSuite.hpp>
 #include <benchmarks/descriptors/function/boost.hpp>
 #include <benchmarks/descriptors/function/std.hpp>
 #include <benchmarks/descriptors/generic/boost.hpp>
@@ -41,12 +41,12 @@ int main(int argc, char* argv[])
 			signal::wigwag::Regular,
 			signal::wigwag::Ui,
 			signal::boost::Regular,
-			signal::boost::Tracking,
+			signal::boost::Tracking
 #if WIGWAG_BENCHMARKS_SIGCPP2
-			signal::sigcpp::Regular,
+			, signal::sigcpp::Regular
 #endif
 #if WIGWAG_BENCHMARKS_QT5
-			signal::qt5::Regular
+			, signal::qt5::Regular
 #endif
 			>();
 
