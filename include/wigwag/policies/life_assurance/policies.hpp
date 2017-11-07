@@ -20,7 +20,7 @@ namespace wigwag {
 namespace life_assurance
 {
 
-	using default_ = intrusive_life_tokens;
+    using default_ = intrusive_life_tokens;
 
 }}
 

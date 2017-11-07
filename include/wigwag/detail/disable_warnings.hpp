@@ -11,26 +11,26 @@
 // Disabling some warnings here because fixing them has a performance penalty :(
 
 #if defined(__GNUC__) || defined(__clang)
-#	pragma GCC diagnostic push
-#	pragma GCC diagnostic ignored "-Weffc++"
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
 #if defined(_MSC_VER)
-#	if _MSC_VER >= 1900
-#		pragma warning(disable: 5031) // Sorry :(
-#	endif
-#	pragma warning(push)
-#	pragma warning(disable: 4355 4625 4626)
-#	if _MSC_VER >= 1700 && _MSC_VER < 1900
-#		pragma warning(disable: 4127)
-#	endif
-#	if _MSC_VER >= 1900
-#		pragma warning(disable: 5026 5027)
-#	endif
+#   if _MSC_VER >= 1900
+#       pragma warning(disable: 5031) // Sorry :(
+#   endif
+#   pragma warning(push)
+#   pragma warning(disable: 4355 4625 4626)
+#   if _MSC_VER >= 1700 && _MSC_VER < 1900
+#       pragma warning(disable: 4127)
+#   endif
+#   if _MSC_VER >= 1900
+#       pragma warning(disable: 5026 5027)
+#   endif
 #endif
 
 #if defined(WIGWAG_WARNINGS_DISABLED)
-#	error Inconsistent disable_warnings.hpp/enable_warnings.hpp  includes!
+#   error Inconsistent disable_warnings.hpp/enable_warnings.hpp  includes!
 #endif
 
 #define WIGWAG_WARNINGS_DISABLED

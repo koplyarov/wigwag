@@ -17,98 +17,98 @@
 
 
 #if defined(__GNUC__) || defined(__clang)
-#	if !defined(__EXCEPTIONS) && !defined(WIGWAG_NOEXCEPTIONS)
-#		define WIGWAG_NOEXCEPTIONS 1
-#	endif
+#   if !defined(__EXCEPTIONS) && !defined(WIGWAG_NOEXCEPTIONS)
+#       define WIGWAG_NOEXCEPTIONS 1
+#   endif
 
-#	if !defined(WIGWAG_PLATFORM_POSIX)
-#		define WIGWAG_PLATFORM_POSIX 1
-#	endif
+#   if !defined(WIGWAG_PLATFORM_POSIX)
+#       define WIGWAG_PLATFORM_POSIX 1
+#   endif
 #endif
 
 #if defined(__GNUC__) || defined(__clang)
-#	define WIGWAG_EXPECT(A_, B_) __builtin_expect((long)(A_), (long)(B_))
+#   define WIGWAG_EXPECT(A_, B_) __builtin_expect((long)(A_), (long)(B_))
 #endif
 
 #if defined(_MSC_VER)
-#	if !defined(_CPPUNWIND) && !defined(WIGWAG_NOEXCEPTIONS)
-#		define WIGWAG_NOEXCEPTIONS 1
-#	endif
+#   if !defined(_CPPUNWIND) && !defined(WIGWAG_NOEXCEPTIONS)
+#       define WIGWAG_NOEXCEPTIONS 1
+#   endif
 
-#	if !defined(WIGWAG_PLATFORM_WINDOWS)
-#		define WIGWAG_PLATFORM_WINDOWS 1
-#	endif
+#   if !defined(WIGWAG_PLATFORM_WINDOWS)
+#       define WIGWAG_PLATFORM_WINDOWS 1
+#   endif
 #endif
 
 
 #if !defined(WIGWAG_DEBUG)
-#	if defined(NDEBUG)
-#		define WIGWAG_DEBUG 0
-#	else
-#		define WIGWAG_DEBUG 1
-#	endif
+#   if defined(NDEBUG)
+#       define WIGWAG_DEBUG 0
+#   else
+#       define WIGWAG_DEBUG 1
+#   endif
 #endif
 
 
 #if !defined(WIGWAG_NOEXCEPTIONS)
-#	define WIGWAG_NOEXCEPTIONS 0
+#   define WIGWAG_NOEXCEPTIONS 0
 #endif
 
 #if !defined(WIGWAG_PLATFORM_POSIX)
-#	define WIGWAG_PLATFORM_POSIX 0
+#   define WIGWAG_PLATFORM_POSIX 0
 #endif
 
 #if !defined(WIGWAG_PLATFORM_WINDOWS)
-#	define WIGWAG_PLATFORM_WINDOWS 0
+#   define WIGWAG_PLATFORM_WINDOWS 0
 #endif
 
 
 #if !defined(WIGWAG_EXPECT)
-#	define WIGWAG_EXPECT(A_, B_) (A_)
+#   define WIGWAG_EXPECT(A_, B_) (A_)
 #endif
 
 
 #if _MSC_VER
-#	define WIGWAG_FUNCTION __FUNCTION__
+#   define WIGWAG_FUNCTION __FUNCTION__
 #else
-#	define WIGWAG_FUNCTION __func__
+#   define WIGWAG_FUNCTION __func__
 #endif
 
 #if !defined(WIGWAG_THROW)
-#	if WIGWAG_NOEXCEPTIONS
-#		define WIGWAG_THROW(Msg_) do { fprintf(stderr, "WIGWAG_THROW: %s\nFile: %s:%d\nFunction: %s\n", Msg_, __FILE__, __LINE__, WIGWAG_FUNCTION); std::terminate(); } while (0)
-#	else
-#		define WIGWAG_THROW(Msg_) throw std::runtime_error(Msg_)
-#	endif
+#   if WIGWAG_NOEXCEPTIONS
+#       define WIGWAG_THROW(Msg_) do { fprintf(stderr, "WIGWAG_THROW: %s\nFile: %s:%d\nFunction: %s\n", Msg_, __FILE__, __LINE__, WIGWAG_FUNCTION); std::terminate(); } while (0)
+#   else
+#       define WIGWAG_THROW(Msg_) throw std::runtime_error(Msg_)
+#   endif
 #endif
 
 #if !defined(WIGWAG_ASSERT)
-#	if WIGWAG_DEBUG
-#		define WIGWAG_ASSERT(Expr_, Msg_) do { if (!(Expr_)) { fprintf(stderr, "WIGWAG_ASSERT: %s\nFile: %s:%d\nFunction: %s\n", Msg_, __FILE__, __LINE__, WIGWAG_FUNCTION); std::terminate(); } } while (0)
-#	else
-#		define WIGWAG_ASSERT(...) do { } while (0)
-#	endif
+#   if WIGWAG_DEBUG
+#       define WIGWAG_ASSERT(Expr_, Msg_) do { if (!(Expr_)) { fprintf(stderr, "WIGWAG_ASSERT: %s\nFile: %s:%d\nFunction: %s\n", Msg_, __FILE__, __LINE__, WIGWAG_FUNCTION); std::terminate(); } } while (0)
+#   else
+#       define WIGWAG_ASSERT(...) do { } while (0)
+#   endif
 #endif
 
 #if defined(_MSC_VER) && (WIGWAG_NOEXCEPTIONS || _MSC_VER < 1900)
-#	define WIGWAG_NOEXCEPT
+#   define WIGWAG_NOEXCEPT
 #else
-#	define WIGWAG_NOEXCEPT noexcept
+#   define WIGWAG_NOEXCEPT noexcept
 #endif
 
 #if defined(_MSC_VER)
-#	define WIGWAG_HAS_UNRESTRICTED_UNIONS (_MSC_VER >= 1900)
-#	if _MSC_VER < 1900
-#		define WIGWAG_ALIGNOF __alignof
-#		define WIGWAG_PRIVATE_IS_CONSTRUCTIBLE_WORKAROUND public
-#	else
-#		define WIGWAG_ALIGNOF alignof
-#		define WIGWAG_PRIVATE_IS_CONSTRUCTIBLE_WORKAROUND private
-#	endif
+#   define WIGWAG_HAS_UNRESTRICTED_UNIONS (_MSC_VER >= 1900)
+#   if _MSC_VER < 1900
+#       define WIGWAG_ALIGNOF __alignof
+#       define WIGWAG_PRIVATE_IS_CONSTRUCTIBLE_WORKAROUND public
+#   else
+#       define WIGWAG_ALIGNOF alignof
+#       define WIGWAG_PRIVATE_IS_CONSTRUCTIBLE_WORKAROUND private
+#   endif
 #else
-#	define WIGWAG_HAS_UNRESTRICTED_UNIONS 1
-#	define WIGWAG_ALIGNOF alignof
-#	define WIGWAG_PRIVATE_IS_CONSTRUCTIBLE_WORKAROUND private
+#   define WIGWAG_HAS_UNRESTRICTED_UNIONS 1
+#   define WIGWAG_ALIGNOF alignof
+#   define WIGWAG_PRIVATE_IS_CONSTRUCTIBLE_WORKAROUND private
 #endif
 
 

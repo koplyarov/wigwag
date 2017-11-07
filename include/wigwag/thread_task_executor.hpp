@@ -25,84 +25,84 @@ namespace wigwag
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	namespace detail
-	{
-		using thread_task_executor_policies_config = policies_config<
-				policies_config_entry<exception_handling::policy_concept, wigwag::exception_handling::default_>
-			>;
-	}
+    namespace detail
+    {
+        using thread_task_executor_policies_config = policies_config<
+                policies_config_entry<exception_handling::policy_concept, wigwag::exception_handling::default_>
+            >;
+    }
 
 
-	template < typename... Policies_ >
-	class basic_thread_task_executor :
-		public task_executor,
-		private detail::policy_picker<detail::exception_handling::policy_concept, detail::thread_task_executor_policies_config, Policies_...>::type
-	{
-		using exception_handling_policy = typename detail::policy_picker<detail::exception_handling::policy_concept, detail::thread_task_executor_policies_config, Policies_...>::type;
+    template < typename... Policies_ >
+    class basic_thread_task_executor :
+        public task_executor,
+        private detail::policy_picker<detail::exception_handling::policy_concept, detail::thread_task_executor_policies_config, Policies_...>::type
+    {
+        using exception_handling_policy = typename detail::policy_picker<detail::exception_handling::policy_concept, detail::thread_task_executor_policies_config, Policies_...>::type;
 
-		using task_queue = std::queue<std::function<void()>>;
+        using task_queue = std::queue<std::function<void()>>;
 
-	private:
-		task_queue					_tasks;
-		bool						_alive;
-		std::mutex					_mutex;
-		std::condition_variable		_cv;
-		std::thread					_thread;
+    private:
+        task_queue                  _tasks;
+        bool                        _alive;
+        std::mutex                  _mutex;
+        std::condition_variable     _cv;
+        std::thread                 _thread;
 
-	public:
-		template < typename... Args_ >
-		basic_thread_task_executor(Args_&... args)
-			: exception_handling_policy(std::forward<Args_>(args)...), _alive(true)
-		{ _thread = std::thread(&basic_thread_task_executor::thread_func, this); }
+    public:
+        template < typename... Args_ >
+        basic_thread_task_executor(Args_&... args)
+            : exception_handling_policy(std::forward<Args_>(args)...), _alive(true)
+        { _thread = std::thread(&basic_thread_task_executor::thread_func, this); }
 
-		~basic_thread_task_executor()
-		{
-			{
-				std::lock_guard<std::mutex> l(_mutex);
-				_alive = false;
-				_cv.notify_all();
-			}
-			if (_thread.joinable())
-				_thread.join();
-		}
+        ~basic_thread_task_executor()
+        {
+            {
+                std::lock_guard<std::mutex> l(_mutex);
+                _alive = false;
+                _cv.notify_all();
+            }
+            if (_thread.joinable())
+                _thread.join();
+        }
 
-		virtual void add_task(std::function<void()> task)
-		{
-			std::lock_guard<std::mutex> l(_mutex);
-			bool need_wakeup = _tasks.empty();
-			_tasks.push(std::move(task));
-			if (need_wakeup)
-				_cv.notify_all();
-		}
+        virtual void add_task(std::function<void()> task)
+        {
+            std::lock_guard<std::mutex> l(_mutex);
+            bool need_wakeup = _tasks.empty();
+            _tasks.push(std::move(task));
+            if (need_wakeup)
+                _cv.notify_all();
+        }
 
-	private:
-		void thread_func()
-		{
-			std::unique_lock<std::mutex> l(_mutex);
-			while (_alive || !_tasks.empty())
-			{
-				if (_tasks.empty())
-				{
-					_cv.wait(l);
-					continue;
-				}
+    private:
+        void thread_func()
+        {
+            std::unique_lock<std::mutex> l(_mutex);
+            while (_alive || !_tasks.empty())
+            {
+                if (_tasks.empty())
+                {
+                    _cv.wait(l);
+                    continue;
+                }
 
-				exception_handling_policy::handle_exceptions([&]() {
-						std::function<void()> task;
-						std::swap(_tasks.front(), task);
-						_tasks.pop();
+                exception_handling_policy::handle_exceptions([&]() {
+                        std::function<void()> task;
+                        std::swap(_tasks.front(), task);
+                        _tasks.pop();
 
-						l.unlock();
-						auto sg = detail::at_scope_exit([&] { l.lock(); } );
+                        l.unlock();
+                        auto sg = detail::at_scope_exit([&] { l.lock(); } );
 
-						task();
-					} );
-			}
-		}
-	};
+                        task();
+                    } );
+            }
+        }
+    };
 
 
-	using thread_task_executor = basic_thread_task_executor<>;
+    using thread_task_executor = basic_thread_task_executor<>;
 
 
 #include <wigwag/detail/enable_warnings.hpp>

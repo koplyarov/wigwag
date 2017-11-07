@@ -18,7 +18,7 @@ namespace wigwag {
 namespace state_populating
 {
 
-	using default_ = populator_only;
+    using default_ = populator_only;
 
 }}
 

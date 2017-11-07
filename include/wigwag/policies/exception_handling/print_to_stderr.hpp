@@ -26,19 +26,19 @@ namespace exception_handling
 #include <wigwag/detail/disable_warnings.hpp>
 
 #if !WIGWAG_NOEXCEPTIONS
-	struct print_to_stderr
-	{
-		using tag = exception_handling::tag<api_version<2, 0>>;
+    struct print_to_stderr
+    {
+        using tag = exception_handling::tag<api_version<2, 0>>;
 
-		template < typename Func_, typename... Args_ >
-		void handle_exceptions(Func_&& func, Args_&&... args) const
-		{
-			try
-			{ func(std::forward<Args_>(args)...); }
-			catch (const std::exception& ex)
-			{ fprintf(stderr, "Uncaught std::exception: %s\n", ex.what()); }
-		}
-	};
+        template < typename Func_, typename... Args_ >
+        void handle_exceptions(Func_&& func, Args_&&... args) const
+        {
+            try
+            { func(std::forward<Args_>(args)...); }
+            catch (const std::exception& ex)
+            { fprintf(stderr, "Uncaught std::exception: %s\n", ex.what()); }
+        }
+    };
 #endif
 
 #include <wigwag/detail/enable_warnings.hpp>

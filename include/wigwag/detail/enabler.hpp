@@ -15,11 +15,11 @@ namespace wigwag {
 namespace detail
 {
 
-	template < int >
-	class basic_enabler
-	{ };
+    template < int >
+    class basic_enabler
+    { };
 
-	using enabler = basic_enabler<0>;
+    using enabler = basic_enabler<0>;
 
 }}
 

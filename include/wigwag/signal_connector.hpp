@@ -21,32 +21,32 @@ namespace wigwag
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	template < typename Signature_ >
-	class signal_connector
-	{
-	public:
-		using handler_type = std::function<Signature_>;
+    template < typename Signature_ >
+    class signal_connector
+    {
+    public:
+        using handler_type = std::function<Signature_>;
 
-	private:
-		using impl_type = detail::signal_connector_impl<Signature_>;
-		using impl_type_ptr = detail::intrusive_ptr<impl_type>;
+    private:
+        using impl_type = detail::signal_connector_impl<Signature_>;
+        using impl_type_ptr = detail::intrusive_ptr<impl_type>;
 
-	private:
-		impl_type_ptr 	_impl;
+    private:
+        impl_type_ptr   _impl;
 
-	public:
-		explicit signal_connector(impl_type_ptr impl)
-			: _impl(std::move(impl))
-		{ }
+    public:
+        explicit signal_connector(impl_type_ptr impl)
+            : _impl(std::move(impl))
+        { }
 
-		template < typename HandlerFunc_ >
-		token connect(HandlerFunc_ handler, handler_attributes attributes = handler_attributes::none) const
-		{ return _impl->connect(std::move(handler), attributes); }
+        template < typename HandlerFunc_ >
+        token connect(HandlerFunc_ handler, handler_attributes attributes = handler_attributes::none) const
+        { return _impl->connect(std::move(handler), attributes); }
 
-		template < typename HandlerFunc_ >
-		token connect(std::shared_ptr<task_executor> worker, HandlerFunc_ handler, handler_attributes attributes = handler_attributes::none) const
-		{ return _impl->connect(std::move(worker), std::move(handler), attributes); }
-	};
+        template < typename HandlerFunc_ >
+        token connect(std::shared_ptr<task_executor> worker, HandlerFunc_ handler, handler_attributes attributes = handler_attributes::none) const
+        { return _impl->connect(std::move(worker), std::move(handler), attributes); }
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

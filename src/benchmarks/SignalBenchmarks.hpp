@@ -18,96 +18,96 @@
 namespace benchmarks
 {
 
-	template < typename SignalsDesc_ >
-	class SignalBenchmarks : public BenchmarksClass
-	{
-		using SignalType = typename SignalsDesc_::SignalType;
-		using HandlerType = typename SignalsDesc_::HandlerType;
-		using ConnectionType = typename SignalsDesc_::ConnectionType;
+    template < typename SignalsDesc_ >
+    class SignalBenchmarks : public BenchmarksClass
+    {
+        using SignalType = typename SignalsDesc_::SignalType;
+        using HandlerType = typename SignalsDesc_::HandlerType;
+        using ConnectionType = typename SignalsDesc_::ConnectionType;
 
-	public:
-		SignalBenchmarks()
-			: BenchmarksClass("signal")
-		{
-			AddBenchmark<>("createEmpty", &SignalBenchmarks::CreateEmpty);
-			AddBenchmark<>("create", &SignalBenchmarks::Create);
-			AddBenchmark<>("handlerSize", &SignalBenchmarks::HandlerSize);
-			AddBenchmark<int64_t>("invoke", &SignalBenchmarks::Invoke, {"numSlots"});
-			AddBenchmark<int64_t>("connect", &SignalBenchmarks::Connect, {"numSlots"});
-		}
+    public:
+        SignalBenchmarks()
+            : BenchmarksClass("signal")
+        {
+            AddBenchmark<>("createEmpty", &SignalBenchmarks::CreateEmpty);
+            AddBenchmark<>("create", &SignalBenchmarks::Create);
+            AddBenchmark<>("handlerSize", &SignalBenchmarks::HandlerSize);
+            AddBenchmark<int64_t>("invoke", &SignalBenchmarks::Invoke, {"numSlots"});
+            AddBenchmark<int64_t>("connect", &SignalBenchmarks::Connect, {"numSlots"});
+        }
 
-	private:
-		static void CreateEmpty(BenchmarkContext& context)
-		{
-			const auto n = context.GetIterationsCount();
+    private:
+        static void CreateEmpty(BenchmarkContext& context)
+        {
+            const auto n = context.GetIterationsCount();
 
-			StorageArray<SignalType> s(n);
+            StorageArray<SignalType> s(n);
 
-			context.Profile("create", n, [&]{ s.Construct(); });
-			context.MeasureMemory("signal", n);
-			context.Profile("destroy", n, [&]{ s.Destruct(); });
-		}
+            context.Profile("create", n, [&]{ s.Construct(); });
+            context.MeasureMemory("signal", n);
+            context.Profile("destroy", n, [&]{ s.Destruct(); });
+        }
 
-		static void Create(BenchmarkContext& context)
-		{
-			const auto n = context.GetIterationsCount();
+        static void Create(BenchmarkContext& context)
+        {
+            const auto n = context.GetIterationsCount();
 
-			StorageArray<SignalType> s(n);
+            StorageArray<SignalType> s(n);
 
-			s.Construct();
-			s.ForEach([](SignalType& s){ ConnectionType(s.connect(SignalsDesc_::MakeHandler())); s(); });
-			context.MeasureMemory("signal", n);
-			context.Profile("destroy", n, [&]{ s.Destruct(); });
-		}
+            s.Construct();
+            s.ForEach([](SignalType& s){ ConnectionType(s.connect(SignalsDesc_::MakeHandler())); s(); });
+            context.MeasureMemory("signal", n);
+            context.Profile("destroy", n, [&]{ s.Destruct(); });
+        }
 
-		static void HandlerSize(BenchmarkContext& context)
-		{
-			HandlerType handler = SignalsDesc_::MakeHandler();
-			SignalType s;
-			StorageArray<ConnectionType> c(context.GetIterationsCount());
+        static void HandlerSize(BenchmarkContext& context)
+        {
+            HandlerType handler = SignalsDesc_::MakeHandler();
+            SignalType s;
+            StorageArray<ConnectionType> c(context.GetIterationsCount());
 
-			c.Construct([&]{ return s.connect(handler); });
-			context.MeasureMemory("handler", context.GetIterationsCount());
-			context.Profile("disconnect", context.GetIterationsCount(), [&]{ c.Destruct(); });
-		}
+            c.Construct([&]{ return s.connect(handler); });
+            context.MeasureMemory("handler", context.GetIterationsCount());
+            context.Profile("disconnect", context.GetIterationsCount(), [&]{ c.Destruct(); });
+        }
 
-		static void Invoke(BenchmarkContext& context, int64_t numSlots)
-		{
-			const auto n = context.GetIterationsCount();
+        static void Invoke(BenchmarkContext& context, int64_t numSlots)
+        {
+            const auto n = context.GetIterationsCount();
 
-			HandlerType handler = SignalsDesc_::MakeHandler();
-			SignalType s;
-			StorageArray<ConnectionType> c(numSlots);
+            HandlerType handler = SignalsDesc_::MakeHandler();
+            SignalType s;
+            StorageArray<ConnectionType> c(numSlots);
 
-			c.Construct([&]{ return s.connect(handler); });
+            c.Construct([&]{ return s.connect(handler); });
 
-			{
-				auto op = context.Profile("invoke", numSlots * n);
-				for (int64_t i = 0; i < n; ++i)
-					s();
-			}
+            {
+                auto op = context.Profile("invoke", numSlots * n);
+                for (int64_t i = 0; i < n; ++i)
+                    s();
+            }
 
-			c.Destruct();
-		}
+            c.Destruct();
+        }
 
-		static void Connect(BenchmarkContext& context, int64_t numSlots)
-		{
-			const auto n = context.GetIterationsCount();
+        static void Connect(BenchmarkContext& context, int64_t numSlots)
+        {
+            const auto n = context.GetIterationsCount();
 
-			HandlerType handler = SignalsDesc_::MakeHandler();
-			std::vector<SignalType> s(n);
-			StorageArray<ConnectionType> c(numSlots * n);
+            HandlerType handler = SignalsDesc_::MakeHandler();
+            std::vector<SignalType> s(n);
+            StorageArray<ConnectionType> c(numSlots * n);
 
-			{
-				auto op = context.Profile("connect", numSlots * n);
-				for (int64_t j = 0; j < n; ++j)
-					for (int64_t i = 0; i < numSlots; ++i)
-						c[i + j * numSlots].Construct(s[j].connect(handler));
-			}
+            {
+                auto op = context.Profile("connect", numSlots * n);
+                for (int64_t j = 0; j < n; ++j)
+                    for (int64_t i = 0; i < numSlots; ++i)
+                        c[i + j * numSlots].Construct(s[j].connect(handler));
+            }
 
-			context.Profile("disconnect", numSlots * n, [&]{ c.Destruct(); });
-		}
-	};
+            context.Profile("disconnect", numSlots * n, [&]{ c.Destruct(); });
+        }
+    };
 
 }
 

@@ -23,35 +23,35 @@ namespace ref_counter
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	class atomic
-	{
-	public:
-		using tag = ref_counter::tag<api_version<2, 0>>;
+    class atomic
+    {
+    public:
+        using tag = ref_counter::tag<api_version<2, 0>>;
 
-	private:
-		mutable std::atomic<int>	_counter;
+    private:
+        mutable std::atomic<int>    _counter;
 
-	public:
-		atomic(int initVal)
-			: _counter(initVal)
-		{ }
+    public:
+        atomic(int initVal)
+            : _counter(initVal)
+        { }
 
-		int add_ref() const
-		{ return ++_counter; }
+        int add_ref() const
+        { return ++_counter; }
 
-		int release() const
-		{
-			auto res = --_counter;
-			if (res == 0)
-			{
-				WIGWAG_ANNOTATE_HAPPENS_AFTER(this);
-				WIGWAG_ANNOTATE_RELEASE(this);
-			}
-			else
-				WIGWAG_ANNOTATE_HAPPENS_BEFORE(this);
-			return res;
-		}
-	};
+        int release() const
+        {
+            auto res = --_counter;
+            if (res == 0)
+            {
+                WIGWAG_ANNOTATE_HAPPENS_AFTER(this);
+                WIGWAG_ANNOTATE_RELEASE(this);
+            }
+            else
+                WIGWAG_ANNOTATE_HAPPENS_BEFORE(this);
+            return res;
+        }
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

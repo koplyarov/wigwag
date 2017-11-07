@@ -19,12 +19,12 @@ namespace wigwag
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	struct task_executor
-	{
-		virtual ~task_executor() { }
+    struct task_executor
+    {
+        virtual ~task_executor() { }
 
-		virtual void add_task(std::function<void()> task) = 0;
-	};
+        virtual void add_task(std::function<void()> task) = 0;
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

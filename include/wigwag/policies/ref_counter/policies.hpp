@@ -19,7 +19,7 @@ namespace wigwag {
 namespace ref_counter
 {
 
-	using default_ = atomic;
+    using default_ = atomic;
 
 }}
 

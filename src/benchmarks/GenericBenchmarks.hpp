@@ -18,30 +18,30 @@
 namespace benchmarks
 {
 
-	template < typename Desc_ >
-	class GenericBenchmarks : public BenchmarksClass
-	{
-		using Type = typename Desc_::Type;
+    template < typename Desc_ >
+    class GenericBenchmarks : public BenchmarksClass
+    {
+        using Type = typename Desc_::Type;
 
-	public:
-		GenericBenchmarks()
-			: BenchmarksClass("generic")
-		{
-			AddBenchmark<>("create", &GenericBenchmarks::Create);
-		}
+    public:
+        GenericBenchmarks()
+            : BenchmarksClass("generic")
+        {
+            AddBenchmark<>("create", &GenericBenchmarks::Create);
+        }
 
-	private:
-		static void Create(BenchmarkContext& context)
-		{
-			const auto n = context.GetIterationsCount();
+    private:
+        static void Create(BenchmarkContext& context)
+        {
+            const auto n = context.GetIterationsCount();
 
-			StorageArray<Type> m(n);
+            StorageArray<Type> m(n);
 
-			context.Profile("create", n, [&]{ m.Construct(); });
-			context.MeasureMemory("object", n);
-			context.Profile("destroy", n, [&]{ m.Destruct(); });
-		}
-	};
+            context.Profile("create", n, [&]{ m.Construct(); });
+            context.MeasureMemory("object", n);
+            context.Profile("destroy", n, [&]{ m.Destruct(); });
+        }
+    };
 
 }
 

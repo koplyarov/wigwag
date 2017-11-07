@@ -19,13 +19,13 @@ namespace wigwag
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	enum class handler_attributes
-	{
-		none					= 0x0,
-		suppress_populator		= 0x1
-	};
+    enum class handler_attributes
+    {
+        none                    = 0x0,
+        suppress_populator      = 0x1
+    };
 
-	WIGWAG_DECLARE_ENUM_BITWISE_OPERATORS(handler_attributes)
+    WIGWAG_DECLARE_ENUM_BITWISE_OPERATORS(handler_attributes)
 
 #include <wigwag/detail/enable_warnings.hpp>
 

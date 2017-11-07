@@ -27,150 +27,150 @@ namespace life_assurance
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	struct intrusive_life_tokens
-	{
-		using tag = life_assurance::tag<api_version<2, 0>>;
+    struct intrusive_life_tokens
+    {
+        using tag = life_assurance::tag<api_version<2, 0>>;
 
-		class life_assurance;
-		class life_checker;
-		class execution_guard;
-
-
-		class shared_data
-		{
-			friend class life_assurance;
-			friend class execution_guard;
-
-		private:
-			mutable std::condition_variable		_cond_var;
-			mutable std::mutex					_mutex;
-		};
+        class life_assurance;
+        class life_checker;
+        class execution_guard;
 
 
-		class life_assurance
-		{
-			friend class life_checker;
-			friend class execution_guard;
+        class shared_data
+        {
+            friend class life_assurance;
+            friend class execution_guard;
 
-			using int_type = unsigned int;
-			static const int_type alive_flag = ((int_type)1) << (std::numeric_limits<int_type>::digits - 1);
-
-			mutable std::atomic<int_type>		_lock_counter_and_alive_flag;
-			mutable std::atomic<int>			_ref_count;
-
-		public:
-			life_assurance()
-				: _lock_counter_and_alive_flag(alive_flag), _ref_count(2) // One ref in signal, another in token
-			{ }
-
-			virtual ~life_assurance()
-			{ }
-
-			life_assurance(const life_assurance&) = delete;
-			life_assurance& operator = (const life_assurance&) = delete;
+        private:
+            mutable std::condition_variable     _cond_var;
+            mutable std::mutex                  _mutex;
+        };
 
 
-			void add_ref() const
-			{ ++_ref_count; }
+        class life_assurance
+        {
+            friend class life_checker;
+            friend class execution_guard;
 
-			void release() const
-			{
-				if (release_node())
-					delete this;
-			}
+            using int_type = unsigned int;
+            static const int_type alive_flag = ((int_type)1) << (std::numeric_limits<int_type>::digits - 1);
 
-			void release_life_assurance(const shared_data& sd)
-			{
-				_lock_counter_and_alive_flag -= alive_flag;
-				std::unique_lock<std::mutex> l(sd._mutex);
-				while (_lock_counter_and_alive_flag != 0)
-					sd._cond_var.wait(l);
-			}
+            mutable std::atomic<int_type>       _lock_counter_and_alive_flag;
+            mutable std::atomic<int>            _ref_count;
 
-			bool node_should_be_released() const
-			{ return _ref_count == 1; }
+        public:
+            life_assurance()
+                : _lock_counter_and_alive_flag(alive_flag), _ref_count(2) // One ref in signal, another in token
+            { }
 
-			bool release_node() const
-			{
-				if (--_ref_count == 0)
-				{
-					WIGWAG_ANNOTATE_HAPPENS_AFTER(this);
-					WIGWAG_ANNOTATE_RELEASE(this);
+            virtual ~life_assurance()
+            { }
 
-					return true;
-				}
-				else
-				{
-					WIGWAG_ANNOTATE_HAPPENS_BEFORE(this);
-					return false;
-				}
-			}
-		};
+            life_assurance(const life_assurance&) = delete;
+            life_assurance& operator = (const life_assurance&) = delete;
 
 
-		class life_checker
-		{
-			friend class execution_guard;
+            void add_ref() const
+            { ++_ref_count; }
 
-			const shared_data*								_sd;
-			wigwag::detail::intrusive_ptr<const life_assurance>		_la;
+            void release() const
+            {
+                if (release_node())
+                    delete this;
+            }
 
-		public:
-			life_checker(const shared_data& sd, const life_assurance& la) WIGWAG_NOEXCEPT
-				: _sd(&sd), _la(&la)
-			{ la.add_ref(); }
-		};
+            void release_life_assurance(const shared_data& sd)
+            {
+                _lock_counter_and_alive_flag -= alive_flag;
+                std::unique_lock<std::mutex> l(sd._mutex);
+                while (_lock_counter_and_alive_flag != 0)
+                    sd._cond_var.wait(l);
+            }
 
-		class execution_guard
-		{
-			const shared_data&								_sd;
-			const life_assurance*							_la;
-			life_assurance::int_type						_alive;
+            bool node_should_be_released() const
+            { return _ref_count == 1; }
 
-		public:
-			execution_guard(const life_checker& c)
-				: _sd(*c._sd), _la(c._la.get()), _alive(++c._la->_lock_counter_and_alive_flag & life_assurance::alive_flag)
-			{
-				if (!_alive)
-					unlock();
-			}
+            bool release_node() const
+            {
+                if (--_ref_count == 0)
+                {
+                    WIGWAG_ANNOTATE_HAPPENS_AFTER(this);
+                    WIGWAG_ANNOTATE_RELEASE(this);
 
-			execution_guard(const shared_data& sd, const life_assurance& la)
-				: _sd(sd), _la(&la), _alive(++la._lock_counter_and_alive_flag & life_assurance::alive_flag)
-			{
-				if (!_alive)
-					unlock();
-			}
+                    return true;
+                }
+                else
+                {
+                    WIGWAG_ANNOTATE_HAPPENS_BEFORE(this);
+                    return false;
+                }
+            }
+        };
 
-			~execution_guard()
-			{
-				if (_alive)
-					unlock();
-			}
 
-			execution_guard(const execution_guard&) = delete;
-			execution_guard& operator = (const execution_guard&) = delete;
+        class life_checker
+        {
+            friend class execution_guard;
 
-			life_assurance::int_type is_alive() const WIGWAG_NOEXCEPT
-			{ return _alive; }
+            const shared_data*                              _sd;
+            wigwag::detail::intrusive_ptr<const life_assurance>     _la;
 
-		private:
-			void unlock()
-			{
-				life_assurance::int_type i = --_la->_lock_counter_and_alive_flag;
-				if (i == 0)
-				{
-					WIGWAG_ANNOTATE_HAPPENS_AFTER(&_la->_lock_counter_and_alive_flag);
-					WIGWAG_ANNOTATE_RELEASE(&_la->_lock_counter_and_alive_flag);
+        public:
+            life_checker(const shared_data& sd, const life_assurance& la) WIGWAG_NOEXCEPT
+                : _sd(&sd), _la(&la)
+            { la.add_ref(); }
+        };
 
-					std::unique_lock<std::mutex> l(_sd._mutex);
-					_sd._cond_var.notify_all();
-				}
-				else
-					WIGWAG_ANNOTATE_HAPPENS_BEFORE(&_la->_lock_counter_and_alive_flag);
-			}
-		};
-	};
+        class execution_guard
+        {
+            const shared_data&                              _sd;
+            const life_assurance*                           _la;
+            life_assurance::int_type                        _alive;
+
+        public:
+            execution_guard(const life_checker& c)
+                : _sd(*c._sd), _la(c._la.get()), _alive(++c._la->_lock_counter_and_alive_flag & life_assurance::alive_flag)
+            {
+                if (!_alive)
+                    unlock();
+            }
+
+            execution_guard(const shared_data& sd, const life_assurance& la)
+                : _sd(sd), _la(&la), _alive(++la._lock_counter_and_alive_flag & life_assurance::alive_flag)
+            {
+                if (!_alive)
+                    unlock();
+            }
+
+            ~execution_guard()
+            {
+                if (_alive)
+                    unlock();
+            }
+
+            execution_guard(const execution_guard&) = delete;
+            execution_guard& operator = (const execution_guard&) = delete;
+
+            life_assurance::int_type is_alive() const WIGWAG_NOEXCEPT
+            { return _alive; }
+
+        private:
+            void unlock()
+            {
+                life_assurance::int_type i = --_la->_lock_counter_and_alive_flag;
+                if (i == 0)
+                {
+                    WIGWAG_ANNOTATE_HAPPENS_AFTER(&_la->_lock_counter_and_alive_flag);
+                    WIGWAG_ANNOTATE_RELEASE(&_la->_lock_counter_and_alive_flag);
+
+                    std::unique_lock<std::mutex> l(_sd._mutex);
+                    _sd._cond_var.notify_all();
+                }
+                else
+                    WIGWAG_ANNOTATE_HAPPENS_BEFORE(&_la->_lock_counter_and_alive_flag);
+            }
+        };
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

@@ -20,26 +20,26 @@ namespace detail
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	template < typename RefCounterPolicy_, typename Derived_ >
-	class intrusive_ref_counter : private RefCounterPolicy_
-	{
-	public:
-		intrusive_ref_counter()
-			: RefCounterPolicy_(1)
-		{ }
+    template < typename RefCounterPolicy_, typename Derived_ >
+    class intrusive_ref_counter : private RefCounterPolicy_
+    {
+    public:
+        intrusive_ref_counter()
+            : RefCounterPolicy_(1)
+        { }
 
-		intrusive_ref_counter(const intrusive_ref_counter&) = delete;
-		intrusive_ref_counter& operator = (const intrusive_ref_counter&) = delete;
+        intrusive_ref_counter(const intrusive_ref_counter&) = delete;
+        intrusive_ref_counter& operator = (const intrusive_ref_counter&) = delete;
 
-		void add_ref() const
-		{ RefCounterPolicy_::add_ref(); }
+        void add_ref() const
+        { RefCounterPolicy_::add_ref(); }
 
-		void release() const
-		{
-			if (RefCounterPolicy_::release() == 0)
-				delete static_cast<const Derived_*>(this);
-		}
-	};
+        void release() const
+        {
+            if (RefCounterPolicy_::release() == 0)
+                delete static_cast<const Derived_*>(this);
+        }
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

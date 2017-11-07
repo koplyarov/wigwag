@@ -19,61 +19,61 @@ namespace wigwag
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	class token
-	{
-	public:
-		struct implementation
-		{
-			virtual void release_token_impl() = 0;
-			virtual ~implementation() { }
-		};
+    class token
+    {
+    public:
+        struct implementation
+        {
+            virtual void release_token_impl() = 0;
+            virtual ~implementation() { }
+        };
 
-	private:
-		implementation*		_impl;
+    private:
+        implementation*     _impl;
 
-	private:
-		token(implementation* impl)
-			: _impl(impl)
-		{ }
+    private:
+        token(implementation* impl)
+            : _impl(impl)
+        { }
 
-	public:
-		token()
-			: _impl(nullptr)
-		{ }
+    public:
+        token()
+            : _impl(nullptr)
+        { }
 
-		token(token&& other)
-			: _impl(other._impl)
-		{ other._impl = nullptr; }
+        token(token&& other)
+            : _impl(other._impl)
+        { other._impl = nullptr; }
 
-		~token()
-		{ reset(); }
+        ~token()
+        { reset(); }
 
-		token(const token&) = delete;
-		token& operator = (const token&) = delete;
+        token(const token&) = delete;
+        token& operator = (const token&) = delete;
 
-		token& operator = (token&& other)
-		{
-			reset();
+        token& operator = (token&& other)
+        {
+            reset();
 
-			_impl = other._impl;
-			other._impl = nullptr;
+            _impl = other._impl;
+            other._impl = nullptr;
 
-			return *this;
-		}
+            return *this;
+        }
 
-		void reset()
-		{
-			if (!_impl)
-				return;
+        void reset()
+        {
+            if (!_impl)
+                return;
 
-			_impl->release_token_impl();
-			_impl = nullptr;
-		}
+            _impl->release_token_impl();
+            _impl = nullptr;
+        }
 
-		template < typename Implementation_, typename... Args_ >
-		static token create(Args_&&... args)
-		{ return token(new Implementation_(std::forward<Args_>(args)...)); }
-	};
+        template < typename Implementation_, typename... Args_ >
+        static token create(Args_&&... args)
+        { return token(new Implementation_(std::forward<Args_>(args)...)); }
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

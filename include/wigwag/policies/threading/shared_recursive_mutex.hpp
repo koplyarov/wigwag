@@ -24,29 +24,29 @@ namespace threading
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	struct shared_recursive_mutex
-	{
-		using tag = threading::tag<api_version<2, 0>>;
+    struct shared_recursive_mutex
+    {
+        using tag = threading::tag<api_version<2, 0>>;
 
-		class lock_primitive
-		{
-		private:
-			std::shared_ptr<std::recursive_mutex>	_mutex;
+        class lock_primitive
+        {
+        private:
+            std::shared_ptr<std::recursive_mutex>   _mutex;
 
-		public:
-			lock_primitive(std::shared_ptr<std::recursive_mutex> mutex)
-				: _mutex(std::move(mutex))
-			{ }
+        public:
+            lock_primitive(std::shared_ptr<std::recursive_mutex> mutex)
+                : _mutex(std::move(mutex))
+            { }
 
-			const std::shared_ptr<std::recursive_mutex>& get_primitive() const WIGWAG_NOEXCEPT { return _mutex; }
+            const std::shared_ptr<std::recursive_mutex>& get_primitive() const WIGWAG_NOEXCEPT { return _mutex; }
 
-			void lock_nonrecursive() const { _mutex->lock(); }
-			void unlock_nonrecursive() const { _mutex->unlock(); }
+            void lock_nonrecursive() const { _mutex->lock(); }
+            void unlock_nonrecursive() const { _mutex->unlock(); }
 
-			void lock_recursive() const { _mutex->lock(); }
-			void unlock_recursive() const { _mutex->unlock(); }
-		};
-	};
+            void lock_recursive() const { _mutex->lock(); }
+            void unlock_recursive() const { _mutex->unlock(); }
+        };
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

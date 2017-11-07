@@ -23,25 +23,25 @@ namespace threading
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	struct own_mutex
-	{
-		using tag = threading::tag<api_version<2, 0>>;
+    struct own_mutex
+    {
+        using tag = threading::tag<api_version<2, 0>>;
 
-		class lock_primitive
-		{
-		private:
-			mutable std::mutex		_mutex;
+        class lock_primitive
+        {
+        private:
+            mutable std::mutex      _mutex;
 
-		public:
-			std::mutex& get_primitive() const WIGWAG_NOEXCEPT { return _mutex; }
+        public:
+            std::mutex& get_primitive() const WIGWAG_NOEXCEPT { return _mutex; }
 
-			void lock_nonrecursive() const { _mutex.lock(); }
-			void unlock_nonrecursive() const { _mutex.unlock(); }
+            void lock_nonrecursive() const { _mutex.lock(); }
+            void unlock_nonrecursive() const { _mutex.unlock(); }
 
-			void lock_recursive() const WIGWAG_NOEXCEPT { }
-			void unlock_recursive() const WIGWAG_NOEXCEPT { }
-		};
-	};
+            void lock_recursive() const WIGWAG_NOEXCEPT { }
+            void unlock_recursive() const WIGWAG_NOEXCEPT { }
+        };
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

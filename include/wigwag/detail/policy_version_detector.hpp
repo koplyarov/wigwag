@@ -21,26 +21,26 @@ namespace detail
 #include <wigwag/detail/disable_warnings.hpp>
 
 
-	template < typename T_, typename Tag_, typename AdaptedT_ >
-	struct policy_adapter
-	{ using type = typename std::conditional<std::is_same<typename T_::tag, Tag_>::value, T_, void>::type; };
+    template < typename T_, typename Tag_, typename AdaptedT_ >
+    struct policy_adapter
+    { using type = typename std::conditional<std::is_same<typename T_::tag, Tag_>::value, T_, void>::type; };
 
-	template < typename... VersionChecks_ >
-	struct policy_version_detector
-	{
-		using adapted_policy = void;
-	};
+    template < typename... VersionChecks_ >
+    struct policy_version_detector
+    {
+        using adapted_policy = void;
+    };
 
 
-	template < typename HeadVersionCheck_, typename... TailVersionChecks_ >
-	struct policy_version_detector<HeadVersionCheck_, TailVersionChecks_...>
-	{
-		using adapted_policy = typename std::conditional<
-				std::is_same<typename HeadVersionCheck_::adapted_policy, void>::value,
-				typename policy_version_detector<TailVersionChecks_...>::adapted_policy,
-				typename HeadVersionCheck_::adapted_policy
-			>::type;
-	};
+    template < typename HeadVersionCheck_, typename... TailVersionChecks_ >
+    struct policy_version_detector<HeadVersionCheck_, TailVersionChecks_...>
+    {
+        using adapted_policy = typename std::conditional<
+                std::is_same<typename HeadVersionCheck_::adapted_policy, void>::value,
+                typename policy_version_detector<TailVersionChecks_...>::adapted_policy,
+                typename HeadVersionCheck_::adapted_policy
+            >::type;
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

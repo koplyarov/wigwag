@@ -17,26 +17,26 @@
 namespace wigwag
 {
 
-	template < typename ClockT_ >
-	class basic_profiler
-	{
-		typedef std::chrono::time_point<ClockT_>		TimePoint;
+    template < typename ClockT_ >
+    class basic_profiler
+    {
+        typedef std::chrono::time_point<ClockT_>        TimePoint;
 
-	private:
-		TimePoint		_start;
+    private:
+        TimePoint       _start;
 
-	public:
-		basic_profiler() { _start = ClockT_::now(); }
+    public:
+        basic_profiler() { _start = ClockT_::now(); }
 
-		decltype(TimePoint() - TimePoint()) reset()
-		{
-			TimePoint end = ClockT_::now();
-			auto delta = end - _start;
-			_start = end;
-			return delta;
-		}
-	};
-	using profiler = basic_profiler<std::chrono::high_resolution_clock>;
+        decltype(TimePoint() - TimePoint()) reset()
+        {
+            TimePoint end = ClockT_::now();
+            auto delta = end - _start;
+            _start = end;
+            return delta;
+        }
+    };
+    using profiler = basic_profiler<std::chrono::high_resolution_clock>;
 
 }
 

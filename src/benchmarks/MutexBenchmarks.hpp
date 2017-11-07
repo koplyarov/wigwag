@@ -18,32 +18,32 @@
 namespace benchmarks
 {
 
-	template < typename MutexDesc_ >
-	class MutexBenchmarks : public BenchmarksClass
-	{
-		using MutexType = typename MutexDesc_::MutexType;
+    template < typename MutexDesc_ >
+    class MutexBenchmarks : public BenchmarksClass
+    {
+        using MutexType = typename MutexDesc_::MutexType;
 
-	public:
-		MutexBenchmarks()
-			: BenchmarksClass("mutex")
-		{
-			AddBenchmark<>("basic", &MutexBenchmarks::Basic);
-		}
+    public:
+        MutexBenchmarks()
+            : BenchmarksClass("mutex")
+        {
+            AddBenchmark<>("basic", &MutexBenchmarks::Basic);
+        }
 
-	private:
-		static void Basic(BenchmarkContext& context)
-		{
-			const auto n = context.GetIterationsCount();
+    private:
+        static void Basic(BenchmarkContext& context)
+        {
+            const auto n = context.GetIterationsCount();
 
-			StorageArray<MutexType> m(n);
+            StorageArray<MutexType> m(n);
 
-			context.Profile("create", n, [&]{ m.Construct(); });
-			context.MeasureMemory("mutex", n);
-			context.Profile("lock", n, [&]{ m.ForEach([](MutexType& m){ m.lock(); }); });
-			context.Profile("unlock", n, [&]{ m.ForEach([](MutexType& m){ m.unlock(); }); });
-			context.Profile("destroy", n, [&]{ m.Destruct(); });
-		}
-	};
+            context.Profile("create", n, [&]{ m.Construct(); });
+            context.MeasureMemory("mutex", n);
+            context.Profile("lock", n, [&]{ m.ForEach([](MutexType& m){ m.lock(); }); });
+            context.Profile("unlock", n, [&]{ m.ForEach([](MutexType& m){ m.unlock(); }); });
+            context.Profile("destroy", n, [&]{ m.Destruct(); });
+        }
+    };
 
 }
 

@@ -22,16 +22,16 @@ namespace ref_counter
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	template < typename T_ >
-	struct check_policy_v2_0
-	{ using adapted_policy = typename policy_adapter<T_, wigwag::ref_counter::tag<api_version<2, 0>>, T_>::type; };
+    template < typename T_ >
+    struct check_policy_v2_0
+    { using adapted_policy = typename policy_adapter<T_, wigwag::ref_counter::tag<api_version<2, 0>>, T_>::type; };
 
 
-	template < typename T_ >
-	struct policy_concept
-	{
-		using adapted_policy = typename wigwag::detail::policy_version_detector<check_policy_v2_0<T_>>::adapted_policy;
-	};
+    template < typename T_ >
+    struct policy_concept
+    {
+        using adapted_policy = typename wigwag::detail::policy_version_detector<check_policy_v2_0<T_>>::adapted_policy;
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

@@ -24,112 +24,112 @@ namespace wigwag
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	namespace detail
-	{
-		using signal_policies_config = policies_config<
-				policies_config_entry<exception_handling::policy_concept, wigwag::exception_handling::default_>,
-				policies_config_entry<threading::policy_concept, wigwag::threading::default_>,
-				policies_config_entry<state_populating::policy_concept, wigwag::state_populating::default_>,
-				policies_config_entry<life_assurance::policy_concept, wigwag::life_assurance::default_>,
-				policies_config_entry<creation::policy_concept, wigwag::creation::default_>,
-				policies_config_entry<ref_counter::policy_concept, wigwag::ref_counter::default_>
-			>;
+    namespace detail
+    {
+        using signal_policies_config = policies_config<
+                policies_config_entry<exception_handling::policy_concept, wigwag::exception_handling::default_>,
+                policies_config_entry<threading::policy_concept, wigwag::threading::default_>,
+                policies_config_entry<state_populating::policy_concept, wigwag::state_populating::default_>,
+                policies_config_entry<life_assurance::policy_concept, wigwag::life_assurance::default_>,
+                policies_config_entry<creation::policy_concept, wigwag::creation::default_>,
+                policies_config_entry<ref_counter::policy_concept, wigwag::ref_counter::default_>
+            >;
 
-		template < typename T_ >
-		struct signature_getter
-		{ using type = T_; };
-	}
+        template < typename T_ >
+        struct signature_getter
+        { using type = T_; };
+    }
 
 
-	template <
-			typename Signature_,
-			typename... Policies_
-		>
-	class signal;
+    template <
+            typename Signature_,
+            typename... Policies_
+        >
+    class signal;
 
-	template <
-			typename... ArgTypes_,
-			typename... Policies_
-		>
-	class signal<void(ArgTypes_...), Policies_...>
-	{
-	public:
-		using signature = typename detail::signature_getter<void(ArgTypes_...)>::type;
+    template <
+            typename... ArgTypes_,
+            typename... Policies_
+        >
+    class signal<void(ArgTypes_...), Policies_...>
+    {
+    public:
+        using signature = typename detail::signature_getter<void(ArgTypes_...)>::type;
 
-	private:
-		template < template <typename> class PolicyConcept_ >
-		using policy = typename detail::policy_picker<PolicyConcept_, detail::signal_policies_config, Policies_...>::type;
+    private:
+        template < template <typename> class PolicyConcept_ >
+        using policy = typename detail::policy_picker<PolicyConcept_, detail::signal_policies_config, Policies_...>::type;
 
-		using exception_handling_policy = policy<detail::exception_handling::policy_concept>;
-		using threading_policy = policy<detail::threading::policy_concept>;
-		using state_populating_policy = policy<detail::state_populating::policy_concept>;
-		using life_assurance_policy = policy<detail::life_assurance::policy_concept>;
-		using creation_policy = policy<detail::creation::policy_concept>;
-		using ref_counter_policy = policy<detail::ref_counter::policy_concept>;
+        using exception_handling_policy = policy<detail::exception_handling::policy_concept>;
+        using threading_policy = policy<detail::threading::policy_concept>;
+        using state_populating_policy = policy<detail::state_populating::policy_concept>;
+        using life_assurance_policy = policy<detail::life_assurance::policy_concept>;
+        using creation_policy = policy<detail::creation::policy_concept>;
+        using ref_counter_policy = policy<detail::ref_counter::policy_concept>;
 
-	public:
-		using handler_type = std::function<signature>;
+    public:
+        using handler_type = std::function<signature>;
 
-	WIGWAG_PRIVATE_IS_CONSTRUCTIBLE_WORKAROUND:
-		using impl_type = detail::signal_impl<signature, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy, ref_counter_policy>;
-		using impl_type_with_attr = detail::signal_with_attributes_impl<signature, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy, ref_counter_policy>;
+    WIGWAG_PRIVATE_IS_CONSTRUCTIBLE_WORKAROUND:
+        using impl_type = detail::signal_impl<signature, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy, ref_counter_policy>;
+        using impl_type_with_attr = detail::signal_with_attributes_impl<signature, exception_handling_policy, threading_policy, state_populating_policy, life_assurance_policy, ref_counter_policy>;
 
-	private:
-		using impl_type_ptr = detail::intrusive_ptr<impl_type>;
+    private:
+        using impl_type_ptr = detail::intrusive_ptr<impl_type>;
 
-		using storage = typename creation_policy::template storage<impl_type_ptr, impl_type>;
+        using storage = typename creation_policy::template storage<impl_type_ptr, impl_type>;
 
-	private:
-		detail::creation_storage_adapter<storage>		_impl;
+    private:
+        detail::creation_storage_adapter<storage>       _impl;
 
-	public:
-		template < typename... Args_, bool E_ = std::is_constructible<impl_type, Args_...>::value, typename = typename std::enable_if<E_>::type >
-		signal(signal_attributes attributes, Args_&&... args)
-		{
-			if (attributes == signal_attributes::none)
-				_impl.template create<impl_type>(std::forward<Args_>(args)...);
-			else
-				_impl.template create<impl_type_with_attr>(attributes, std::forward<Args_>(args)...);
-		}
+    public:
+        template < typename... Args_, bool E_ = std::is_constructible<impl_type, Args_...>::value, typename = typename std::enable_if<E_>::type >
+        signal(signal_attributes attributes, Args_&&... args)
+        {
+            if (attributes == signal_attributes::none)
+                _impl.template create<impl_type>(std::forward<Args_>(args)...);
+            else
+                _impl.template create<impl_type_with_attr>(attributes, std::forward<Args_>(args)...);
+        }
 
-		template < typename... Args_, bool E_ = std::is_constructible<impl_type, Args_...>::value, typename = typename std::enable_if<E_>::type >
-		signal(Args_&&... args)
-		{ _impl.template create<impl_type>(std::forward<Args_>(args)...); }
+        template < typename... Args_, bool E_ = std::is_constructible<impl_type, Args_...>::value, typename = typename std::enable_if<E_>::type >
+        signal(Args_&&... args)
+        { _impl.template create<impl_type>(std::forward<Args_>(args)...); }
 
-		~signal()
-		{
-			if (_impl)
-			{
-				_impl->get_lock_primitive().lock_nonrecursive();
-				auto sg = detail::at_scope_exit([&] { _impl->get_lock_primitive().unlock_nonrecursive(); } );
+        ~signal()
+        {
+            if (_impl)
+            {
+                _impl->get_lock_primitive().lock_nonrecursive();
+                auto sg = detail::at_scope_exit([&] { _impl->get_lock_primitive().unlock_nonrecursive(); } );
 
-				_impl->finalize_nodes();
-			}
-		}
+                _impl->finalize_nodes();
+            }
+        }
 
-		signal(const signal&) = delete;
-		signal& operator = (const signal&) = delete;
+        signal(const signal&) = delete;
+        signal& operator = (const signal&) = delete;
 
-		auto lock_primitive() const -> decltype(_impl->get_lock_primitive().get_primitive())
-		{ return _impl->get_lock_primitive().get_primitive(); }
+        auto lock_primitive() const -> decltype(_impl->get_lock_primitive().get_primitive())
+        { return _impl->get_lock_primitive().get_primitive(); }
 
-		signal_connector<signature> connector() const
-		{ return signal_connector<signature>(_impl.get_ptr()); }
+        signal_connector<signature> connector() const
+        { return signal_connector<signature>(_impl.get_ptr()); }
 
-		template < typename HandlerFunc_ >
-		token connect(HandlerFunc_ handler, handler_attributes attributes = handler_attributes::none) const
-		{ return _impl->connect(std::move(handler), attributes); }
+        template < typename HandlerFunc_ >
+        token connect(HandlerFunc_ handler, handler_attributes attributes = handler_attributes::none) const
+        { return _impl->connect(std::move(handler), attributes); }
 
-		template < typename HandlerFunc_ >
-		token connect(std::shared_ptr<task_executor> worker, HandlerFunc_ handler, handler_attributes attributes = handler_attributes::none) const
-		{ return _impl->connect(std::move(worker), std::move(handler), attributes); }
+        template < typename HandlerFunc_ >
+        token connect(std::shared_ptr<task_executor> worker, HandlerFunc_ handler, handler_attributes attributes = handler_attributes::none) const
+        { return _impl->connect(std::move(worker), std::move(handler), attributes); }
 
-		void operator() (ArgTypes_... args) const
-		{
-			if (_impl)
-				_impl->invoke(args...);
-		}
-	};
+        void operator() (ArgTypes_... args) const
+        {
+            if (_impl)
+                _impl->invoke(args...);
+        }
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

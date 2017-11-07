@@ -18,56 +18,56 @@
 
 enum class LogLevel
 {
-	Info,
-	Error
+    Info,
+    Error
 };
 
 
 class Logger
 {
 public:
-	class LoggerWriter
-	{
-	private:
-		LogLevel            _logLevel;
-		std::stringstream   _stream;
-		bool                _moved;
+    class LoggerWriter
+    {
+    private:
+        LogLevel            _logLevel;
+        std::stringstream   _stream;
+        bool                _moved;
 
-	public:
-		LoggerWriter(LogLevel logLevel)
-			: _logLevel(logLevel), _moved(false)
-		{ }
+    public:
+        LoggerWriter(LogLevel logLevel)
+            : _logLevel(logLevel), _moved(false)
+        { }
 
-		LoggerWriter(LoggerWriter&& other)
-			: _logLevel(other._logLevel), _moved(false)
-		{
-			_stream << other._stream.str();
-			other._moved = true;
-		}
+        LoggerWriter(LoggerWriter&& other)
+            : _logLevel(other._logLevel), _moved(false)
+        {
+            _stream << other._stream.str();
+            other._moved = true;
+        }
 
-		~LoggerWriter()
-		{
-			if (!_moved)
-				Logger::Write(_logLevel, _stream.str());
-		}
+        ~LoggerWriter()
+        {
+            if (!_moved)
+                Logger::Write(_logLevel, _stream.str());
+        }
 
-		template < typename T_ >
-		LoggerWriter& operator << (T_&& val)
-		{
-			_stream << val;
-			return *this;
-		}
-	};
+        template < typename T_ >
+        LoggerWriter& operator << (T_&& val)
+        {
+            _stream << val;
+            return *this;
+        }
+    };
 
 private:
-	static std::mutex       s_mutex;
+    static std::mutex       s_mutex;
 
 public:
-	static LoggerWriter Log(LogLevel logLevel)
-	{ return LoggerWriter(logLevel); }
+    static LoggerWriter Log(LogLevel logLevel)
+    { return LoggerWriter(logLevel); }
 
 private:
-	static void Write(LogLevel logLevel, std::string str);
+    static void Write(LogLevel logLevel, std::string str);
 };
 
 #endif

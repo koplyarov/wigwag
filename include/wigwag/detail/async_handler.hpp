@@ -22,35 +22,35 @@ namespace detail
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	template < typename Signature_, typename LifeAssurancePolicy_ >
-	class async_handler
-	{
-		using life_checker = typename LifeAssurancePolicy_::life_checker;
-		using execution_guard = typename LifeAssurancePolicy_::execution_guard;
+    template < typename Signature_, typename LifeAssurancePolicy_ >
+    class async_handler
+    {
+        using life_checker = typename LifeAssurancePolicy_::life_checker;
+        using execution_guard = typename LifeAssurancePolicy_::execution_guard;
 
-	private:
-		std::shared_ptr<task_executor>	_worker;
-		life_checker					_life_checker;
-		std::function<Signature_>		_func;
+    private:
+        std::shared_ptr<task_executor>  _worker;
+        life_checker                    _life_checker;
+        std::function<Signature_>       _func;
 
-	public:
-		async_handler(std::shared_ptr<task_executor> worker, life_checker checker, std::function<Signature_> func)
-			: _worker(std::move(worker)), _life_checker(std::move(checker)), _func(std::move(func))
-		{ }
+    public:
+        async_handler(std::shared_ptr<task_executor> worker, life_checker checker, std::function<Signature_> func)
+            : _worker(std::move(worker)), _life_checker(std::move(checker)), _func(std::move(func))
+        { }
 
-		template < typename... Args_ >
-		void operator() (Args_&&... args) const
-		{ _worker->add_task(std::bind(&async_handler::invoke_func<Args_&...>, _life_checker, _func, std::forward<Args_>(args)...)); }
+        template < typename... Args_ >
+        void operator() (Args_&&... args) const
+        { _worker->add_task(std::bind(&async_handler::invoke_func<Args_&...>, _life_checker, _func, std::forward<Args_>(args)...)); }
 
-	private:
-		template < typename... Args_ >
-		static void invoke_func(life_checker checker, const std::function<Signature_>& func, Args_&&... args)
-		{
-			execution_guard g(checker);
-			if (g.is_alive())
-				func(std::forward<Args_>(args)...);
-		}
-	};
+    private:
+        template < typename... Args_ >
+        static void invoke_func(life_checker checker, const std::function<Signature_>& func, Args_&&... args)
+        {
+            execution_guard g(checker);
+            if (g.is_alive())
+                func(std::forward<Args_>(args)...);
+        }
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

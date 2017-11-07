@@ -23,47 +23,47 @@ namespace creation
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	struct lazy
-	{
-		using tag = creation::tag<api_version<2, 0>>;
+    struct lazy
+    {
+        using tag = creation::tag<api_version<2, 0>>;
 
-		template < typename OwningPtr_, typename DefaultType_ >
-		class storage
-		{
-		private:
-			mutable OwningPtr_		_ptr;
+        template < typename OwningPtr_, typename DefaultType_ >
+        class storage
+        {
+        private:
+            mutable OwningPtr_      _ptr;
 
-		public:
-			template < typename T_, bool enable = std::is_same<T_, DefaultType_>::value && std::is_constructible<T_>::value, typename = typename std::enable_if<enable>::type >
-			void create()
-			{ }
+        public:
+            template < typename T_, bool enable = std::is_same<T_, DefaultType_>::value && std::is_constructible<T_>::value, typename = typename std::enable_if<enable>::type >
+            void create()
+            { }
 
-			template < typename T_, typename... Args_ >
-			void create(Args_&&... args)
-			{ _ptr.reset(new T_(std::forward<Args_>(args)...)); }
+            template < typename T_, typename... Args_ >
+            void create(Args_&&... args)
+            { _ptr.reset(new T_(std::forward<Args_>(args)...)); }
 
-			const OwningPtr_& get_ptr() const
-			{
-				ensure_created();
-				return _ptr;
-			}
+            const OwningPtr_& get_ptr() const
+            {
+                ensure_created();
+                return _ptr;
+            }
 
-			bool constructed() const
-			{ return (bool)_ptr; }
+            bool constructed() const
+            { return (bool)_ptr; }
 
-		private:
-			template < bool E_ = std::is_constructible<DefaultType_>::value>
-			void ensure_created(typename std::enable_if<E_, wigwag::detail::enabler>::type = wigwag::detail::enabler()) const
-			{
-				if (!_ptr)
-					_ptr.reset(new DefaultType_());
-			}
+        private:
+            template < bool E_ = std::is_constructible<DefaultType_>::value>
+            void ensure_created(typename std::enable_if<E_, wigwag::detail::enabler>::type = wigwag::detail::enabler()) const
+            {
+                if (!_ptr)
+                    _ptr.reset(new DefaultType_());
+            }
 
-			template < bool E_ = std::is_constructible<DefaultType_>::value>
-			void ensure_created(typename std::enable_if<!E_, wigwag::detail::enabler>::type = wigwag::detail::enabler()) const
-			{ WIGWAG_ASSERT(_ptr, "Internal wigwag error, _ptr must have been initialized before!"); }
-		};
-	};
+            template < bool E_ = std::is_constructible<DefaultType_>::value>
+            void ensure_created(typename std::enable_if<!E_, wigwag::detail::enabler>::type = wigwag::detail::enabler()) const
+            { WIGWAG_ASSERT(_ptr, "Internal wigwag error, _ptr must have been initialized before!"); }
+        };
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

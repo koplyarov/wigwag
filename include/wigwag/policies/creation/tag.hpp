@@ -18,9 +18,9 @@ namespace wigwag {
 namespace creation
 {
 
-	template < typename Version_ >
-	struct tag
-	{ using version = Version_; };
+    template < typename Version_ >
+    struct tag
+    { using version = Version_; };
 
 }}
 

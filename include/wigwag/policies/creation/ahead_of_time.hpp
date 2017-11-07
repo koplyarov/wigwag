@@ -22,28 +22,28 @@ namespace creation
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	struct ahead_of_time
-	{
-		using tag = creation::tag<api_version<2, 0>>;
+    struct ahead_of_time
+    {
+        using tag = creation::tag<api_version<2, 0>>;
 
-		template < typename OwningPtr_, typename DefaultType_ >
-		class storage
-		{
-		private:
-			OwningPtr_		_ptr;
+        template < typename OwningPtr_, typename DefaultType_ >
+        class storage
+        {
+        private:
+            OwningPtr_      _ptr;
 
-		public:
-			template < typename T_, typename... Args_ >
-			void create(Args_&&... args)
-			{ _ptr.reset(new T_(std::forward<Args_>(args)...)); }
+        public:
+            template < typename T_, typename... Args_ >
+            void create(Args_&&... args)
+            { _ptr.reset(new T_(std::forward<Args_>(args)...)); }
 
-			const OwningPtr_& get_ptr() const
-			{ return _ptr; }
+            const OwningPtr_& get_ptr() const
+            { return _ptr; }
 
-			bool constructed() const
-			{ return (bool)_ptr; }
-		};
-	};
+            bool constructed() const
+            { return (bool)_ptr; }
+        };
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

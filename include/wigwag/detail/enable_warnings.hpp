@@ -9,18 +9,18 @@
 
 
 #if defined(__GNUC__) || defined(__clang)
-#	pragma GCC diagnostic pop
+#   pragma GCC diagnostic pop
 #endif
 
 #if defined(_MSC_VER)
-#	pragma warning(pop)
-#	if _MSC_VER >= 1900
-#		pragma warning(default: 5031) // Sorry :(
-#	endif
+#   pragma warning(pop)
+#   if _MSC_VER >= 1900
+#       pragma warning(default: 5031) // Sorry :(
+#   endif
 #endif
 
 #if !defined(WIGWAG_WARNINGS_DISABLED)
-#	error Inconsistent disable_warnings.hpp/enable_warnings.hpp  includes!
+#   error Inconsistent disable_warnings.hpp/enable_warnings.hpp  includes!
 #endif
 
 #undef WIGWAG_WARNINGS_DISABLED

@@ -22,14 +22,14 @@ namespace exception_handling
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	struct none
-	{
-		using tag = exception_handling::tag<api_version<2, 0>>;
+    struct none
+    {
+        using tag = exception_handling::tag<api_version<2, 0>>;
 
-		template < typename Func_, typename... Args_ >
-		void handle_exceptions(Func_&& func, Args_&&... args) const
-		{ func(std::forward<Args_>(args)...); }
-	};
+        template < typename Func_, typename... Args_ >
+        void handle_exceptions(Func_&& func, Args_&&... args) const
+        { func(std::forward<Args_>(args)...); }
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

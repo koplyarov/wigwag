@@ -22,88 +22,88 @@ namespace life_assurance
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	struct single_threaded
-	{
-		using tag = life_assurance::tag<api_version<2, 0>>;
+    struct single_threaded
+    {
+        using tag = life_assurance::tag<api_version<2, 0>>;
 
-		class life_checker;
-		class execution_guard;
+        class life_checker;
+        class execution_guard;
 
-		class shared_data
-		{ };
+        class shared_data
+        { };
 
-		struct life_assurance
-		{
-			friend class life_checker;
-			friend class execution_guard;
+        struct life_assurance
+        {
+            friend class life_checker;
+            friend class execution_guard;
 
-		private:
-			mutable bool	_alive;
-			mutable int		_ref_count;
+        private:
+            mutable bool    _alive;
+            mutable int     _ref_count;
 
-		public:
-			life_assurance()
-				: _alive(true), _ref_count(2) // One ref in signal, another in token
-			{ }
+        public:
+            life_assurance()
+                : _alive(true), _ref_count(2) // One ref in signal, another in token
+            { }
 
-			virtual ~life_assurance()
-			{ }
+            virtual ~life_assurance()
+            { }
 
-			life_assurance(const life_assurance&) = delete;
-			life_assurance& operator = (const life_assurance&) = delete;
+            life_assurance(const life_assurance&) = delete;
+            life_assurance& operator = (const life_assurance&) = delete;
 
 
-			void add_ref() const
-			{ ++_ref_count; }
+            void add_ref() const
+            { ++_ref_count; }
 
-			void release() const
-			{
-				if (release_node())
-					delete this;
-			}
+            void release() const
+            {
+                if (release_node())
+                    delete this;
+            }
 
-			void release_life_assurance(const shared_data&)
-			{ _alive = false; }
+            void release_life_assurance(const shared_data&)
+            { _alive = false; }
 
-			bool node_should_be_released() const
-			{ return _ref_count == 1; }
+            bool node_should_be_released() const
+            { return _ref_count == 1; }
 
-			bool release_node() const
-			{ return --_ref_count == 0; }
-		};
+            bool release_node() const
+            { return --_ref_count == 0; }
+        };
 
-		class life_checker
-		{
-			friend class execution_guard;
+        class life_checker
+        {
+            friend class execution_guard;
 
-			wigwag::detail::intrusive_ptr<const life_assurance>		_la;
+            wigwag::detail::intrusive_ptr<const life_assurance>     _la;
 
-		public:
-			life_checker(const shared_data&, const life_assurance& la) WIGWAG_NOEXCEPT
-				: _la(&la)
-			{ la.add_ref(); }
-		};
+        public:
+            life_checker(const shared_data&, const life_assurance& la) WIGWAG_NOEXCEPT
+                : _la(&la)
+            { la.add_ref(); }
+        };
 
-		class execution_guard
-		{
-			wigwag::detail::intrusive_ptr<const life_assurance>		_la;
+        class execution_guard
+        {
+            wigwag::detail::intrusive_ptr<const life_assurance>     _la;
 
-		public:
-			execution_guard(const life_checker& c)
-				: _la(c._la)
-			{ }
+        public:
+            execution_guard(const life_checker& c)
+                : _la(c._la)
+            { }
 
-			execution_guard(const shared_data&, const life_assurance& la)
-				: _la(&la)
-			{ la.add_ref(); }
+            execution_guard(const shared_data&, const life_assurance& la)
+                : _la(&la)
+            { la.add_ref(); }
 
-			~execution_guard()
-			{ }
+            ~execution_guard()
+            { }
 
-			int is_alive() const WIGWAG_NOEXCEPT
-			{ return _la->_alive; }
-		};
-	};
+            int is_alive() const WIGWAG_NOEXCEPT
+            { return _la->_alive; }
+        };
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

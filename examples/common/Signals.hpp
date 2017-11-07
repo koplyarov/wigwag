@@ -17,16 +17,16 @@
 
 template < typename Signature_ >
 using SharedRMutexSignal = wigwag::signal<
-			Signature_,
-			wigwag::exception_handling::print_to_stderr,
-			wigwag::threading::shared_recursive_mutex
-		>;
+            Signature_,
+            wigwag::exception_handling::print_to_stderr,
+            wigwag::threading::shared_recursive_mutex
+        >;
 
 template < typename HandlerType_ >
 using SharedRMutexListenable = wigwag::listenable<
-			HandlerType_,
-			wigwag::exception_handling::print_to_stderr,
-			wigwag::threading::shared_recursive_mutex
-		>;
+            HandlerType_,
+            wigwag::exception_handling::print_to_stderr,
+            wigwag::threading::shared_recursive_mutex
+        >;
 
 #endif

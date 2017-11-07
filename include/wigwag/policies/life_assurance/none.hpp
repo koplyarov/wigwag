@@ -21,37 +21,37 @@ namespace life_assurance
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	struct none
-	{
-		using tag = life_assurance::tag<api_version<2, 0>>;
+    struct none
+    {
+        using tag = life_assurance::tag<api_version<2, 0>>;
 
-		class shared_data
-		{ };
+        class shared_data
+        { };
 
-		struct life_assurance
-		{
-			void release_life_assurance(const shared_data&)
-			{ }
+        struct life_assurance
+        {
+            void release_life_assurance(const shared_data&)
+            { }
 
-			bool node_should_be_released() const
-			{ return false; }
+            bool node_should_be_released() const
+            { return false; }
 
-			bool release_node() const
-			{ return true; }
-		};
+            bool release_node() const
+            { return true; }
+        };
 
-		struct life_checker
-		{
-			life_checker(const shared_data&, const life_assurance&) WIGWAG_NOEXCEPT { }
-		};
+        struct life_checker
+        {
+            life_checker(const shared_data&, const life_assurance&) WIGWAG_NOEXCEPT { }
+        };
 
-		struct execution_guard
-		{
-			execution_guard(const life_checker&) WIGWAG_NOEXCEPT { }
-			execution_guard(const shared_data&, const life_assurance&) WIGWAG_NOEXCEPT { }
-			int is_alive() const WIGWAG_NOEXCEPT { return true; }
-		};
-	};
+        struct execution_guard
+        {
+            execution_guard(const life_checker&) WIGWAG_NOEXCEPT { }
+            execution_guard(const shared_data&, const life_assurance&) WIGWAG_NOEXCEPT { }
+            int is_alive() const WIGWAG_NOEXCEPT { return true; }
+        };
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

@@ -23,30 +23,30 @@ namespace state_populating
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	struct populator_only
-	{
-		using tag = state_populating::tag<api_version<2, 0>>;
+    struct populator_only
+    {
+        using tag = state_populating::tag<api_version<2, 0>>;
 
-		template < typename HandlerType_ >
-		class handler_processor
-		{
-			using handler_processor_func = std::function<void(const HandlerType_&)>;
+        template < typename HandlerType_ >
+        class handler_processor
+        {
+            using handler_processor_func = std::function<void(const HandlerType_&)>;
 
-		private:
-			handler_processor_func		_populator;
+        private:
+            handler_processor_func      _populator;
 
-		public:
-			handler_processor(handler_processor_func populator = handler_processor_func())
-				: _populator(populator)
-			{ }
+        public:
+            handler_processor(handler_processor_func populator = handler_processor_func())
+                : _populator(populator)
+            { }
 
-			bool has_populate_state() const WIGWAG_NOEXCEPT { return (bool)_populator; }
-			void populate_state(const HandlerType_& handler) const { _populator(handler); }
+            bool has_populate_state() const WIGWAG_NOEXCEPT { return (bool)_populator; }
+            void populate_state(const HandlerType_& handler) const { _populator(handler); }
 
-			bool has_withdraw_state() const WIGWAG_NOEXCEPT { return false; }
-			void withdraw_state(const HandlerType_&) const WIGWAG_NOEXCEPT { }
-		};
-	};
+            bool has_withdraw_state() const WIGWAG_NOEXCEPT { return false; }
+            void withdraw_state(const HandlerType_&) const WIGWAG_NOEXCEPT { }
+        };
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

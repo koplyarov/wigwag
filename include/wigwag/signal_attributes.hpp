@@ -19,14 +19,14 @@ namespace wigwag
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	enum class signal_attributes
-	{
-		none				= 0x0,
-		connect_sync_only	= 0x1,
-		connect_async_only	= 0x2
-	};
+    enum class signal_attributes
+    {
+        none                = 0x0,
+        connect_sync_only   = 0x1,
+        connect_async_only  = 0x2
+    };
 
-	WIGWAG_DECLARE_ENUM_BITWISE_OPERATORS(signal_attributes)
+    WIGWAG_DECLARE_ENUM_BITWISE_OPERATORS(signal_attributes)
 
 #include <wigwag/detail/enable_warnings.hpp>
 

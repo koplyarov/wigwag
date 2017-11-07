@@ -13,8 +13,8 @@
 
 enum class CollectionOp
 {
-	ItemAdded,
-	ItemRemoved
+    ItemAdded,
+    ItemRemoved
 };
 
 #endif

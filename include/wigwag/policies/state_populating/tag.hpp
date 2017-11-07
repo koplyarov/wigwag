@@ -18,9 +18,9 @@ namespace wigwag {
 namespace state_populating
 {
 
-	template < typename Version_ >
-	struct tag
-	{ using version = Version_; };
+    template < typename Version_ >
+    struct tag
+    { using version = Version_; };
 
 }}
 

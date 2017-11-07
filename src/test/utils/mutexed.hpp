@@ -19,30 +19,30 @@
 namespace wigwag
 {
 
-	template < typename T_ >
-	class mutexed
-	{
-	private:
-		mutable std::mutex		_m;
-		T_						_val;
+    template < typename T_ >
+    class mutexed
+    {
+    private:
+        mutable std::mutex      _m;
+        T_                      _val;
 
-	public:
-		mutexed(T_ val = T_())
-			: _val(val)
-		{ }
+    public:
+        mutexed(T_ val = T_())
+            : _val(val)
+        { }
 
-		T_ get() const
-		{
-			auto l = lock(_m);
-			return _val;
-		}
+        T_ get() const
+        {
+            auto l = lock(_m);
+            return _val;
+        }
 
-		void set(T_ val)
-		{
-			auto l = lock(_m);
-			_val = val;
-		}
-	};
+        void set(T_ val)
+        {
+            auto l = lock(_m);
+            _val = val;
+        }
+    };
 
 }
 

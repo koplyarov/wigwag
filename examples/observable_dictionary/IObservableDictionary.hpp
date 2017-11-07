@@ -20,10 +20,10 @@
 template < typename Key_, typename Value_ >
 struct IObservableDictionaryListener
 {
-	virtual ~IObservableDictionaryListener() { }
+    virtual ~IObservableDictionaryListener() { }
 
-	virtual void OnItemAdded(const Key_&, const Value_&) = 0;
-	virtual void OnItemRemoved(const Key_&, const Value_&) = 0;
+    virtual void OnItemAdded(const Key_&, const Value_&) = 0;
+    virtual void OnItemRemoved(const Key_&, const Value_&) = 0;
 };
 
 template < typename Key_, typename Value_ >
@@ -33,25 +33,25 @@ using IObservableDictionaryListenerPtr = std::shared_ptr<IObservableDictionaryLi
 template < typename Key_, typename Value_ >
 struct IObservableDictionary
 {
-	virtual ~IObservableDictionary() { }
+    virtual ~IObservableDictionary() { }
 
-	virtual std::recursive_mutex& SyncRoot() const = 0;
+    virtual std::recursive_mutex& SyncRoot() const = 0;
 
-	virtual wigwag::signal_connector<void(CollectionOp, const Key_&, const Value_&)> OnChanged() const = 0;
-	virtual wigwag::token AddListener(const IObservableDictionaryListenerPtr<Key_, Value_>& listener) const = 0;
+    virtual wigwag::signal_connector<void(CollectionOp, const Key_&, const Value_&)> OnChanged() const = 0;
+    virtual wigwag::token AddListener(const IObservableDictionaryListenerPtr<Key_, Value_>& listener) const = 0;
 
-	virtual int GetCount() const = 0;
-	virtual bool IsEmpty() const = 0;
+    virtual int GetCount() const = 0;
+    virtual bool IsEmpty() const = 0;
 
-	virtual Value_ Get(const Key_& key) const = 0;
-	virtual bool ContainsKey(const Key_& key) const = 0;
-	virtual bool TryGet(const Key_& key, Value_& outValue) const = 0;
+    virtual Value_ Get(const Key_& key) const = 0;
+    virtual bool ContainsKey(const Key_& key) const = 0;
+    virtual bool TryGet(const Key_& key, Value_& outValue) const = 0;
 
-	virtual void Set(const Key_& key, const Value_& value) = 0;
-	virtual void Remove(const Key_& key) = 0;
-	virtual bool TryRemove(const Key_& key) = 0;
+    virtual void Set(const Key_& key, const Value_& value) = 0;
+    virtual void Remove(const Key_& key) = 0;
+    virtual bool TryRemove(const Key_& key) = 0;
 
-	virtual void Clear() = 0;
+    virtual void Clear() = 0;
 };
 
 

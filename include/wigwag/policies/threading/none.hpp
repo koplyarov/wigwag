@@ -21,22 +21,22 @@ namespace threading
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	struct none
-	{
-		using tag = threading::tag<api_version<2, 0>>;
+    struct none
+    {
+        using tag = threading::tag<api_version<2, 0>>;
 
-		class lock_primitive
-		{
-		public:
-			void get_primitive() const WIGWAG_NOEXCEPT { }
+        class lock_primitive
+        {
+        public:
+            void get_primitive() const WIGWAG_NOEXCEPT { }
 
-			void lock_nonrecursive() const WIGWAG_NOEXCEPT { }
-			void unlock_nonrecursive() const WIGWAG_NOEXCEPT { }
+            void lock_nonrecursive() const WIGWAG_NOEXCEPT { }
+            void unlock_nonrecursive() const WIGWAG_NOEXCEPT { }
 
-			void lock_recursive() const WIGWAG_NOEXCEPT { }
-			void unlock_recursive() const WIGWAG_NOEXCEPT { }
-		};
-	};
+            void lock_recursive() const WIGWAG_NOEXCEPT { }
+            void unlock_recursive() const WIGWAG_NOEXCEPT { }
+        };
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

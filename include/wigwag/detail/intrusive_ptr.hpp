@@ -23,86 +23,86 @@ namespace detail
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	template < typename T_ >
-	class intrusive_ptr
-	{
-		template < typename U_ >
-		friend class intrusive_ptr;
+    template < typename T_ >
+    class intrusive_ptr
+    {
+        template < typename U_ >
+        friend class intrusive_ptr;
 
-	private:
-		T_*		_raw;
+    private:
+        T_*     _raw;
 
-	public:
-		explicit intrusive_ptr(T_* rawPtr = nullptr)
-			: _raw(rawPtr)
-		{ }
+    public:
+        explicit intrusive_ptr(T_* rawPtr = nullptr)
+            : _raw(rawPtr)
+        { }
 
-		intrusive_ptr(intrusive_ptr&& other) WIGWAG_NOEXCEPT
-			: _raw(other._raw)
-		{ other._raw = nullptr; }
+        intrusive_ptr(intrusive_ptr&& other) WIGWAG_NOEXCEPT
+            : _raw(other._raw)
+        { other._raw = nullptr; }
 
-		template < typename U_ >
-		intrusive_ptr(const intrusive_ptr<U_> other, typename std::enable_if<std::is_base_of<T_, U_>::value, enabler>::type = enabler())
-			: _raw(other._raw)
-		{
-			if (_raw)
-				_raw->add_ref();
-		}
+        template < typename U_ >
+        intrusive_ptr(const intrusive_ptr<U_> other, typename std::enable_if<std::is_base_of<T_, U_>::value, enabler>::type = enabler())
+            : _raw(other._raw)
+        {
+            if (_raw)
+                _raw->add_ref();
+        }
 
-		intrusive_ptr(const intrusive_ptr& other)
-			: _raw(other._raw)
-		{
-			if (_raw)
-				_raw->add_ref();
-		}
+        intrusive_ptr(const intrusive_ptr& other)
+            : _raw(other._raw)
+        {
+            if (_raw)
+                _raw->add_ref();
+        }
 
-		~intrusive_ptr()
-		{
-			if (_raw)
-				_raw->release();
-		}
+        ~intrusive_ptr()
+        {
+            if (_raw)
+                _raw->release();
+        }
 
-		intrusive_ptr& operator = (intrusive_ptr&& other)
-		{
-			intrusive_ptr tmp(std::move(other));
-			swap(tmp);
-			return *this;
-		}
+        intrusive_ptr& operator = (intrusive_ptr&& other)
+        {
+            intrusive_ptr tmp(std::move(other));
+            swap(tmp);
+            return *this;
+        }
 
-		intrusive_ptr& operator = (const intrusive_ptr& other)
-		{
-			intrusive_ptr tmp(other);
-			swap(tmp);
-			return *this;
-		}
+        intrusive_ptr& operator = (const intrusive_ptr& other)
+        {
+            intrusive_ptr tmp(other);
+            swap(tmp);
+            return *this;
+        }
 
-		bool operator == (const intrusive_ptr& other) const
-		{ return other._raw == _raw; }
+        bool operator == (const intrusive_ptr& other) const
+        { return other._raw == _raw; }
 
-		bool operator != (const intrusive_ptr& other) const
-		{ return !(*this == other); }
+        bool operator != (const intrusive_ptr& other) const
+        { return !(*this == other); }
 
-		explicit operator bool() const
-		{ return _raw != nullptr; }
+        explicit operator bool() const
+        { return _raw != nullptr; }
 
-		void reset(T_* ptr = nullptr)
-		{
-			intrusive_ptr tmp(ptr);
-			swap(tmp);
-		}
+        void reset(T_* ptr = nullptr)
+        {
+            intrusive_ptr tmp(ptr);
+            swap(tmp);
+        }
 
-		void swap(intrusive_ptr& other)
-		{ std::swap(_raw, other._raw); }
+        void swap(intrusive_ptr& other)
+        { std::swap(_raw, other._raw); }
 
-		T_* get() const
-		{ return _raw; }
+        T_* get() const
+        { return _raw; }
 
-		T_* operator -> () const
-		{ return _raw; }
+        T_* operator -> () const
+        { return _raw; }
 
-		T_& operator * () const
-		{ return *_raw; }
-	};
+        T_& operator * () const
+        { return *_raw; }
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

@@ -20,31 +20,31 @@ namespace detail
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	template < typename Func_ >
-	class scope_guard
-	{
-		Func_	_f;
-		bool	_moved;
+    template < typename Func_ >
+    class scope_guard
+    {
+        Func_   _f;
+        bool    _moved;
 
-	public:
-		scope_guard(Func_&& f)
-			: _f(f), _moved(false)
-		{ }
+    public:
+        scope_guard(Func_&& f)
+            : _f(f), _moved(false)
+        { }
 
-		scope_guard(scope_guard&& other)
-			: _f(other._f), _moved(other._moved)
-		{ other._moved = true; }
+        scope_guard(scope_guard&& other)
+            : _f(other._f), _moved(other._moved)
+        { other._moved = true; }
 
-		~scope_guard()
-		{
-			if (!_moved)
-				_f();
-		}
-	};
+        ~scope_guard()
+        {
+            if (!_moved)
+                _f();
+        }
+    };
 
-	template < typename Func_ >
-	scope_guard<Func_> at_scope_exit(Func_&& f)
-	{ return scope_guard<Func_>(std::move(f)); }
+    template < typename Func_ >
+    scope_guard<Func_> at_scope_exit(Func_&& f)
+    { return scope_guard<Func_>(std::move(f)); }
 
 #include <wigwag/detail/enable_warnings.hpp>
 

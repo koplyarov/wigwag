@@ -20,25 +20,25 @@ namespace ref_counter
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	class single_threaded
-	{
-	public:
-		using tag = ref_counter::tag<api_version<2, 0>>;
+    class single_threaded
+    {
+    public:
+        using tag = ref_counter::tag<api_version<2, 0>>;
 
-	private:
-		mutable int		_counter;
+    private:
+        mutable int     _counter;
 
-	public:
-		single_threaded(int initVal)
-			: _counter(initVal)
-		{ }
+    public:
+        single_threaded(int initVal)
+            : _counter(initVal)
+        { }
 
-		int add_ref() const
-		{ return ++_counter; }
+        int add_ref() const
+        { return ++_counter; }
 
-		int release() const
-		{ return --_counter; }
-	};
+        int release() const
+        { return --_counter; }
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

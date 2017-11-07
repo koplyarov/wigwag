@@ -23,101 +23,101 @@ namespace detail
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	template < typename T_ >
-	class intrusive_list;
+    template < typename T_ >
+    class intrusive_list;
 
 
-	class intrusive_list_node
-	{
-		template < typename T_ >
-		friend class intrusive_list;
+    class intrusive_list_node
+    {
+        template < typename T_ >
+        friend class intrusive_list;
 
-	private:
-		intrusive_list_node*	_prev;
-		intrusive_list_node*	_next;
+    private:
+        intrusive_list_node*    _prev;
+        intrusive_list_node*    _next;
 
-	public:
-		intrusive_list_node() : _prev(this), _next(this) { }
+    public:
+        intrusive_list_node() : _prev(this), _next(this) { }
 
-	private:
-		void insert_before(intrusive_list_node& other)
-		{
-			_prev = other._prev;
-			_next = &other;
+    private:
+        void insert_before(intrusive_list_node& other)
+        {
+            _prev = other._prev;
+            _next = &other;
 
-			_next->_prev = this;
-			_prev->_next = this;
-		}
+            _next->_prev = this;
+            _prev->_next = this;
+        }
 
-		void unlink()
-		{
-			_next->_prev = _prev;
-			_prev->_next = _next;
-			_prev = _next = this;
-		}
+        void unlink()
+        {
+            _next->_prev = _prev;
+            _prev->_next = _next;
+            _prev = _next = this;
+        }
 
-		bool unlinked() const
-		{ return _next == this && _prev == this; }
-	};
+        bool unlinked() const
+        { return _next == this && _prev == this; }
+    };
 
 
-	template < typename T_ >
-	class intrusive_list
-	{
-		static_assert(std::is_base_of<intrusive_list_node, T_>::value, "intrusive_list_node should be a base of T_");
+    template < typename T_ >
+    class intrusive_list
+    {
+        static_assert(std::is_base_of<intrusive_list_node, T_>::value, "intrusive_list_node should be a base of T_");
 
-	public:
-		class const_iterator;
+    public:
+        class const_iterator;
 
-		class iterator : public iterator_base<iterator, std::bidirectional_iterator_tag, T_>
-		{
-			friend class const_iterator;
+        class iterator : public iterator_base<iterator, std::bidirectional_iterator_tag, T_>
+        {
+            friend class const_iterator;
 
-		private:
-			intrusive_list_node*	_node;
+        private:
+            intrusive_list_node*    _node;
 
-		public:
-			explicit iterator(intrusive_list_node* node = nullptr) : _node(node) { }
+        public:
+            explicit iterator(intrusive_list_node* node = nullptr) : _node(node) { }
 
-			T_& dereference() const { return static_cast<T_&>(*_node); }
-			bool equal(iterator other) const { return _node == other._node; }
-			void increment() { _node = _node->_next; }
-			void decrement() { _node = _node->_prev; }
-		};
+            T_& dereference() const { return static_cast<T_&>(*_node); }
+            bool equal(iterator other) const { return _node == other._node; }
+            void increment() { _node = _node->_next; }
+            void decrement() { _node = _node->_prev; }
+        };
 
-		class const_iterator : public iterator_base<const_iterator, std::bidirectional_iterator_tag, const T_>
-		{
-		private:
-			const intrusive_list_node*	_node;
+        class const_iterator : public iterator_base<const_iterator, std::bidirectional_iterator_tag, const T_>
+        {
+        private:
+            const intrusive_list_node*  _node;
 
-		public:
-			const_iterator(iterator it) : _node(it._node) { }
-			explicit const_iterator(const intrusive_list_node* node = nullptr) : _node(node) { }
+        public:
+            const_iterator(iterator it) : _node(it._node) { }
+            explicit const_iterator(const intrusive_list_node* node = nullptr) : _node(node) { }
 
-			const T_& dereference() const { return static_cast<const T_&>(*_node); }
-			bool equal(const_iterator other) const { return _node == other._node; }
-			void increment() { _node = _node->_next; }
-			void decrement() { _node = _node->_prev; }
-		};
+            const T_& dereference() const { return static_cast<const T_&>(*_node); }
+            bool equal(const_iterator other) const { return _node == other._node; }
+            void increment() { _node = _node->_next; }
+            void decrement() { _node = _node->_prev; }
+        };
 
-	private:
-		intrusive_list_node		_root;
+    private:
+        intrusive_list_node     _root;
 
-	public:
-		iterator begin() { return iterator(_root._next); }
-		iterator end() { return iterator(&_root); }
-		iterator pre_end() { return iterator(_root._prev); }
+    public:
+        iterator begin() { return iterator(_root._next); }
+        iterator end() { return iterator(&_root); }
+        iterator pre_end() { return iterator(_root._prev); }
 
-		const_iterator begin() const { return const_iterator(_root._next); }
-		const_iterator end() const { return const_iterator(&_root); }
-		const_iterator pre_end() const { return const_iterator(_root._prev); }
+        const_iterator begin() const { return const_iterator(_root._next); }
+        const_iterator end() const { return const_iterator(&_root); }
+        const_iterator pre_end() const { return const_iterator(_root._prev); }
 
-		bool empty() const { return _root.unlinked(); }
-		size_t size() const { return std::distance(begin(), end()); }
+        bool empty() const { return _root.unlinked(); }
+        size_t size() const { return std::distance(begin(), end()); }
 
-		void push_back(T_& node) { node.insert_before(_root); }
-		void erase(T_& node) { node.unlink(); }
-	};
+        void push_back(T_& node) { node.insert_before(_root); }
+        void erase(T_& node) { node.unlink(); }
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

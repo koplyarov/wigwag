@@ -19,12 +19,12 @@ namespace detail
 {
 
 #define WIGWAG_DECLARE_TYPE_EXPRESSION_CHECK(Name_, ...) \
-	template < typename T_, typename Enabler = std::true_type > \
-	struct Name_ \
-	{ static const bool value = false; }; \
-	template < typename T_ > \
-	struct Name_<T_, decltype((__VA_ARGS__), std::true_type())> \
-	{ static const bool value = true; }
+    template < typename T_, typename Enabler = std::true_type > \
+    struct Name_ \
+    { static const bool value = false; }; \
+    template < typename T_ > \
+    struct Name_<T_, decltype((__VA_ARGS__), std::true_type())> \
+    { static const bool value = true; }
 
 }}
 

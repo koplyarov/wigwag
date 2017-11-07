@@ -21,20 +21,20 @@ namespace state_populating
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	struct none
-	{
-		using tag = state_populating::tag<api_version<2, 0>>;
+    struct none
+    {
+        using tag = state_populating::tag<api_version<2, 0>>;
 
-		template < typename HandlerType_ >
-		struct handler_processor
-		{
-			bool has_populate_state() const WIGWAG_NOEXCEPT { return false; }
-			void populate_state(const HandlerType_&) const WIGWAG_NOEXCEPT { }
+        template < typename HandlerType_ >
+        struct handler_processor
+        {
+            bool has_populate_state() const WIGWAG_NOEXCEPT { return false; }
+            void populate_state(const HandlerType_&) const WIGWAG_NOEXCEPT { }
 
-			bool has_withdraw_state() const WIGWAG_NOEXCEPT { return false; }
-			void withdraw_state(const HandlerType_&) const WIGWAG_NOEXCEPT { }
-		};
-	};
+            bool has_withdraw_state() const WIGWAG_NOEXCEPT { return false; }
+            void withdraw_state(const HandlerType_&) const WIGWAG_NOEXCEPT { }
+        };
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

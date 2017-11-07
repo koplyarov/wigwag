@@ -31,46 +31,46 @@
 
 int main(int argc, char* argv[])
 {
-	try
-	{
-		using namespace benchmarks;
-		using namespace descriptors;
+    try
+    {
+        using namespace benchmarks;
+        using namespace descriptors;
 
-		BenchmarkSuite s;
-		s.RegisterBenchmarks<SignalBenchmarks,
-			signal::wigwag::Regular,
-			signal::wigwag::Ui,
-			signal::boost::Regular,
-			signal::boost::Tracking
+        BenchmarkSuite s;
+        s.RegisterBenchmarks<SignalBenchmarks,
+            signal::wigwag::Regular,
+            signal::wigwag::Ui,
+            signal::boost::Regular,
+            signal::boost::Tracking
 #if WIGWAG_BENCHMARKS_SIGCPP2
-			, signal::sigcpp::Regular
+            , signal::sigcpp::Regular
 #endif
 #if WIGWAG_BENCHMARKS_QT5
-			, signal::qt5::Regular
+            , signal::qt5::Regular
 #endif
-			>();
+            >();
 
-		s.RegisterBenchmarks<FunctionBenchmarks,
-			function::std::Regular,
-			function::boost::Regular>();
+        s.RegisterBenchmarks<FunctionBenchmarks,
+            function::std::Regular,
+            function::boost::Regular>();
 
-		s.RegisterBenchmarks<MutexBenchmarks,
-			mutex::std::Mutex,
-			mutex::std::RecursiveMutex,
-			mutex::boost::Mutex,
-			mutex::boost::RecursiveMutex >();
+        s.RegisterBenchmarks<MutexBenchmarks,
+            mutex::std::Mutex,
+            mutex::std::RecursiveMutex,
+            mutex::boost::Mutex,
+            mutex::boost::RecursiveMutex >();
 
-		s.RegisterBenchmarks<GenericBenchmarks,
-			generic::std::ConditionVariable,
-			generic::boost::ConditionVariable,
-			generic::wigwag::LifeToken>();
+        s.RegisterBenchmarks<GenericBenchmarks,
+            generic::std::ConditionVariable,
+            generic::boost::ConditionVariable,
+            generic::wigwag::LifeToken>();
 
-		return BenchmarkApp(s).Run(argc, argv);
-	}
-	catch (const std::exception& ex)
-	{
-		std::cerr << "Uncaught exception: " << ex.what() << std::endl;
-		return 1;
-	}
-	return 0;
+        return BenchmarkApp(s).Run(argc, argv);
+    }
+    catch (const std::exception& ex)
+    {
+        std::cerr << "Uncaught exception: " << ex.what() << std::endl;
+        return 1;
+    }
+    return 0;
 }

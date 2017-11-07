@@ -21,7 +21,7 @@ namespace wigwag {
 namespace threading
 {
 
-	using default_ = own_recursive_mutex;
+    using default_ = own_recursive_mutex;
 
 }}
 

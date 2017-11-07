@@ -22,17 +22,17 @@ namespace detail
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	template < typename Signature_ >
-	struct signal_connector_impl
-	{
-		virtual ~signal_connector_impl() { }
+    template < typename Signature_ >
+    struct signal_connector_impl
+    {
+        virtual ~signal_connector_impl() { }
 
-		virtual token connect(std::function<Signature_> handler, handler_attributes attributes) = 0;
-		virtual token connect(std::shared_ptr<task_executor> worker, std::function<Signature_> handler, handler_attributes attributes) = 0;
+        virtual token connect(std::function<Signature_> handler, handler_attributes attributes) = 0;
+        virtual token connect(std::shared_ptr<task_executor> worker, std::function<Signature_> handler, handler_attributes attributes) = 0;
 
-		virtual void add_ref() = 0;
-		virtual void release() = 0;
-	};
+        virtual void add_ref() = 0;
+        virtual void release() = 0;
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

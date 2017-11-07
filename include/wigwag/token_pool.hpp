@@ -22,33 +22,33 @@ namespace wigwag
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	class token_pool
-	{
-		using tokens_container = std::vector<token>;
+    class token_pool
+    {
+        using tokens_container = std::vector<token>;
 
-	private:
-		tokens_container		_tokens;
-		mutable std::mutex		_mutex;
+    private:
+        tokens_container        _tokens;
+        mutable std::mutex      _mutex;
 
-	public:
-		token_pool& operator += (token&& t)
-		{
-			add_token(std::move(t));
-			return *this;
-		}
+    public:
+        token_pool& operator += (token&& t)
+        {
+            add_token(std::move(t));
+            return *this;
+        }
 
-		void add_token(token&& t)
-		{
-			std::lock_guard<std::mutex> l(_mutex);
-			_tokens.push_back(std::move(t));
-		}
+        void add_token(token&& t)
+        {
+            std::lock_guard<std::mutex> l(_mutex);
+            _tokens.push_back(std::move(t));
+        }
 
-		void release()
-		{
-			std::lock_guard<std::mutex> l(_mutex);
-			_tokens.clear();
-		}
-	};
+        void release()
+        {
+            std::lock_guard<std::mutex> l(_mutex);
+            _tokens.clear();
+        }
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

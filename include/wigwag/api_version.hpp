@@ -14,12 +14,12 @@
 namespace wigwag
 {
 
-	template < unsigned Major_, unsigned Minor_ >
-	struct api_version
-	{
-		static const unsigned major = Major_;
-		static const unsigned minor = Minor_;
-	};
+    template < unsigned Major_, unsigned Minor_ >
+    struct api_version
+    {
+        static const unsigned major = Major_;
+        static const unsigned minor = Minor_;
+    };
 
 }
 

@@ -18,53 +18,53 @@
 namespace wigwag
 {
 
-	class thread
-	{
-	public:
-		using thread_func = std::function<void(const std::atomic<bool>&)>;
+    class thread
+    {
+    public:
+        using thread_func = std::function<void(const std::atomic<bool>&)>;
 
-	private:
-		std::atomic<bool>		_alive;
-		thread_func				_thread_func;
-		std::string				_error_message;
-		std::thread				_impl;
+    private:
+        std::atomic<bool>       _alive;
+        thread_func             _thread_func;
+        std::string             _error_message;
+        std::thread             _impl;
 
-	public:
-		thread(const thread_func& f)
-			:	_alive(true),
-				_thread_func(f)
-		{ _impl = std::thread(std::bind(&thread::func, this)); }
+    public:
+        thread(const thread_func& f)
+            :   _alive(true),
+                _thread_func(f)
+        { _impl = std::thread(std::bind(&thread::func, this)); }
 
-		~thread()
-		{
-			_alive = false;
+        ~thread()
+        {
+            _alive = false;
 
-			if (_impl.joinable())
-				_impl.join();
-			else
-				std::cerr << "WARNING: thread is not joinable!" << std::endl;
+            if (_impl.joinable())
+                _impl.join();
+            else
+                std::cerr << "WARNING: thread is not joinable!" << std::endl;
 
-			if (!_error_message.empty())
-				TS_FAIL(("Uncaught exception in thread: " + _error_message).c_str());
-		}
+            if (!_error_message.empty())
+                TS_FAIL(("Uncaught exception in thread: " + _error_message).c_str());
+        }
 
-		static void sleep(int64_t ms)
-		{ std::this_thread::sleep_for(std::chrono::milliseconds(ms)); }
+        static void sleep(int64_t ms)
+        { std::this_thread::sleep_for(std::chrono::milliseconds(ms)); }
 
-	private:
-		void func()
-		{
-			try
-			{ _thread_func(_alive); }
-			catch (const std::exception& ex)
-			{ _error_message = ex.what(); }
-		}
-	};
+    private:
+        void func()
+        {
+            try
+            { _thread_func(_alive); }
+            catch (const std::exception& ex)
+            { _error_message = ex.what(); }
+        }
+    };
 
 
-	template < typename Lockable_ >
-	std::unique_lock<Lockable_> lock(Lockable_& lockable)
-	{ return std::unique_lock<Lockable_>(lockable); }
+    template < typename Lockable_ >
+    std::unique_lock<Lockable_> lock(Lockable_& lockable)
+    { return std::unique_lock<Lockable_>(lockable); }
 
 }
 

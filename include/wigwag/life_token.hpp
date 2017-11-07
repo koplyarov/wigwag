@@ -25,120 +25,120 @@ namespace wigwag
 
 #include <wigwag/detail/disable_warnings.hpp>
 
-	class life_token
-	{
-	private:
-		using int_type = unsigned int;
-		static const int_type alive_flag = ((int_type)1) << (std::numeric_limits<int_type>::digits - 1);
+    class life_token
+    {
+    private:
+        using int_type = unsigned int;
+        static const int_type alive_flag = ((int_type)1) << (std::numeric_limits<int_type>::digits - 1);
 
-		struct impl
-		{
-			std::atomic<int_type>		lock_counter_and_alive_flag;
-			std::condition_variable		cond_var;
-			std::mutex					mutex;
+        struct impl
+        {
+            std::atomic<int_type>       lock_counter_and_alive_flag;
+            std::condition_variable     cond_var;
+            std::mutex                  mutex;
 
-			impl() : lock_counter_and_alive_flag(alive_flag) { }
-		};
-		using impl_ptr = std::shared_ptr<impl>;
+            impl() : lock_counter_and_alive_flag(alive_flag) { }
+        };
+        using impl_ptr = std::shared_ptr<impl>;
 
-	public:
-		class checker;
-		class execution_guard;
+    public:
+        class checker;
+        class execution_guard;
 
-	private:
-		impl_ptr		_impl;
-		bool			_released;
+    private:
+        impl_ptr        _impl;
+        bool            _released;
 
-	public:
-		life_token()
-			: _impl(std::make_shared<impl>()), _released(false)
-		{ }
+    public:
+        life_token()
+            : _impl(std::make_shared<impl>()), _released(false)
+        { }
 
-		life_token(life_token&& other) WIGWAG_NOEXCEPT
-			: _impl(other._impl), _released(false)
-		{ other._released = true; }
+        life_token(life_token&& other) WIGWAG_NOEXCEPT
+            : _impl(other._impl), _released(false)
+        { other._released = true; }
 
-		~life_token()
-		{ release(); }
+        ~life_token()
+        { release(); }
 
-		void release()
-		{
-			if (_released)
-				return;
+        void release()
+        {
+            if (_released)
+                return;
 
-			_impl->lock_counter_and_alive_flag -= alive_flag;
-			std::unique_lock<std::mutex> l(_impl->mutex);
-			while (_impl->lock_counter_and_alive_flag != 0)
-				_impl->cond_var.wait(l);
+            _impl->lock_counter_and_alive_flag -= alive_flag;
+            std::unique_lock<std::mutex> l(_impl->mutex);
+            while (_impl->lock_counter_and_alive_flag != 0)
+                _impl->cond_var.wait(l);
 
-			_released = true;
-		}
+            _released = true;
+        }
 
-		life_token(const life_token&) = delete;
-		life_token& operator = (const life_token&) = delete;
-	};
-
-
-	class life_token::checker
-	{
-		friend class execution_guard;
-
-	private:
-		impl_ptr		_impl;
-
-	public:
-		checker(const life_token& token) WIGWAG_NOEXCEPT
-			: _impl(token._impl)
-		{ }
-	};
+        life_token(const life_token&) = delete;
+        life_token& operator = (const life_token&) = delete;
+    };
 
 
-	class life_token::execution_guard
-	{
-	private:
-		impl_ptr		_impl;
-		int				_alive;
+    class life_token::checker
+    {
+        friend class execution_guard;
 
-	public:
-		execution_guard(const life_token& token)
-			: _impl(token._impl), _alive(++_impl->lock_counter_and_alive_flag & alive_flag)
-		{
-			if (!_alive)
-				unlock();
-		}
+    private:
+        impl_ptr        _impl;
 
-		execution_guard(const life_token::checker& checker)
-			: _impl(checker._impl), _alive(++_impl->lock_counter_and_alive_flag & alive_flag)
-		{
-			if (!_alive)
-				unlock();
-		}
+    public:
+        checker(const life_token& token) WIGWAG_NOEXCEPT
+            : _impl(token._impl)
+        { }
+    };
 
-		~execution_guard()
-		{
-			if (_alive)
-				unlock();
-		}
 
-		int is_alive() const
-		{ return _alive; }
+    class life_token::execution_guard
+    {
+    private:
+        impl_ptr        _impl;
+        int             _alive;
 
-	private:
-		void unlock()
-		{
-			int_type i = --_impl->lock_counter_and_alive_flag;
-			if (i == 0)
-			{
-				WIGWAG_ANNOTATE_HAPPENS_AFTER(&_impl->lock_counter_and_alive_flag);
-				WIGWAG_ANNOTATE_RELEASE(&_impl->lock_counter_and_alive_flag);
+    public:
+        execution_guard(const life_token& token)
+            : _impl(token._impl), _alive(++_impl->lock_counter_and_alive_flag & alive_flag)
+        {
+            if (!_alive)
+                unlock();
+        }
 
-				std::unique_lock<std::mutex> l(_impl->mutex);
-				_impl->cond_var.notify_all();
-			}
-			else
-				WIGWAG_ANNOTATE_HAPPENS_BEFORE(&_impl->lock_counter_and_alive_flag);
-		}
-	};
+        execution_guard(const life_token::checker& checker)
+            : _impl(checker._impl), _alive(++_impl->lock_counter_and_alive_flag & alive_flag)
+        {
+            if (!_alive)
+                unlock();
+        }
+
+        ~execution_guard()
+        {
+            if (_alive)
+                unlock();
+        }
+
+        int is_alive() const
+        { return _alive; }
+
+    private:
+        void unlock()
+        {
+            int_type i = --_impl->lock_counter_and_alive_flag;
+            if (i == 0)
+            {
+                WIGWAG_ANNOTATE_HAPPENS_AFTER(&_impl->lock_counter_and_alive_flag);
+                WIGWAG_ANNOTATE_RELEASE(&_impl->lock_counter_and_alive_flag);
+
+                std::unique_lock<std::mutex> l(_impl->mutex);
+                _impl->cond_var.notify_all();
+            }
+            else
+                WIGWAG_ANNOTATE_HAPPENS_BEFORE(&_impl->lock_counter_and_alive_flag);
+        }
+    };
 
 #include <wigwag/detail/enable_warnings.hpp>
 

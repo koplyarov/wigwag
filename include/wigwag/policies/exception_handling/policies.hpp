@@ -18,7 +18,7 @@ namespace wigwag {
 namespace exception_handling
 {
 
-	using default_ = none;
+    using default_ = none;
 
 }}
 

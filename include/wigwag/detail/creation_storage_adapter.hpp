@@ -18,30 +18,30 @@ namespace wigwag {
 namespace detail
 {
 
-	template < typename Storage_ >
-	class creation_storage_adapter
-	{
-	private:
-		Storage_		_s;
+    template < typename Storage_ >
+    class creation_storage_adapter
+    {
+    private:
+        Storage_        _s;
 
-	public:
-		creation_storage_adapter()
-			: _s()
-		{ }
+    public:
+        creation_storage_adapter()
+            : _s()
+        { }
 
-		template < typename T_, typename... Args_ >
-		void create(Args_&&... args)
-		{ _s.template create<T_>(std::forward<Args_>(args)...); }
+        template < typename T_, typename... Args_ >
+        void create(Args_&&... args)
+        { _s.template create<T_>(std::forward<Args_>(args)...); }
 
-		explicit operator bool() const
-		{ return _s.constructed(); }
+        explicit operator bool() const
+        { return _s.constructed(); }
 
-		auto get_ptr() const -> decltype(_s.get_ptr())
-		{ return _s.get_ptr(); }
+        auto get_ptr() const -> decltype(_s.get_ptr())
+        { return _s.get_ptr(); }
 
-		auto operator -> () const -> decltype(&*_s.get_ptr())
-		{ return &*_s.get_ptr(); }
-	};
+        auto operator -> () const -> decltype(&*_s.get_ptr())
+        { return &*_s.get_ptr(); }
+    };
 
 }}
 

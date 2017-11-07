@@ -18,31 +18,31 @@
 namespace benchmarks
 {
 
-	template < typename FunctionDesc_ >
-	class FunctionBenchmarks : public BenchmarksClass
-	{
-		using FunctionType = typename FunctionDesc_::FunctionType;
+    template < typename FunctionDesc_ >
+    class FunctionBenchmarks : public BenchmarksClass
+    {
+        using FunctionType = typename FunctionDesc_::FunctionType;
 
-	public:
-		FunctionBenchmarks()
-			: BenchmarksClass("function")
-		{
-			AddBenchmark<>("basic", &FunctionBenchmarks::Basic);
-		}
+    public:
+        FunctionBenchmarks()
+            : BenchmarksClass("function")
+        {
+            AddBenchmark<>("basic", &FunctionBenchmarks::Basic);
+        }
 
-	private:
-		static void Basic(BenchmarkContext& context)
-		{
-			const auto n = context.GetIterationsCount();
+    private:
+        static void Basic(BenchmarkContext& context)
+        {
+            const auto n = context.GetIterationsCount();
 
-			StorageArray<FunctionType> f(n);
+            StorageArray<FunctionType> f(n);
 
-			context.Profile("create", n, [&]{ f.Construct([]{ return []{}; }); });
-			context.MeasureMemory("function", n);
-			context.Profile("invoke", n, [&]{ f.ForEach([](const FunctionType& f){ f(); }); });
-			context.Profile("destroy", n, [&]{ f.Destruct(); });
-		}
-	};
+            context.Profile("create", n, [&]{ f.Construct([]{ return []{}; }); });
+            context.MeasureMemory("function", n);
+            context.Profile("invoke", n, [&]{ f.ForEach([](const FunctionType& f){ f(); }); });
+            context.Profile("destroy", n, [&]{ f.Destruct(); });
+        }
+    };
 
 }
 

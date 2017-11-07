@@ -24,62 +24,62 @@ namespace detail
 #include <wigwag/detail/disable_warnings.hpp>
 
 #if WIGWAG_HAS_UNRESTRICTED_UNIONS
-	template < typename T_ >
-	union storage_for
-	{
-	public:
-		struct no_construct_tag { };
+    template < typename T_ >
+    union storage_for
+    {
+    public:
+        struct no_construct_tag { };
 
-	private:
-		T_ obj;
+    private:
+        T_ obj;
 
-	public:
-		storage_for(no_construct_tag) { }
+    public:
+        storage_for(no_construct_tag) { }
 
-		template < typename... Args_ >
-		storage_for(Args_&&... args) : obj(std::forward<Args_>(args)...) { }
-		~storage_for() { }
+        template < typename... Args_ >
+        storage_for(Args_&&... args) : obj(std::forward<Args_>(args)...) { }
+        ~storage_for() { }
 
-		template < typename... Args_ >
-		void construct(Args_&&... args)
-		{ new(&obj) T_(std::forward<Args_>(args)...); }
+        template < typename... Args_ >
+        void construct(Args_&&... args)
+        { new(&obj) T_(std::forward<Args_>(args)...); }
 
-		void destruct()
-		{ obj.~T_(); }
+        void destruct()
+        { obj.~T_(); }
 
-		T_& ref() { return obj; }
-		const T_& ref() const { return obj; }
-	};
+        T_& ref() { return obj; }
+        const T_& ref() const { return obj; }
+    };
 #else
-	template < typename T_ >
-	class storage_for
-	{
-	public:
-		struct no_construct_tag { };
+    template < typename T_ >
+    class storage_for
+    {
+    public:
+        struct no_construct_tag { };
 
-	private:
-		using storage = typename std::aligned_storage<sizeof(T_), WIGWAG_ALIGNOF(T_)>::type;
+    private:
+        using storage = typename std::aligned_storage<sizeof(T_), WIGWAG_ALIGNOF(T_)>::type;
 
-	private:
-		storage		obj;
+    private:
+        storage     obj;
 
-	public:
-		storage_for(no_construct_tag) { }
+    public:
+        storage_for(no_construct_tag) { }
 
-		template < typename... Args_ >
-		storage_for(Args_&&... args) { new(&obj) T_(std::forward<Args_>(args)...); }
-		~storage_for() { }
+        template < typename... Args_ >
+        storage_for(Args_&&... args) { new(&obj) T_(std::forward<Args_>(args)...); }
+        ~storage_for() { }
 
-		template < typename... Args_ >
-		void construct(Args_&&... args)
-		{ new(&obj) T_(std::forward<Args_>(args)...); }
+        template < typename... Args_ >
+        void construct(Args_&&... args)
+        { new(&obj) T_(std::forward<Args_>(args)...); }
 
-		void destruct()
-		{ obj.~T_(); }
+        void destruct()
+        { obj.~T_(); }
 
-		T_& ref() { return *reinterpret_cast<T_*>(&obj); }
-		const T_& ref() const { return *reinterpret_cast<const T_*>(&obj); }
-	};
+        T_& ref() { return *reinterpret_cast<T_*>(&obj); }
+        const T_& ref() const { return *reinterpret_cast<const T_*>(&obj); }
+    };
 #endif
 
 #include <wigwag/detail/enable_warnings.hpp>
