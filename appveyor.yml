@@ -1,5 +1,7 @@
 version: "1.0.{build}"
 os: Visual Studio 2015
+platform: 
+  - Win32
 
 environment:
   global:
@@ -14,6 +16,7 @@ configuration:
 
 init:
   - cmd: cmake --version
+  - cmd: msbuild /version
 
 install:
   - cmd: git clone --depth 1 --branch 4.4 https://github.com/CxxTest/cxxtest.git
