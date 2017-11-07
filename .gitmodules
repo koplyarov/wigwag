@@ -1,0 +1,3 @@
+[submodule "src/benchmarks/core"]
+	path = src/benchmarks/core
+	url = https://github.com/koplyarov/benchmarks.git
