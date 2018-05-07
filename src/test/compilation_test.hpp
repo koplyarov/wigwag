@@ -15,9 +15,6 @@
 #include <wigwag/token_pool.hpp>
 
 
-using namespace wigwag;
-
-
 template < int >
 class constructor_tag
 { };
@@ -26,8 +23,8 @@ class constructor_tag
 class observable_int
 {
 private:
-    int                 _value;
-    signal<void(int)>   _on_changed;
+    int                         _value;
+    wigwag::signal<void(int)>   _on_changed;
 
 public:
     observable_int(constructor_tag<1>)
@@ -43,10 +40,10 @@ public:
     { }
 
 
-    signal_connector<void(int)> on_changed() const
+    wigwag::signal_connector<void(int)> on_changed() const
     { return _on_changed.connector(); }
 
-    const signal<void(int)>& on_changed_ref() const
+    const wigwag::signal<void(int)>& on_changed_ref() const
     { return _on_changed; }
 
 
@@ -66,10 +63,10 @@ private:
 class int_observer
 {
 private:
-    mutable std::mutex              _mutex { };
-    int                             _value { };
-    token_pool                      _tokens { };
-    std::shared_ptr<task_executor>  _worker { std::make_shared<thread_task_executor>() };
+    mutable std::mutex                      _mutex { };
+    int                                     _value { };
+    wigwag::token_pool                      _tokens { };
+    std::shared_ptr<wigwag::task_executor>  _worker { std::make_shared<wigwag::thread_task_executor>() };
 
 public:
     int_observer(const observable_int& i)
@@ -93,13 +90,13 @@ private:
 class crazy_signals
 {
 public:
-    signal<void(const std::function<void(int)>& f)>         on_func;
-    signal<void(std::string& s)>                            on_string_ref;
+    wigwag::signal<void(const std::function<void(int)>& f)>         on_func;
+    wigwag::signal<void(std::string& s)>                            on_string_ref;
 
     void test_connect()
     {
-        std::shared_ptr<task_executor>  worker = std::make_shared<thread_task_executor>();
-        token_pool tp;
+        std::shared_ptr<wigwag::task_executor>  worker = std::make_shared<wigwag::thread_task_executor>();
+        wigwag::token_pool tp;
 
         tp += on_func.connect(std::bind(&crazy_signals::func_handler, this, std::placeholders::_1));
         tp += on_string_ref.connect(std::bind(&crazy_signals::string_ref_handler, this, std::placeholders::_1));
@@ -127,14 +124,14 @@ private:
 class instantiations_test
 {
 public:
-    signal<void(), exception_handling::none> s1;
-    signal<void(), threading::shared_recursive_mutex> s2;
-    signal<void(), life_assurance::none, state_populating::none> s3;
-    signal<void(), threading::shared_recursive_mutex, creation::lazy> s4;
+    wigwag::signal<void(), wigwag::exception_handling::none> s1;
+    wigwag::signal<void(), wigwag::threading::shared_recursive_mutex> s2;
+    wigwag::signal<void(), wigwag::life_assurance::none, wigwag::state_populating::none> s3;
+    wigwag::signal<void(), wigwag::threading::shared_recursive_mutex, wigwag::creation::lazy> s4;
 
-    listenable<std::function<void()>, exception_handling::none> l1;
-    listenable<std::function<void()>, threading::shared_recursive_mutex> l2;
-    listenable<std::function<void()>, life_assurance::none, state_populating::none> l3;
+    wigwag::listenable<std::function<void()>, wigwag::exception_handling::none> l1;
+    wigwag::listenable<std::function<void()>, wigwag::threading::shared_recursive_mutex> l2;
+    wigwag::listenable<std::function<void()>, wigwag::life_assurance::none, wigwag::state_populating::none> l3;
 
     instantiations_test()
         :   s1(),
