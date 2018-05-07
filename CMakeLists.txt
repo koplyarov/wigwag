@@ -156,7 +156,7 @@ if (Boost_FOUND)
 		benchmarks
 	)
 
-	if (MSVC OR MINGW)
+	if (WIN32)
 		target_link_libraries(wigwag_benchmarks ole32 oleaut32)
 	else()
 		target_link_libraries(wigwag_benchmarks rt)
