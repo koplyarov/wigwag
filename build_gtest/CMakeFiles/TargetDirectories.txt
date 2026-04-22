@@ -1,0 +1,7 @@
+/home/runner/work/wigwag/wigwag/build_gtest/CMakeFiles/wigwag_pedantic_compilation_test.dir
+/home/runner/work/wigwag/wigwag/build_gtest/CMakeFiles/example_common.dir
+/home/runner/work/wigwag/wigwag/build_gtest/CMakeFiles/example_observable_dictionary.dir
+/home/runner/work/wigwag/wigwag/build_gtest/CMakeFiles/wigwag_test.dir
+/home/runner/work/wigwag/wigwag/build_gtest/CMakeFiles/test.dir
+/home/runner/work/wigwag/wigwag/build_gtest/CMakeFiles/edit_cache.dir
+/home/runner/work/wigwag/wigwag/build_gtest/CMakeFiles/rebuild_cache.dir

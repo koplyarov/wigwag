@@ -11,6 +11,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <gtest/gtest.h>
+
 #include <chrono>
 #include <thread>
 
@@ -45,7 +47,7 @@ namespace wigwag
                 std::cerr << "WARNING: thread is not joinable!" << std::endl;
 
             if (!_error_message.empty())
-                TS_FAIL(("Uncaught exception in thread: " + _error_message).c_str());
+                ADD_FAILURE() << "Uncaught exception in thread: " << _error_message;
         }
 
         static void sleep(int64_t ms)

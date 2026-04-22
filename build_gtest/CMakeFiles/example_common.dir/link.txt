@@ -1,0 +1,2 @@
+/usr/bin/ar qc libexample_common.a CMakeFiles/example_common.dir/examples/common/Logger.cpp.o
+/usr/bin/ranlib libexample_common.a

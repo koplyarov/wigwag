@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic -Wl,--dependency-file=CMakeFiles/wigwag_test.dir/link.d CMakeFiles/wigwag_test.dir/src/test/api_v1_test.cpp.o -o bin/wigwag_test  /usr/lib/x86_64-linux-gnu/libgtest_main.a /usr/lib/x86_64-linux-gnu/libgtest.a
