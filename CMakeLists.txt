@@ -81,6 +81,8 @@ if(CXXTEST_FOUND)
 
 	if (MSVC)
 		set_source_files_properties(unittest_wigwag.cpp PROPERTIES COMPILE_FLAGS "/wd4800")
+	else()
+		target_compile_options(wigwag_test PRIVATE -Wno-catch-value)
 	endif()
 
 	target_link_libraries(wigwag_test ${CMAKE_THREAD_LIBS_INIT})
