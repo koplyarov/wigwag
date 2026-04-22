@@ -70,22 +70,19 @@ target_link_libraries(example_observable_dictionary example_common)
 
 ######################################################################
 
-find_package(CxxTest)
-if(CXXTEST_FOUND)
-	message(STATUS "Found cxxtest, enabling wigwag_test")
-	include_directories(${CXXTEST_INCLUDE_DIR})
+find_package(Boost COMPONENTS unit_test_framework)
+if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
+	message(STATUS "Found Boost.Test, enabling wigwag_test")
 	enable_testing()
 
-	CXXTEST_ADD_TEST(wigwag_test unittest_wigwag.cpp
-					  ${CMAKE_CURRENT_SOURCE_DIR}/src/test/api_v1_test.hpp)
-
-	if (MSVC)
-		set_source_files_properties(unittest_wigwag.cpp PROPERTIES COMPILE_FLAGS "/wd4800")
-	else()
-		target_compile_options(wigwag_test PRIVATE -Wno-catch-value)
-	endif()
-
-	target_link_libraries(wigwag_test ${CMAKE_THREAD_LIBS_INIT})
+	add_executable(wigwag_test
+					${CMAKE_CURRENT_SOURCE_DIR}/src/test/api_v1_test.cpp)
+	target_include_directories(wigwag_test PRIVATE ${Boost_INCLUDE_DIRS})
+	target_compile_definitions(wigwag_test PRIVATE BOOST_TEST_DYN_LINK)
+	target_link_libraries(wigwag_test
+		${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}
+		${CMAKE_THREAD_LIBS_INIT})
+	add_test(NAME wigwag_test COMMAND wigwag_test)
 endif()
 
 ######################################################################

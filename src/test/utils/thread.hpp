@@ -11,6 +11,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
+#include <boost/test/unit_test.hpp>
+
 #include <chrono>
 #include <thread>
 
@@ -45,7 +47,7 @@ namespace wigwag
                 std::cerr << "WARNING: thread is not joinable!" << std::endl;
 
             if (!_error_message.empty())
-                TS_FAIL(("Uncaught exception in thread: " + _error_message).c_str());
+                BOOST_ERROR(("Uncaught exception in thread: " + _error_message).c_str());
         }
 
         static void sleep(int64_t ms)
