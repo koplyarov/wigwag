@@ -1,2 +1,0 @@
-/usr/bin/ar qc libwigwag_pedantic_compilation_test.a CMakeFiles/wigwag_pedantic_compilation_test.dir/src/test/no_exceptions_compilation_test.cpp.o CMakeFiles/wigwag_pedantic_compilation_test.dir/src/test/pedantic_compilation_test.cpp.o
-/usr/bin/ranlib libwigwag_pedantic_compilation_test.a

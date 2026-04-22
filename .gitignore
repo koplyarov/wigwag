@@ -13,6 +13,7 @@
 /Makefile
 /bin
 /build
+/build_*/
 /build.ninja
 /cmake_install.cmake
 /compile_commands.json
