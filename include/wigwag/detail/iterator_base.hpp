@@ -29,9 +29,15 @@ namespace detail
             typename Pointer_ = T_*,
             typename Reference_ = T_&
         >
-    class iterator_base : public std::iterator<Category_, T_, Distance_, Pointer_, Reference_>
+    class iterator_base
     {
     public:
+        using iterator_category = Category_;
+        using value_type        = T_;
+        using difference_type   = Distance_;
+        using pointer           = Pointer_;
+        using reference         = Reference_;
+
         bool operator == (Derived_ other) const { return get_derived().equal(other); }
         bool operator != (Derived_ other) const { return !(*this == other); }
 
