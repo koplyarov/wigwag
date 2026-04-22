@@ -1,0 +1,57 @@
+name: run_tests
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - cc: gcc
+            cxx: g++
+          - cc: clang
+            cxx: clang++
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake make valgrind cxxtest gcc g++ clang
+
+      - name: Configure (valgrind annotations)
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: cmake -S . -B build -DWIGWAG_VALGRIND=TRUE
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Run helgrind
+        run: |
+          valgrind \
+            --suppressions=etc/valgrind.sup \
+            --tool=helgrind \
+            --gen-suppressions=all \
+            --error-exitcode=1 \
+            ./build/bin/wigwag_test
+
+      - name: Run memcheck
+        run: |
+          valgrind \
+            --suppressions=etc/valgrind.sup \
+            --tool=memcheck \
+            --leak-check=full \
+            --gen-suppressions=all \
+            --error-exitcode=1 \
+            ./build/bin/wigwag_test

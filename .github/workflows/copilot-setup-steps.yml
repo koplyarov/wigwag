@@ -1,0 +1,26 @@
+name: copilot-setup-steps
+
+on:
+  workflow_dispatch:
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake make valgrind cxxtest gcc g++ clang
+
+      - name: Configure
+        run: cmake -S . -B build -DWIGWAG_VALGRIND=TRUE
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Verify tests executable exists
+        run: test -x ./build/bin/wigwag_test
