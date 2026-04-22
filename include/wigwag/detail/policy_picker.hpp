@@ -23,7 +23,7 @@ namespace detail
     template < template <typename> class PolicyConcept_, typename DefaultPolicy_ >
     struct policies_config_entry
     {
-        template < typename T_ > using concept = PolicyConcept_<T_>;
+        template < typename T_ > using policy_concept = PolicyConcept_<T_>;
         using default_policy = DefaultPolicy_;
     };
 
@@ -43,14 +43,14 @@ namespace detail
     {
         template < typename Policy_ >
         using policy_supported = typename std::conditional<
-                !std::is_same<typename EntriesHead_::template concept<Policy_>::adapted_policy, void>::value,
+                !std::is_same<typename EntriesHead_::template policy_concept<Policy_>::adapted_policy, void>::value,
                 std::true_type,
                 typename policies_config<Entries_...>::template policy_supported<Policy_>
             >::type;
 
         template < template <typename> class Concept_ >
         using default_policy = typename std::conditional<
-                std::is_same<typename EntriesHead_::template concept<int>, Concept_<int>>::value,
+                std::is_same<typename EntriesHead_::template policy_concept<int>, Concept_<int>>::value,
                 typename EntriesHead_::default_policy,
                 typename policies_config<Entries_...>::template default_policy<Concept_>
             >::type;
