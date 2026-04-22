@@ -33,7 +33,29 @@
 #endif
 
 
-using namespace wigwag;
+// wigwag::signal<> is explicitly qualified everywhere in this file because
+// <gtest/gtest.h> includes <csignal>, which brings the C signal() function
+// into the global namespace, making unqualified 'signal' ambiguous.
+using wigwag::token;
+using wigwag::token_pool;
+using wigwag::listenable;
+using wigwag::signal_connector;
+using wigwag::task_executor;
+using wigwag::thread_task_executor;
+using wigwag::threadless_task_executor;
+using wigwag::basic_thread_task_executor;
+using wigwag::life_token;
+using wigwag::thread;
+using wigwag::lock;
+using wigwag::mutexed;
+using wigwag::profiler;
+namespace exception_handling = wigwag::exception_handling;
+namespace threading = wigwag::threading;
+namespace state_populating = wigwag::state_populating;
+namespace creation = wigwag::creation;
+namespace life_assurance = wigwag::life_assurance;
+using wigwag::handler_attributes;
+using wigwag::signal_attributes;
 using namespace std::chrono;
 
 
