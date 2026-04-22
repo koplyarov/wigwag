@@ -1,5 +1,5 @@
+cmake_minimum_required(VERSION 3.11)
 project(wigwag)
-cmake_minimum_required(VERSION 2.8.12)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -18,8 +18,8 @@ endif()
 if (MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
 else()
-	add_definitions(-Wall)
-	add_definitions(-std=c++11)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
 if (WIGWAG_COVERAGE)
@@ -70,23 +70,29 @@ target_link_libraries(example_observable_dictionary example_common)
 
 ######################################################################
 
-find_package(CxxTest)
-if(CXXTEST_FOUND)
-	message(STATUS "Found cxxtest, enabling wigwag_test")
-	include_directories(${CXXTEST_INCLUDE_DIR})
-	enable_testing()
+include(FetchContent)
+FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG        release-1.10.0
+)
+# For Windows: prevent overriding our compiler/linker settings with debug runtime
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+# Suppress -Werror for GTest sources (old codebase triggers false positives with modern compilers)
+target_compile_options(gtest PRIVATE -Wno-error)
+target_compile_options(gtest_main PRIVATE -Wno-error)
+target_compile_options(gmock PRIVATE -Wno-error)
+target_compile_options(gmock_main PRIVATE -Wno-error)
 
-	CXXTEST_ADD_TEST(wigwag_test unittest_wigwag.cpp
-					  ${CMAKE_CURRENT_SOURCE_DIR}/src/test/api_v1_test.hpp)
+enable_testing()
 
-	if (MSVC)
-		set_source_files_properties(unittest_wigwag.cpp PROPERTIES COMPILE_FLAGS "/wd4800")
-	else()
-		target_compile_options(wigwag_test PRIVATE -Wno-catch-value)
-	endif()
+add_executable(wigwag_test
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/test/api_v1_test.cpp)
+target_link_libraries(wigwag_test gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
-	target_link_libraries(wigwag_test ${CMAKE_THREAD_LIBS_INIT})
-endif()
+include(GoogleTest)
+gtest_discover_tests(wigwag_test)
 
 ######################################################################
 

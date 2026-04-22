@@ -14,6 +14,8 @@
 #include <chrono>
 #include <thread>
 
+#include <gtest/gtest.h>
+
 
 namespace wigwag
 {
@@ -45,7 +47,7 @@ namespace wigwag
                 std::cerr << "WARNING: thread is not joinable!" << std::endl;
 
             if (!_error_message.empty())
-                TS_FAIL(("Uncaught exception in thread: " + _error_message).c_str());
+                ADD_FAILURE() << "Uncaught exception in thread: " << _error_message;
         }
 
         static void sleep(int64_t ms)
