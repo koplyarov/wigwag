@@ -142,7 +142,7 @@ namespace wigwag_test_detail
             t.reset();
             auto disconnect_time = duration_cast<milliseconds>(p.reset()).count();
             BOOST_CHECK(handler_invoked.get());
-            BOOST_CHECK_LE(600, disconnect_time);
+            BOOST_CHECK_GE(disconnect_time, 600);
             BOOST_CHECK_LE(disconnect_time, 1200);
         }
 
@@ -172,7 +172,7 @@ namespace wigwag_test_detail
             t.reset();
             auto disconnect_time = duration_cast<milliseconds>(p.reset()).count();
             BOOST_CHECK(handler_invoked.get());
-            BOOST_CHECK_LE(600, disconnect_time);
+            BOOST_CHECK_GE(disconnect_time, 600);
             BOOST_CHECK_LE(disconnect_time, 1200);
         }
 
@@ -764,7 +764,7 @@ BOOST_AUTO_TEST_CASE(test_life_token)
         lt2.release();
         auto release_time = duration_cast<milliseconds>(p.reset()).count();
         BOOST_CHECK_LE(move_time, 100);
-        BOOST_CHECK_LE(150, release_time);
+        BOOST_CHECK_GE(release_time, 150);
     }
 
     {
@@ -809,7 +809,7 @@ BOOST_AUTO_TEST_CASE(test_life_token)
         lt2.release();
         auto release_time = duration_cast<milliseconds>(p.reset()).count();
         BOOST_CHECK_LE(move_time, 100);
-        BOOST_CHECK_LE(150, release_time);
+        BOOST_CHECK_GE(release_time, 150);
     }
 
     {
@@ -878,7 +878,7 @@ BOOST_AUTO_TEST_CASE(test_task_executors)
         profiler p;
         worker.reset();
         auto worker_dtor_time = duration_cast<milliseconds>(p.reset()).count();
-        BOOST_CHECK_LE(500, worker_dtor_time);
+        BOOST_CHECK_GE(worker_dtor_time, 500);
         auto l = lock(m);
         BOOST_CHECK_EQUAL(n, 3);
     }
