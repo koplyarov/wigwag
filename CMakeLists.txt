@@ -84,7 +84,6 @@ if(GTEST_FOUND)
 	endif()
 
 	target_link_libraries(wigwag_test GTest::GTest GTest::Main ${CMAKE_THREAD_LIBS_INIT})
-	set_property(TARGET wigwag_test PROPERTY CXX_STANDARD 14)
 	add_test(NAME wigwag_test COMMAND wigwag_test)
 endif()
 

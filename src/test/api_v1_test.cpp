@@ -107,7 +107,7 @@ namespace {
 
 
     template < typename Signal_ >
-    void do_test_life_assurance_common()
+    void run_life_assurance_common_test()
     {
         {
             std::shared_ptr<task_executor> worker = std::make_shared<thread_task_executor>();
@@ -638,10 +638,10 @@ TEST(WigwagApiV1Test, StatePopulatingNone)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 TEST(WigwagApiV1Test, LifeAssuranceDefault)
-{ do_test_life_assurance_common<wigwag::signal<void()>>(); }
+{ run_life_assurance_common_test<wigwag::signal<void()>>(); }
 
 TEST(WigwagApiV1Test, LifeAssuranceIntrusiveLifeTokens)
-{ do_test_life_assurance_common<wigwag::signal<void(), exception_handling::default_, threading::default_, state_populating::default_, life_assurance::intrusive_life_tokens>>(); }
+{ run_life_assurance_common_test<wigwag::signal<void(), exception_handling::default_, threading::default_, state_populating::default_, life_assurance::intrusive_life_tokens>>(); }
 
 TEST(WigwagApiV1Test, LifeAssuranceSingleThreaded)
 {
