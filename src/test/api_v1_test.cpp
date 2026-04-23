@@ -28,9 +28,3 @@ TEST(wigwag_api_v1_test, task_executors) { wigwag_api_v1_test::test_task_executo
 TEST(wigwag_api_v1_test, task_executor_function_copying) { wigwag_api_v1_test::test_task_executor_function_copying(); }
 TEST(wigwag_api_v1_test, signal_handler_copying) { wigwag_api_v1_test::test_signal_handler_copying(); }
 TEST(wigwag_api_v1_test, signal_parameters_copying) { wigwag_api_v1_test::test_signal_parameters_copying(); }
-
-int main(int argc, char** argv)
-{
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
