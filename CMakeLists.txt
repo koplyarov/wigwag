@@ -70,22 +70,30 @@ target_link_libraries(example_observable_dictionary example_common)
 
 ######################################################################
 
-find_package(CxxTest)
-if(CXXTEST_FOUND)
-	message(STATUS "Found cxxtest, enabling wigwag_test")
-	include_directories(${CXXTEST_INCLUDE_DIR})
+find_package(GTest)
+if(GTEST_FOUND)
+	message(STATUS "Found googletest, enabling wigwag_test")
 	enable_testing()
 
-	CXXTEST_ADD_TEST(wigwag_test unittest_wigwag.cpp
-					  ${CMAKE_CURRENT_SOURCE_DIR}/src/test/api_v1_test.hpp)
+	add_executable(wigwag_test
+		${CMAKE_CURRENT_SOURCE_DIR}/src/test/api_v1_test.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/src/test/api_v1_test.hpp)
+	set_target_properties(wigwag_test PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON)
 
 	if (MSVC)
-		set_source_files_properties(unittest_wigwag.cpp PROPERTIES COMPILE_FLAGS "/wd4800")
+		target_compile_options(wigwag_test PRIVATE /wd4800)
 	else()
-		target_compile_options(wigwag_test PRIVATE -Wno-catch-value)
+		target_compile_options(wigwag_test PRIVATE -Wno-catch-value -std=c++14)
 	endif()
 
-	target_link_libraries(wigwag_test ${CMAKE_THREAD_LIBS_INIT})
+	if (TARGET GTest::gtest AND TARGET GTest::gtest_main)
+		target_link_libraries(wigwag_test ${CMAKE_THREAD_LIBS_INIT} GTest::gtest GTest::gtest_main)
+	else()
+		include_directories(${GTEST_INCLUDE_DIRS})
+		target_link_libraries(wigwag_test ${CMAKE_THREAD_LIBS_INIT} ${GTEST_BOTH_LIBRARIES})
+	endif()
+
+	add_test(NAME wigwag_test COMMAND wigwag_test)
 endif()
 
 ######################################################################
