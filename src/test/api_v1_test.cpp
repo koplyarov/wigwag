@@ -1,4 +1,5 @@
 #include <test/api_v1_test.hpp>
+#include <gtest/gtest.h>
 
 TEST(wigwag_api_v1_test, signals) { wigwag_api_v1_test::test_signals(); }
 TEST(wigwag_api_v1_test, signal_connector) { wigwag_api_v1_test::test_signal_connector(); }

@@ -18,11 +18,37 @@
 #include <wigwag/threadless_task_executor.hpp>
 #include <wigwag/token_pool.hpp>
 
-#include <gtest/gtest.h>
-
 #include <chrono>
 #include <iostream>
+#include <sstream>
+#include <stdexcept>
 #include <thread>
+
+namespace wigwag_test_detail
+{
+    inline void fail(const std::string& message)
+    { throw std::runtime_error(message); }
+
+    template < typename Lhs_, typename Rhs_ >
+    inline void assert_equals(const Lhs_& lhs, const Rhs_& rhs, const char* lhs_str, const char* rhs_str, const char* file, int line)
+    {
+        if (!(lhs == rhs))
+        {
+            std::ostringstream ss;
+            ss << file << ":" << line << ": expected " << lhs_str << " == " << rhs_str;
+            fail(ss.str());
+        }
+    }
+}
+
+#define TS_ASSERT(expr) do { if (!(expr)) wigwag_test_detail::fail(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": assertion failed: " + #expr); } while (false)
+#define TS_ASSERT_EQUALS(a, b) wigwag_test_detail::assert_equals((a), (b), #a, #b, __FILE__, __LINE__)
+#define TS_ASSERT_DIFFERS(a, b) do { if ((a) == (b)) wigwag_test_detail::fail(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": expected values to differ"); } while (false)
+#define TS_ASSERT_THROWS_NOTHING(expr) do { try { (expr); } catch (...) { wigwag_test_detail::fail(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": expected no exception"); } } while (false)
+#define TS_ASSERT_THROWS(expr, ex) do { bool __threw = false; try { (expr); } catch (const ex&) { __threw = true; } catch (...) { wigwag_test_detail::fail(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": wrong exception type"); } if (!__threw) wigwag_test_detail::fail(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": expected exception " + #ex); } while (false)
+#define TS_ASSERT_THROWS_ANYTHING(expr) do { bool __threw = false; try { (expr); } catch (...) { __threw = true; } if (!__threw) wigwag_test_detail::fail(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": expected exception"); } while (false)
+#define TS_ASSERT_LESS_THAN_EQUALS(a, b) do { if (!((a) <= (b))) wigwag_test_detail::fail(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": expected " + #a + " <= " + #b); } while (false)
+#define TS_FAIL(msg) wigwag_test_detail::fail(msg)
 
 #include <test/utils/mutexed.hpp>
 #include <test/utils/profiler.hpp>
@@ -38,15 +64,6 @@
 
 using namespace wigwag;
 using namespace std::chrono;
-
-#define TS_ASSERT(expr) EXPECT_TRUE((expr))
-#define TS_ASSERT_EQUALS(a, b) EXPECT_EQ((a), (b))
-#define TS_ASSERT_DIFFERS(a, b) EXPECT_NE((a), (b))
-#define TS_ASSERT_THROWS_NOTHING(expr) EXPECT_NO_THROW(expr)
-#define TS_ASSERT_THROWS(expr, ex) EXPECT_THROW(expr, ex)
-#define TS_ASSERT_THROWS_ANYTHING(expr) EXPECT_ANY_THROW(expr)
-#define TS_ASSERT_LESS_THAN_EQUALS(a, b) EXPECT_LE((a), (b))
-#define TS_FAIL(msg) ADD_FAILURE() << (msg)
 
 
 class wigwag_api_v1_test

@@ -82,7 +82,7 @@ if(GTEST_FOUND)
 	if (MSVC)
 		target_compile_options(wigwag_test PRIVATE /wd4800)
 	else()
-		target_compile_options(wigwag_test PRIVATE -Wno-catch-value)
+		target_compile_options(wigwag_test PRIVATE -Wno-catch-value -std=c++14)
 	endif()
 
 	if (TARGET GTest::gtest AND TARGET GTest::gtest_main)
