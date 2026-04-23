@@ -19,7 +19,7 @@ if (MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
 else()
 	add_definitions(-Wall)
-	add_definitions(-std=c++11)
+	add_definitions(-std=c++14)
 endif()
 
 if (WIGWAG_COVERAGE)
@@ -70,22 +70,21 @@ target_link_libraries(example_observable_dictionary example_common)
 
 ######################################################################
 
-find_package(CxxTest)
-if(CXXTEST_FOUND)
-	message(STATUS "Found cxxtest, enabling wigwag_test")
-	include_directories(${CXXTEST_INCLUDE_DIR})
+find_package(GTest)
+if(GTEST_FOUND)
+	message(STATUS "Found GTest, enabling wigwag_test")
 	enable_testing()
 
-	CXXTEST_ADD_TEST(wigwag_test unittest_wigwag.cpp
-					  ${CMAKE_CURRENT_SOURCE_DIR}/src/test/api_v1_test.hpp)
+	add_executable(wigwag_test ${CMAKE_CURRENT_SOURCE_DIR}/src/test/api_v1_test.cpp)
 
 	if (MSVC)
-		set_source_files_properties(unittest_wigwag.cpp PROPERTIES COMPILE_FLAGS "/wd4800")
+		set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/test/api_v1_test.cpp PROPERTIES COMPILE_FLAGS "/wd4800")
 	else()
 		target_compile_options(wigwag_test PRIVATE -Wno-catch-value)
 	endif()
 
-	target_link_libraries(wigwag_test ${CMAKE_THREAD_LIBS_INIT})
+	target_link_libraries(wigwag_test GTest::GTest GTest::Main ${CMAKE_THREAD_LIBS_INIT})
+	add_test(NAME wigwag_test COMMAND wigwag_test)
 endif()
 
 ######################################################################
