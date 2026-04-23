@@ -18,7 +18,7 @@
 #include <wigwag/threadless_task_executor.hpp>
 #include <wigwag/token_pool.hpp>
 
-#include <cxxtest/TestSuite.h>
+#include <gtest/gtest.h>
 
 #include <chrono>
 #include <iostream>
@@ -39,8 +39,17 @@
 using namespace wigwag;
 using namespace std::chrono;
 
+#define TS_ASSERT(expr) EXPECT_TRUE((expr))
+#define TS_ASSERT_EQUALS(a, b) EXPECT_EQ((a), (b))
+#define TS_ASSERT_DIFFERS(a, b) EXPECT_NE((a), (b))
+#define TS_ASSERT_THROWS_NOTHING(expr) EXPECT_NO_THROW(expr)
+#define TS_ASSERT_THROWS(expr, ex) EXPECT_THROW(expr, ex)
+#define TS_ASSERT_THROWS_ANYTHING(expr) EXPECT_ANY_THROW(expr)
+#define TS_ASSERT_LESS_THAN_EQUALS(a, b) EXPECT_LE((a), (b))
+#define TS_FAIL(msg) ADD_FAILURE() << (msg)
 
-class wigwag_api_v1_test : public CxxTest::TestSuite
+
+class wigwag_api_v1_test
 {
 private:
     class test_listener
