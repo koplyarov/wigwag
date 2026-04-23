@@ -45,8 +45,8 @@ namespace wigwag_test_detail
 #define TS_ASSERT_EQUALS(a, b) wigwag_test_detail::assert_equals((a), (b), #a, #b, __FILE__, __LINE__)
 #define TS_ASSERT_DIFFERS(a, b) do { if ((a) == (b)) wigwag_test_detail::fail(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": expected values to differ"); } while (false)
 #define TS_ASSERT_THROWS_NOTHING(expr) do { try { (expr); } catch (...) { wigwag_test_detail::fail(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": expected no exception"); } } while (false)
-#define TS_ASSERT_THROWS(expr, ex) do { bool __threw = false; try { (expr); } catch (const ex&) { __threw = true; } catch (...) { wigwag_test_detail::fail(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": wrong exception type"); } if (!__threw) wigwag_test_detail::fail(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": expected exception " + #ex); } while (false)
-#define TS_ASSERT_THROWS_ANYTHING(expr) do { bool __threw = false; try { (expr); } catch (...) { __threw = true; } if (!__threw) wigwag_test_detail::fail(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": expected exception"); } while (false)
+#define TS_ASSERT_THROWS(expr, ex) do { bool threw_expected_exception = false; try { (expr); } catch (const ex&) { threw_expected_exception = true; } catch (...) { wigwag_test_detail::fail(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": wrong exception type"); } if (!threw_expected_exception) wigwag_test_detail::fail(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": expected exception " + #ex); } while (false)
+#define TS_ASSERT_THROWS_ANYTHING(expr) do { bool threw_any_exception = false; try { (expr); } catch (...) { threw_any_exception = true; } if (!threw_any_exception) wigwag_test_detail::fail(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": expected exception"); } while (false)
 #define TS_ASSERT_LESS_THAN_EQUALS(a, b) do { if (!((a) <= (b))) wigwag_test_detail::fail(std::string(__FILE__) + ":" + std::to_string(__LINE__) + ": expected " + #a + " <= " + #b); } while (false)
 #define TS_FAIL(msg) wigwag_test_detail::fail(msg)
 

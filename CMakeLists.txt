@@ -78,6 +78,7 @@ if(GTEST_FOUND)
 	add_executable(wigwag_test
 		${CMAKE_CURRENT_SOURCE_DIR}/src/test/api_v1_test.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/src/test/api_v1_test.hpp)
+	set_target_properties(wigwag_test PROPERTIES CXX_STANDARD 14 CXX_STANDARD_REQUIRED ON)
 
 	if (MSVC)
 		target_compile_options(wigwag_test PRIVATE /wd4800)
